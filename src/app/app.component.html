@@ -1,0 +1,9 @@
+<app-header></app-header>
+<!----- SHOWS --------->
+<div class="container my-3 px-5">
+    <h1 class="mx-5 text-uppercase">Nos prochains spectacles</h1>
+    <app-show-card [show]="show" *ngFor="let show of (shows$ | async); let i = index;">
+    </app-show-card>
+</div>
+<app-who></app-who>
+<app-footer></app-footer>

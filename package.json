@@ -1,0 +1,43 @@
+{
+  "name": "ludi-frontend",
+  "version": "0.0.0",
+  "homepage": "https://moktarace.github.io/ludi-frontend/",
+  "scripts": {
+    "ng": "ng",
+    "start": "ng serve",
+    "build": "ng build",
+    "watch": "ng build --watch --configuration development",
+    "deploy-gh": "ng deploy --base-href=/ludi-frontend/",
+    "deploy-ovh": "ng deploy --base-href=/ludi-frontend/"
+  },
+  "private": true,
+  "dependencies": {
+    "@angular/animations": "~13.0.0",
+    "@angular/common": "~13.0.0",
+    "@angular/compiler": "~13.0.0",
+    "@angular/core": "~13.0.0",
+    "@angular/forms": "~13.0.0",
+    "@angular/localize": "~13.0.3",
+    "@angular/platform-browser": "~13.0.0",
+    "@angular/platform-browser-dynamic": "~13.0.0",
+    "@angular/router": "~13.0.0",
+    "@ng-bootstrap/ng-bootstrap": "~12.0.1",
+    "@popperjs/core": "~2.11.2",
+    "bootstrap": "~5.1.3",
+    "bootstrap-icons": "~1.6.1",
+    "moment": "^2.29.3",
+    "ngx-moment": "^6.0.2",
+    "rxjs": "~7.4.0",
+    "tslib": "^2.3.0",
+    "zone.js": "~0.11.4"
+  },
+  "devDependencies": {
+    "@angular-devkit/build-angular": "~13.0.3",
+    "@angular/cli": "~13.0.3",
+    "@angular/compiler-cli": "~13.0.0",
+    "@types/node": "^12.11.1",
+    "angular-cli-ghpages": "^1.0.0",
+    "ngx-deploy-ftp": "^1.1.0",
+    "typescript": "~4.4.3"
+  }
+}

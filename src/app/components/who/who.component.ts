@@ -1,10 +1,9 @@
-import { Input, Component } from '@angular/core'
-import { Show } from '../../model'
+import { Component } from '@angular/core'
 
 @Component({
   selector: 'app-who',
   templateUrl: './who.component.html',
 })
 export class WhoComponent {
-  constructor() {}
+  constructor() { }
 }

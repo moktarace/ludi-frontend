@@ -1,0 +1,22 @@
+<app-highlighted-show-card [show]="highlightedShow">
+</app-highlighted-show-card>
+<div class="container my-3">
+    <h1 class="mx-5 text-uppercase">Nos prochaines Dates</h1>
+    <div class="grid">
+        <div class="row">
+            <div *ngFor="let show of shows | slice:0:4; let i=index" class="col-md-6">
+                <app-show-card [showDetails]="false" [show]="show">
+                </app-show-card>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="container my-3">
+    <h1 class="mx-5 text-uppercase">Dates à venir</h1>
+    <div class="grid">
+        <div class="row m-auto">
+            <app-shows-list [shows]="shows | slice:5:(displayAllShows ? undefined : 10)">
+            </app-shows-list>
+        </div>
+    </div>
+</div>

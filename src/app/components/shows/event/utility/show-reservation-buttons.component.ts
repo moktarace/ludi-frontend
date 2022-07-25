@@ -1,5 +1,5 @@
 import { Input, Component } from '@angular/core'
-import { Show } from '../../../model'
+import { Show } from '../../../../model'
 
 @Component({
   selector: 'app-show-reservation-buttons',
@@ -18,18 +18,10 @@ export class ShowReservationButtonsComponent {
   }
 
   @Input()
-  public isLogged: boolean | null = false
+  public socialLink: boolean | null = true;
 
-  constructor() {}
+  @Input()
+  public outline: boolean | null = true;
 
-  public get isFree() {
-    return !this.show?.price
-  }
-
-  public get locationLink() {
-    if (!this.show?.location) {
-      return '#'
-    }
-    return 'https://maps.google.com/?q=' + this.show?.location
-  }
+  constructor() { }
 }

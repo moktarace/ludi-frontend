@@ -1,10 +1,56 @@
-html, body { height: 100%; }
+h1,
+h2,
+.highlighted h5 {
+  font-family: "The Bold Font", sans-serif;
+}
 
-h1 {
-    font-family: 'The Bold Font', sans-serif;
+.img-polaroid {
+  padding: 0.25rem;
+  background-color: white;
+  border: 10px solid white;
+  max-width: 100%;
+  height: auto;
+  box-shadow: 1px 5px 5px rgb(0 0 0 / 30%);
+}
+
+#picture-noel {
+  transform: rotate(-0.2deg);
+}
+
+#picture-impro-2 {
+  transform: rotate(1.5deg);
+}
+
+#picture-impro-1 {
+  transform: rotate(-1deg);
+}
+
+#picture-ludi {
+  transform: rotate(-1.5deg);
 }
 
 .text-logo {
-    color : #dc3545;
-    font-family: 'Butter Luchy Free', sans-serif;
+  color: #dc3545;
+  font-family: "Butter Luchy Free", sans-serif;
+}
+
+.highlighted {
+  background: url(/assets/background/banner.gif);
+  height: 100%;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+}
+
+div.bg-dark.bg-black {
+  background-color: black !important;
+}
+
+#monthly {
+  max-width: 1024px;
+  max-height: 1024px;
+  width: 1024px;
+  height: 1024px;
+  z-index : -1;
+  bottom : 100vh;
 }

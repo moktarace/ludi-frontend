@@ -5,5 +5,12 @@ import { Component, Input } from '@angular/core';
   templateUrl: './header.component.html',
 })
 export class HeaderComponent {
-  constructor() {}
+  constructor() { }
+
+  public get title(): string {
+    if (window.screen.width < 1000) {
+      return "LA LUDI DE TOULOUSE";
+    }
+    return "LIGUE UNIVERSITAIRE D'IMPROVISATION DE TOULOUSE";
+  }
 }

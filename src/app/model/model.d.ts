@@ -8,6 +8,7 @@ export interface Show {
   price?: number;
   reducedPrice?: number;
   imgLink?: string;
+  isHighlighted?: boolean;
   facebookLink?:string;
   instagramLink?:string;
 }

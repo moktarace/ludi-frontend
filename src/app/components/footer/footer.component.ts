@@ -5,7 +5,14 @@ import { Input, Component, Output, EventEmitter } from '@angular/core'
   templateUrl: './footer.component.html',
 })
 export class FooterComponent {
-  
-  constructor() {}
 
+  @Output()
+  public click:EventEmitter<any> = new EventEmitter();
+
+  constructor() { }
+
+
+  public onClick() {
+    this.click.emit(true);
+  }
 }

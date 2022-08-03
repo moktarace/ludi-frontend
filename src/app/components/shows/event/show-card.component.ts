@@ -7,8 +7,6 @@ import { Show } from '../../../model'
 })
 export class ShowCardComponent {
 
-  private static DATE_FORMATTER = new Intl.DateTimeFormat("fr-FR", { hour12: false, weekday: "long", month: "long", day: "numeric", hour: "2-digit", minute: "2-digit" });
-
   private static SHORT_DATE_FORMATTER = new Intl.DateTimeFormat("fr-FR", { hour12: false, weekday: "short", month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" });
 
   @Input()
@@ -21,13 +19,7 @@ export class ShowCardComponent {
     price: 0,
     reducedPrice: 0,
   }
-
-  @Input()
-  public isHighlighted: boolean | undefined;
-
-  @Input()
-  public showDetails: boolean = true;
-
+  
   constructor() { }
 
   public get isFree() {
@@ -37,9 +29,6 @@ export class ShowCardComponent {
   public get formattedDate(): string | undefined {
     if (!this.show?.date) {
       return 'Date à venir';
-    }
-    if (this.showDetails) {
-      return ShowCardComponent.DATE_FORMATTER.format(new Date(this.show.date * 1000));
     }
     return ShowCardComponent.SHORT_DATE_FORMATTER.format(new Date(this.show.date * 1000));
   }

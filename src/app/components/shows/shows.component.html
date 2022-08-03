@@ -5,7 +5,7 @@
     <div class="grid">
         <div class="row">
             <div *ngFor="let show of shows | slice:0:4; let i=index" class="col-md-6">
-                <app-show-card [showDetails]="false" [show]="show">
+                <app-show-card [show]="show">
                 </app-show-card>
             </div>
         </div>

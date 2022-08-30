@@ -1,5 +1,5 @@
 export interface Show {
-  id?: string;
+  id?: number | string;
   name?: string;
   location?: string;
   date?: number;
@@ -10,5 +10,8 @@ export interface Show {
   imgLink?: string;
   isHighlighted?: boolean;
   facebookLink?:string;
+  freeForStudents?:boolean;
+  bannerImgLink?:string;
   instagramLink?:string;
+  isPublished?: boolean;
 }

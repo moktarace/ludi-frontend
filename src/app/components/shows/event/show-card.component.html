@@ -18,15 +18,15 @@
             </div>
             <div class="row">
                 <div class="row">
-                    <div *ngIf="isFree">
-                        <h5>Gratuit</h5>
+                    <div *ngIf="isFree || show?.freeForStudents">
+                        <h5>Gratuit{{!isFree && show?.freeForStudents ? ' pour les étudiants': ''}}</h5>
                     </div>
                     <div *ngIf="!isFree">
                         <p class="mb-0">{{ show?.price + " €" + (show?.reducedPrice ? (" / " + show?.reducedPrice + "
                             €*") : "") }}
                         </p>
                         <p *ngIf="show?.reducedPrice" class="mt-0 fw-lighter">
-                            *étudiant, chômeur, moins de 16 ans
+                            *{{!show?.freeForStudents ? 'étudiant, ': ''}}chômeur, moins de 16 ans
                         </p>
                     </div>
                 </div>

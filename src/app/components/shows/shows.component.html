@@ -12,7 +12,7 @@
     </div>
 </div>
 <div class="container my-3">
-    <h1 class="mx-5 text-uppercase">Dates à venir</h1>
+    <h1 class="mx-5 text-uppercase" id="programmation">Dates à venir</h1>
     <div class="grid">
         <div class="row m-auto">
             <app-shows-list [shows]="shows | slice:5:(displayAllShows ? undefined : 10)">

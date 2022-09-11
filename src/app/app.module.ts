@@ -16,6 +16,7 @@ import { ShowsComponent } from './components/shows/shows.component';
 import { MonthlyComponent } from './components/monthly/monthly.component';
 import { NoShowsComponent } from './components/no-shows/no-shows.component';
 import { FlyerComponent } from './components/flyers/flyers.component';
+import { FormatComponent } from './components/format/format.component';
 
 @NgModule({
   declarations: [
@@ -29,6 +30,7 @@ import { FlyerComponent } from './components/flyers/flyers.component';
     NoShowsComponent,
     ShowsListComponent,
     FlyerComponent,
+    FormatComponent,
     HighlightedShowCardComponent,
     MonthlyComponent,
     ShowReservationButtonsComponent

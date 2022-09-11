@@ -22,7 +22,7 @@ export const show: Show[] = [
     {
       id: 4,
       name: "Cours d'essais",
-      date: 1664992800,
+      date: 1664476200,
       description: "",
       freeForStudents: false,
       location: "Bâtiment U2 Université Paul Sabatier ",
@@ -39,7 +39,7 @@ export const show: Show[] = [
     {
       id: 5,
       name: "Cours d'essais",
-      date: 1665597600,
+      date: 1664476200,
       description: "",
       freeForStudents: false,
       location: "Bâtiment U2 Université Paul Sabatier ",
@@ -56,7 +56,7 @@ export const show: Show[] = [
     {
       id: 9,
       name: "Catch Oboudup ",
-      date: 1665685800,
+      date: 1664476200,
       description: "",
       freeForStudents:  false,
       location: "Bar O Boudu Pont",
@@ -73,7 +73,7 @@ export const show: Show[] = [
     {
       id: 6,
       name: "Cours d'essais",
-      date: 1666202400,
+      date: 1664476200,
       description: "",
       freeForStudents: false,
       location: "Bâtiment U2 Université Paul Sabatier ",
@@ -90,7 +90,7 @@ export const show: Show[] = [
     {
       id: 7,
       name: "Cours d'essais",
-      date: 1666807200,
+      date: 1664476200,
       description: "",
       freeForStudents: false,
       location: "Bâtiment U2 Université Paul Sabatier ",
@@ -107,7 +107,7 @@ export const show: Show[] = [
     {
       id: 10,
       name: "Catch Oboudup ",
-      date: 1666895400,
+      date: 1664476200,
       description: "",
       freeForStudents: false,
       location: "Bar O Boudu Pont",

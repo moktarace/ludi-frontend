@@ -1,21 +1,205 @@
-<div class="container-fluid mt-3 mb-0 py-3">
-    <div class="container">
-        <h1 class="mx-5 text-uppercase">Nos Formats</h1>
-        <div class="mx-5">
-            <div class="row my-1">
-                <div class="col-md-6 mx-auto order-md-first">
-                    <img loading="lazy" src="/assets/logo/match.png" width="500" height="500" alt="Match au Cap" class="img-fluid">
-                </div>
-                <div class="col-md-6 mx-auto">
-                    <img loading="lazy" src="/assets/logo/improvisem.png" width="500" height="500" alt="Championat Improvisem" class="img-fluid">
-                </div>
-                <div class="col-md-6 mx-auto order-md-first">
-                    <img loading="lazy" src="/assets/logo/improv.png" width="500" height="500" alt="Improv on the Corner" class="img-fluid">
-                </div>
-                <div class="col-md-6 mx-auto ">
-                    <img loading="lazy" src="/assets/logo/ludidee.png" width="500" height="500" alt="Improv on the Corner" class="img-fluid">
-                </div>
-            </div>
-        </div>
+<div class="container mt-3 mb-0 py-3 bg-grey text-white">
+  <h1 class="text-uppercase">Nos spectacles</h1>
+  <div class="mx-3">
+    <div class="row lead my-3">
+      La LUDI propose plusieurs formats de spectacle. Du classique match d'impro
+      au concept experimental, voici nos principaux spectacles
     </div>
+  </div>
+</div>
+<div class="container text-white">
+  <div class="row align-items-center justify-content-around my-1">
+    <div class="col-md-7">
+      <div class="text-center">
+        <img
+          src="/assets/logo/match.png"
+          height="500px"
+          width="500px"
+          style="height: 300px; object-fit: cover"
+          alt="Match au CAP"
+          class="img-fluid"
+        />
+      </div>
+      <div
+        class="rotate shadow text-center text-uppercase text-danger bg-white"
+      >
+        <h2 class="my-auto">Salle le cap - métro paul sabatier</h2>
+      </div>
+      <div class="my-1">
+        <h5 class="d-inline mx-1">
+          <span class="badge bg-light text-black">Réservation conseillée</span>
+        </h5>
+      </div>
+      <p class="lead line-break mx-3 my-2">
+        Un Match d'Impro grand format dans la fameuse Salle du CAP à Paul
+        Sabatier. C'est ici qu'on reçoit d'autres ligues d'impro de France et
+        même du monde entier
+      </p>
+      <app-shows-list
+        [displayLocation]="false"
+        [shows]="capShows"
+      ></app-shows-list>
+    </div>
+
+    <div class="col-md-5 p-3">
+      <div class="row my-1">
+        <img
+          
+          src="/assets/photo/cap05.jpg"
+          alt="Match au CAP"
+          class="col-6 img-fluid rotate img-polaroid"
+        />
+        <img
+          
+          src="/assets/photo/cap06.jpg"
+          alt="Match au CAP"
+          class="col-6 img-fluid negative-rotate img-polaroid"
+        />
+        <img
+          
+          src="/assets/photo/cap01.jpg"
+          alt="Match au CAP"
+          class="col-6 img-fluid negative-rotate img-polaroid"
+        />
+        <img
+          
+          src="/assets/photo/cap04.jpg"
+          alt="Match au CAP"
+          class="col-6 img-fluid negative-rotate img-polaroid"
+        />
+      </div>
+    </div>
+    <div class="row align-items-center justify-content-around my-1">
+      <div class="col-md-7">
+        <div class="text-center">
+          <img
+            
+            src="/assets/logo/improvisem.png"
+            height="500px"
+            width="500px"
+            style="height: 300px; object-fit: cover"
+            alt="Improvisem"
+            class="img-fluid"
+          />
+        </div>
+        <div
+          class="rotate shadow text-center text-uppercase text-danger bg-white"
+        >
+          <h2 class="my-auto">La turbine - métro palais de justice</h2>
+        </div>
+        <div class="my-1">
+          <h5 class="d-inline mr-1">
+            <span class="badge bg-light text-black">Participation libre</span>
+          </h5>
+          <h5 class="d-inline mx-1">
+            <span class="badge bg-light text-black">Sans réservation</span>
+          </h5>
+        </div>
+        <p class="lead line-break mx-3 my-2">
+          Notre championnat interne ! Tous les membres de la LUDI, débutant
+          comme confirmé, s'affrontent avec à la clef : La Gloire Éternelle
+        </p>
+        <app-shows-list
+          [displayLocation]="false"
+          [shows]="improvisemShows"
+        ></app-shows-list>
+      </div>
+      <div class="col-md-5 p-3 order-md-first">
+        <div class="row my-1">
+          <img
+            
+            src="/assets/photo/improvisem02.jpg"
+            alt="Improvisem"
+            class="col-6 img-fluid negative-rotate img-polaroid"
+          />
+          <img
+            
+            src="/assets/photo/improvisem10.jpg"
+            alt="Improvisem"
+            class="col-6 img-fluid rotate img-polaroid"
+          />
+          <img
+            
+            src="/assets/photo/improvisem05.jpg"
+            alt="Improvisem"
+            class="col-6 rotate img-polaroid"
+          />
+          <img
+            
+            src="/assets/photo/improvisem08.jpg"
+            alt="Improvisem"
+            class="col-6 negative-rotate img-polaroid"
+          />
+        </div>
+      </div>
+      <div class="row align-items-center justify-content-around my-1">
+        <div class="col-md-7">
+          <div class="text-center">
+            <img
+              
+              src="/assets/logo/catch.png"
+              height="500px"
+              width="500px"
+              style="height: 300px; object-fit: cover"
+              alt="Catch d'impro"
+              class="img-fluid"
+            />
+          </div>
+          <div
+            class="rotate shadow text-center text-uppercase text-danger bg-white"
+          >
+            <h2 class="my-auto">
+              Bar Ô Boudu Pont - métro Saint-Cyprien République
+            </h2>
+          </div>
+          <div class="my-1">
+            <h5 class="d-inline mr-1">
+              <span class="badge bg-light text-black">Participation libre</span>
+            </h5>
+            <h5 class="d-inline mx-1">
+              <span class="badge bg-light text-black">Sans réservation</span>
+            </h5>
+          </div>
+          <p class="lead line-break mx-3 my-2">
+            Okay, tu connais le Match d'Impro, mais as-tu déjà vu un Catch
+            d'Impro ? C'est presque pareil, mais en 2v2. Et c'est plus nerveux,
+            et c'est aussi plus... J'ai pas le mot... Viens voir, tu vas pas
+            être déçu !
+          </p>
+          <app-shows-list
+            [displayLocation]="false"
+            [shows]="catchShows"
+          ></app-shows-list>
+        </div>
+        <div class="col-md-5 p-3">
+          <div class="row my-1">
+            <img
+              
+              src="/assets/photo/catch05.jpg"
+              alt="Improvisem"
+              class="col-6 img-fluid negative-rotate img-polaroid"
+            />
+            <img
+              
+              src="/assets/photo/catch03.jpg"
+              alt="Improvisem"
+              class="col-6 img-fluid rotate img-polaroid"
+            />
+            <img
+              
+              src="/assets/photo/catch02.jpg"
+              alt="Improvisem"
+              class="col-6 rotate img-polaroid"
+            />
+            <img
+              
+              src="/assets/photo/catch04.jpg"
+              alt="Improvisem"
+              class="col-6 negative-rotate img-polaroid"
+            />
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>

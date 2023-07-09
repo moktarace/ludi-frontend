@@ -8,15 +8,16 @@ import { ShowCardComponent } from './components/shows/event/show-card.component'
 import { ShowReservationButtonsComponent } from './components/shows/event//utility/show-reservation-buttons.component'
 import { FooterComponent } from './components/footer/footer.component'
 import { HeaderComponent } from './components/header/header.component'
-import { PartnersComponent } from './components/partners/partners.component'
 import { WhoComponent } from './components/who/who.component'
 import { ShowsListComponent } from './components/shows/event//shows-list.component';
 import { HighlightedShowCardComponent } from './components/shows/event/highlighted-show-card.component';
 import { ShowsComponent } from './components/shows/shows.component';
-import { MonthlyComponent } from './components/monthly/monthly.component';
 import { NoShowsComponent } from './components/no-shows/no-shows.component';
-import { FlyerComponent } from './components/flyers/flyers.component';
+import { NgbCarouselModule } from '@ng-bootstrap/ng-bootstrap';
 import { FormatComponent } from './components/format/format.component';
+import { NewsComponent } from './components/news/news.component';
+import { ToolsComponent } from './components/tools/tools.component';
+import { JoinUsComponent } from './components/join-us/join-us.component';
 
 @NgModule({
   declarations: [
@@ -25,17 +26,17 @@ import { FormatComponent } from './components/format/format.component';
     FooterComponent,
     ShowsComponent,
     WhoComponent,
-    PartnersComponent,
     ShowCardComponent,
     NoShowsComponent,
     ShowsListComponent,
-    FlyerComponent,
-    FormatComponent,
     HighlightedShowCardComponent,
-    MonthlyComponent,
+    FormatComponent,
+    NewsComponent,
+    JoinUsComponent,
+    ToolsComponent,
     ShowReservationButtonsComponent
   ],
-  imports: [BrowserModule, HttpClientModule, FormsModule, AppRoutingModule],
+  imports: [BrowserModule, HttpClientModule, FormsModule, AppRoutingModule, NgbCarouselModule],
   bootstrap: [AppComponent],
   providers: [],
 })

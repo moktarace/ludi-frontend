@@ -1,3 +1,11 @@
+#content {
+  background-color: #f7f3e9;
+  background: url(/assets/background/bg02.jpg);
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+}
+
 h1,
 h2,
 .highlighted h5 {
@@ -12,6 +20,15 @@ h2,
   height: auto;
   box-shadow: 1px 5px 5px rgb(0 0 0 / 30%);
 }
+
+.rotate {
+  transform: rotate(0.5deg);
+}
+
+.negative-rotate {
+  transform: rotate(-0.5deg);
+}
+
 
 #picture-noel {
   transform: rotate(-0.2deg);
@@ -34,23 +51,87 @@ h2,
   font-family: "Butter Luchy Free", sans-serif;
 }
 
-.highlighted {
-  background: url(/assets/background/banner.gif);
-  height: 100%;
-  background-position: center;
-  background-repeat: no-repeat;
-  background-size: cover;
-}
-
 div.bg-dark.bg-black {
   background-color: black !important;
 }
 
-#monthly, #flyers-recto, #flyers-verso {
-  max-width: 1024px;
-  max-height: 1024px;
-  width: 1024px;
-  height: 1024px;
-  z-index : -1;
-  bottom : 100vh;
+.line-break {
+  white-space: pre-line;
+}
+
+.next-date {
+  background-color: #f7f3e9;
+  background: url(/assets/background/bg02.jpg);
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+  height: 1080px;
+  width: 1080px;
+}
+
+
+/* .desktop-only class is used to hide the element on mobile devices */
+/* .mobile-only class is used to hide the element on desktop devices */
+.desktop-only {
+  display: block;
+}
+
+.mobile-only {
+  display: none;
+}
+
+/* This class is used to display the element on mobile devices */
+@media (max-width: 768px) {
+  .desktop-only {
+    display: none;
+  }
+
+  .mobile-only {
+    display: block;
+  }
+}
+
+/* This class is used to display the element on desktop devices */
+@media (min-width: 768px) {
+  .desktop-only {
+    display: block;
+  }
+
+  .mobile-only {
+    display: none;
+  }
+}
+
+.header {
+  /* This class use the video-header class to display a video header */
+  height: 80vh;
+  width: 100%;
+  overflow: hidden;
+  top : 0;
+  padding: 0%; 
+  
+  .title, .logo, .social-link, .sub-title {
+    position: relative;
+    z-index: 1;
+  }
+
+  .video-header {
+    position: absolute;
+    top: 0;
+    left: 0;
+    padding: 0;
+    margin: 0;
+    height: 80vh;
+    width: 100%;
+    object-fit: cover;
+    opacity: 0.2;
+  }
+}
+
+.join-us {
+  background-color: #f7f3e9;
+  background: url(/assets/background/bgessai.png);
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
 }

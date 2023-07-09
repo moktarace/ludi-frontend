@@ -1,15 +1,24 @@
-<div class="my-3 px-5">
+<div class="my-3">
   <div class="mb-3">
     <div class="container">
       <div class="row border-bottom" *ngFor="let show of shows">
         <div class="col">
           <p class="text-uppercase">{{ formattedDate(show) }}</p>
         </div>
-        <div class="col-md-6">
+        <div [ngClass]="{'col-md-6' : displayLocation, 'col-md-8' : !displayLocation}">
           <p class="fs-5 text-uppercase">{{ show?.name }}</p>
         </div>
-        <div class="col">
+        <div class="col text-capitalize" *ngIf="displayLocation">
           <p>{{ show?.location }}</p>
+        </div>
+        <div class="col">
+          <a
+            target="_blank"
+            *ngIf="retrieveMainLink(show)"
+            class="text-white"
+            [href]="retrieveMainLink(show)"
+            >Plus d'info</a
+          >
         </div>
       </div>
     </div>

@@ -1,4 +1,4 @@
-<div class="container-fluid text-center position-absolute top-50" *ngIf="!isLoaded">
+<div class="container-fluid text-center bg-white position-absolute top-50" *ngIf="!isLoaded">
   <img
     class="spinner-grow text-light"
     src="assets/logo/logo.png"
@@ -8,7 +8,7 @@
   <p class="text-muted">{{ loadingText }}</p>
 </div>
 
-<div *ngIf="shows$ | async as shows">
+<div id="content" *ngIf="shows$ | async as shows">
   <div *ngIf="isLoaded">
     <app-header></app-header>
     <div *ngIf="shows.length">
@@ -16,13 +16,14 @@
         [shows]="shows"
         [highlightedShow]="highlightedShow"
       ></app-shows>
-      <app-monthly [shows]="shows"></app-monthly>
     </div>
     <div *ngIf="!shows.length">
         <app-no-shows></app-no-shows>
       </div>
     <app-who id="who"></app-who>
-    <app-format id="format"></app-format>
-    <app-footer></app-footer>
+    <app-join-us id="join-us"></app-join-us>
+    <app-format [shows]="shows" id="format"></app-format>
+    <app-footer id="footer"></app-footer>
+    <!--<app-tools [shows]="shows" [highlightedShow]="highlightedShow"></app-tools>-->
   </div>
 </div>

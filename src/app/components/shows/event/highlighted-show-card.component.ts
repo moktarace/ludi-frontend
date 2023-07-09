@@ -7,7 +7,7 @@ import { Show } from '../../../model'
 })
 export class HighlightedShowCardComponent {
 
-  private static DATE_FORMATTER = new Intl.DateTimeFormat("fr-FR", { hour12: false, weekday: "short", month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" });
+  private static DATE_FORMATTER = new Intl.DateTimeFormat("fr-FR", { hour12: false, weekday: "long", month: "long", day: "numeric", hour: "2-digit", minute: "2-digit" });
 
   @Input()
   public show?: Show | null = {
@@ -20,6 +20,12 @@ export class HighlightedShowCardComponent {
     reducedPrice: 0,
   }
 
+  @Input()
+  public displayHeader?: boolean = true;
+
+  @Input()
+  public displayButtons?: boolean = true;
+  
   constructor() { }
 
   public get isFree() {

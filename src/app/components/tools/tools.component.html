@@ -1,0 +1,15 @@
+<div class="fluid-container p-3 bg-white text-center text-white">
+<div class="grid next-date">
+  <h1 class="text-uppercase">Nos prochaines dates</h1>
+  <div class="row">
+    <app-highlighted-show-card [displayHeader]="false" [displayButtons]="false" [show]="highlightedShow">
+    </app-highlighted-show-card>
+  </div>
+  <div class="row m-0">
+    <div *ngFor="let show of shows | slice:0:3; let i=index" class="col-4">
+      <app-show-card [show]="show">
+      </app-show-card>
+  </div>
+  </div>
+</div>
+</div>

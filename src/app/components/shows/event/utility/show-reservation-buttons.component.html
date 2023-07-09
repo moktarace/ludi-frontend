@@ -1,14 +1,16 @@
 <div class="justify-content-md-start mt-2">
     <div class="btn-group">
-        <a *ngIf="show?.reservationLink" target="_blank" [href]="show?.reservationLink"
-            class="btn btn-lg btn-danger rounded-0">Réserver</a>
-        <a *ngIf="!show?.reservationLink" style="white-space : pre" class="btn btn-lg btn-light rounded-0 pe-none">Sans
-            Réservation</a>
-        <a *ngIf="socialLink && show?.facebookLink" target="_blank" [href]="show?.facebookLink"
+        <a *ngIf="mainLink" target="_blank" [href]="mainLink"
+            class="btn btn-lg btn-danger rounded-0">Plus d'info</a>
+        <a *ngIf="socialLink && mainLink && show?.facebookLink && show?.facebookLink !== mainLink" target="_blank" [href]="show?.facebookLink"
             class="btn btn-lg btn-secondary rounded-0"><i class="bi bi-facebook"></i>
         </a>
-        <a *ngIf="socialLink &&  show?.instagramLink" target="_blank" [href]="show?.instagramLink"
+        <a *ngIf="socialLink && mainLink && show?.instagramLink && show?.instagramLink !== mainLink" target="_blank" [href]="show?.instagramLink"
             class="btn btn-lg btn-secondary rounded-0"><i class="bi bi-instagram"></i>
         </a>
+    </div>
+    <div class="mx-2 btn-group">
+        <a *ngIf="show?.candidacyLink" target="_blank" [href]="show?.candidacyLink"
+            class="btn btn-lg btn-info text-white rounded-0">Candidater</a>
     </div>
 </div>

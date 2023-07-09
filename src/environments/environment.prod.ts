@@ -1,4 +1,4 @@
 export const environment = {
   production: true,
-  url : "/programmation"
+  url : "/assets/programmation"
 };

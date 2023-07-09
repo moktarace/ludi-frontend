@@ -1,3 +1,11 @@
+#content {
+  background-color: #f7f3e9;
+  background: url(/assets/background/bg02.jpg);
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+}
+
 h1,
 h2,
 .highlighted h5 {
@@ -12,6 +20,15 @@ h2,
   height: auto;
   box-shadow: 1px 5px 5px rgb(0 0 0 / 30%);
 }
+
+.rotate {
+  transform: rotate(0.5deg);
+}
+
+.negative-rotate {
+  transform: rotate(-0.5deg);
+}
+
 
 #picture-noel {
   transform: rotate(-0.2deg);
@@ -34,23 +51,20 @@ h2,
   font-family: "Butter Luchy Free", sans-serif;
 }
 
-.highlighted {
-  background: url(/assets/background/banner.gif);
-  height: 100%;
-  background-position: center;
-  background-repeat: no-repeat;
-  background-size: cover;
-}
-
 div.bg-dark.bg-black {
   background-color: black !important;
 }
 
-#monthly, #flyers-recto, #flyers-verso {
-  max-width: 1024px;
-  max-height: 1024px;
-  width: 1024px;
-  height: 1024px;
-  z-index : -1;
-  bottom : 100vh;
+.line-break {
+  white-space: pre-line;
+}
+
+.next-date {
+  background-color: #f7f3e9;
+  background: url(/assets/background/bg02.jpg);
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+  height: 1080px;
+  width: 1080px;
 }

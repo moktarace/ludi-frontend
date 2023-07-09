@@ -1,41 +1,33 @@
-<div class="my-3 px-5">
-    <div class="mb-3 ">
-        <div class="row">
-            <div class="col-12 m-auto">
-                <img [src]="show?.imgLink || 'assets/event/noimg.png'" loading="lazy" class="img-fluid"
-                    [alt]="show?.name">
-            </div>
-            <div class="row">
-                <div class="col-12 m-auto">
-                    <h3 class="text-uppercase">{{ show?.name }}</h3>
-                </div>
-            </div>
-            <div class="row">
-                <h5 class="text-uppercase">{{ formattedDate }}</h5>
-            </div>
-            <div class="row">
-                <h5>{{ show?.location }}</h5>
-            </div>
-            <div class="row">
-                <div class="row">
-                    <div *ngIf="isFree || show?.freeForStudents">
-                        <h5>Gratuit{{!isFree && show?.freeForStudents ? ' pour les étudiants': ''}}</h5>
-                    </div>
-                    <div *ngIf="!isFree">
-                        <p class="mb-0">{{ show?.price + " €" + (show?.reducedPrice ? (" / " + show?.reducedPrice + "
-                            €*") : "") }}
-                        </p>
-                        <p *ngIf="show?.reducedPrice" class="mt-0 fw-lighter">
-                            *{{!show?.freeForStudents ? 'étudiant, ': ''}}chômeur, moins de 16 ans
-                        </p>
-                    </div>
-                </div>
-            </div>
-            <div class="row" [ngClass]="{'mt-3' : !show?.reducedPrice}">
-                <div class="bg-transparent border-0">
-                    <app-show-reservation-buttons [show]="show">
-                    </app-show-reservation-buttons>
-                </div>
-            </div>
+<div class="my-3 px-3 show-card">
+  <div class="mb-3">
+    <div class="row text-center">
+      <img
+        [src]="show?.logoLink || show?.imgLink || 'assets/event/noimg.png'"
+        loading="lazy"
+        class="img-fluid m-auto"
+        [alt]="show?.name"
+      />
+      <div class="my-2 rotate shadow text-uppercase bg-danger">
+        <h2 class="my-auto">{{ formattedDate }}</h2>
+      </div>
+      <div class="rotate shadow text-uppercase text-danger bg-white">
+        <h2 class="my-auto">{{ show?.location }}</h2>
+      </div>
+      <div class="mt-1">
+        <h5 class="d-inline mr-1" *ngIf="isFree"><span class="badge bg-white text-black">Participation libre</span></h5>
+        <h5 class="d-inline mx-1" *ngIf="!show?.reservationLink"><span class="badge bg-white text-black">Sans réservation</span></h5>  
+        <h5 class="d-inline mx-1" *ngIf="show?.reservationLink"><span class="badge bg-white text-black">Réservation conseillée</span></h5>  
+        <h5 class="d-inline mx-1" *ngIf="show?.freeForStudents"><span class="badge bg-white text-black">Gratuit pour les étudiant.es</span></h5> 
+      </div>
+      <div class="row text-center m-auto" *ngIf="show?.shortDescription">
+        <h5 class="m-auto">{{ show?.shortDescription }}</h5>
+      </div>
+      <div class="row text-center m-auto" [ngClass]="{ 'mt-3': !show?.reducedPrice }">
+        <div class="bg-transparent border-0">
+          <app-show-reservation-buttons [show]="show">
+          </app-show-reservation-buttons>
         </div>
+      </div>
     </div>
+  </div>
+</div>

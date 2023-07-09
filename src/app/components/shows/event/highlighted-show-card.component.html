@@ -1,32 +1,32 @@
-<div class="bg-dark text-white h-100 w-100 highlighted position-relative">
-    <div class="container my-auto px-5">
-        <div class="mb-3 p-3">
-            <div class="row">
-                <div class="col-md-12 text-center m-auto">
-                    <h2 class="text-uppercase ">{{ show?.name }}</h2>
-                    <h5 class="text-uppercase text-danger">{{ formattedDate }}</h5>
-                    <h5 class="text-uppercase text-danger">{{ show?.location }}</h5>
-                </div>
-                <div class="col-md-6 text-center m-auto">
-                    <img [src]="show?.imgLink || 'assets/event/noimg.png'" loading="lazy" class="img-fluid"
-                        [alt]="show?.name">
-                </div>
-                <div class="col-md-6 text-center m-auto" *ngIf="show?.description">
-                    <div class="grid">
-                        <div class="row">
-                            <div class="col-12 mb-2">
-                                <div style="white-space: pre-wrap">{{ show?.description }}</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="row">
-                <div class="col-12 text-center">
-                    <app-show-reservation-buttons [show]="show">
-                    </app-show-reservation-buttons>
-                </div>
-            </div>
+<div class="text-white h-100 w-100 position-relative">
+  <div class="container my-auto">
+    <div class="mb-3 p-3">
+      <h1 *ngIf="displayHeader" class="text-uppercase">à l'affiche</h1>
+      <div class="row">
+        <div class="col-md-6 text-center m-auto">
+          <img
+            [src]="show?.imgLink || show?.logoLink || 'assets/event/noimg.png'"
+            loading="lazy"
+            class="img-fluid"
+            [alt]="show?.name"
+          />
         </div>
+        <div class="col-md-5 m-auto">
+          <h3 class="text-uppercase bg-white text-black nav-link rotate">{{show?.name}}</h3>
+          <h4 class="text-uppercase">{{formattedDate}}</h4>
+          <h4 class="text-uppercase">{{show?.location}}</h4>
+          <div class="mb-1">
+            <h5 class="d-inline mr-1" *ngIf="isFree"><span class="badge bg-light text-black">Participation libre</span></h5>
+            <h5 class="d-inline mx-1" *ngIf="!show?.reservationLink"><span class="badge bg-light text-black">Sans réservation</span></h5>  
+            <h5 class="d-inline mx-1" *ngIf="show?.reservationLink"><span class="badge bg-light text-black">Réservation conseillée</span></h5>  
+            <h5 class="d-inline mx-1" *ngIf="show?.freeForStudents"><span class="badge bg-light text-black">Gratuit pour les étudiant.es</span></h5> 
+          </div>
+          <div class="line-break">{{ show?.description || show?.shortDescription }}</div>
+          <div class="my-3 border-bottom"></div>
+          <app-show-reservation-buttons *ngIf="displayButtons" [show]="show">
+          </app-show-reservation-buttons>
+        </div>
+      </div>
     </div>
+  </div>
 </div>

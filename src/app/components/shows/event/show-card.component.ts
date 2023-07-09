@@ -7,7 +7,7 @@ import { Show } from '../../../model'
 })
 export class ShowCardComponent {
 
-  private static SHORT_DATE_FORMATTER = new Intl.DateTimeFormat("fr-FR", { hour12: false, weekday: "short", month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" });
+  private static SHORT_DATE_FORMATTER = new Intl.DateTimeFormat("fr-FR", { hour12: false, weekday: "long", month: "long", day: "numeric", hour: "2-digit", minute: "2-digit" });
 
   @Input()
   public show?: Show | null = {

@@ -10,7 +10,10 @@ export class ShowsListComponent {
     private static SHORT_DATE_FORMATTER = new Intl.DateTimeFormat("fr-FR", { hour12: false, weekday: "short", month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" });
 
     @Input()
-    public shows?: Show[] | null = []
+    public shows?: Show[] | null = [];
+
+    @Input()
+    public displayLocation?: boolean = true;
 
     constructor() { }
 
@@ -24,5 +27,9 @@ export class ShowsListComponent {
         }
         return ShowsListComponent.SHORT_DATE_FORMATTER.format(new Date(show.date * 1000));
     }
+
+    public retrieveMainLink(show: Show): string {
+        return show?.reservationLink || show?.facebookLink || show?.instagramLink || '';
+      }
 
 }

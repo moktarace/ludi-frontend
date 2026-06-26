@@ -11,7 +11,6 @@ export interface Show {
   imgLink?: string;
   logoLink?: string;
   isHighlighted?: boolean;
-  facebookLink?:string;
   freeForStudents?:boolean;
   bannerImgLink?:string;
   instagramLink?:string;

@@ -29,7 +29,6 @@ foreach ($data["values"] as $key => $show) {
     $current["logoLink"] = $show[9];
     $current["bannerImgLink"] = $show[10];
     $current["reservationLink"] = $show[11];
-    $current["facebookLink"] = $show[12];
     $current["instagramLink"] = $show[13];
     $current["isPublished"] = strcasecmp($show[14], "OUI") == 0;
     $current["isHighlighted"] = strcasecmp($show[15], "OUI") == 0;

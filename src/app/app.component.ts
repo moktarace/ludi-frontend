@@ -13,7 +13,7 @@ export class AppComponent implements OnInit {
     "Les mains plus haut, on compte les cartons",
     "BA-BE-BI-BO-BU",
     "JM, c'est le meilleur parrain",
-    "La Chaise : meilleur improvisatrice",
+    "La Chaise : meilleure improvisatrice",
     "Astuce : bossez votre cristallisation",
     "3 2 1 IMPRO !",
     "Il a pensé à parler du chapeau ??",

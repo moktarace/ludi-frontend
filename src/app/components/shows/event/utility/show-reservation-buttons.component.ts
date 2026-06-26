@@ -24,7 +24,7 @@ export class ShowReservationButtonsComponent {
   public outline: boolean | null = true;
 
   public get mainLink(): string {
-    return this.show?.reservationLink || this.show?.facebookLink || this.show?.instagramLink || '';
+    return this.show?.reservationLink || this.show?.instagramLink || '';
   }
 
   constructor() { }

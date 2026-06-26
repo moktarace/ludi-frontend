@@ -1,7 +1,7 @@
 <app-highlighted-show-card [show]="highlightedShow">
 </app-highlighted-show-card>
-<div class="container my-3 text-white" id="next-show">
-    <h1 class="text-uppercase">Nos prochaines Dates</h1>
+<div class="container section-block shows-section text-white" id="next-show">
+    <h1 class="text-uppercase">Nos prochaines dates</h1>
     <div class="grid">
         <div class="row">
             <div *ngFor="let show of shows | slice:0:4; let i=index" class="col-md-6">
@@ -11,7 +11,7 @@
         </div>
     </div>
 </div>
-<div class="container my-3 text-white" *ngIf="shows && shows.length > 4">
+<div class="container section-block upcoming-section text-white" *ngIf="shows && shows.length > 4">
     <h1 class="text-uppercase" id="programmation">Dates à venir</h1>
     <div class="grid">
         <div class="row m-auto">

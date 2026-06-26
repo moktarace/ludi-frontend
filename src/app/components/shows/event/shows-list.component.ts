@@ -29,7 +29,7 @@ export class ShowsListComponent {
     }
 
     public retrieveMainLink(show: Show): string {
-        return show?.reservationLink || show?.facebookLink || show?.instagramLink || '';
+        return show?.reservationLink || show?.instagramLink || '';
       }
 
 }

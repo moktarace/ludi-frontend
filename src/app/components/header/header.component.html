@@ -1,24 +1,20 @@
-<div class="container">
-  <div class="text-white text-center p-3 header">
-    <video loop autoplay loop muted playsinline oncanplay="this.play()" onloadedmetadata="this.muted = true" class="video-header">
+<div class="site-hero">
+  <div class="text-white text-center header">
+    <video loop autoplay muted playsinline oncanplay="this.play()" onloadedmetadata="this.muted = true" class="video-header">
       <source src="assets/background/header.mp4" type="video/mp4">
-  </video>
-    <div class="row logo">
-      <div class="text-center">
+    </video>
+    <div class="hero-inner">
+      <div class="logo">
         <img class="mb-2 logo" src="assets/logo/logo.png" width="200" height="200" />
       </div>
-    </div>
-    <div class="row">
-      <h1 style="white-space: pre" class="text-uppercase my-0 p-0 title">
+      <h1 class="text-uppercase my-0 p-0 title">
         {{ title }}
       </h1>
-    </div>
-    <div class="sub-title">
-      On est sympa, on est à Paul Sabatier, souvent en U2. Des fois dans des
-      bars, par moment au Cap. Et on fait de l'impro quoi !
-    </div>
-    <div class="my-2 row">
-      <div>
+      <div class="sub-title">
+        Depuis Paul Sabatier, la LUDI fait vivre l'impro à Toulouse avec des
+        spectacles, des rencontres et des scènes ouvertes à toutes les envies
+      </div>
+      <div class="social-links">
         <a
           class="link-light social-link mx-2"
           target="_blank"
@@ -28,34 +24,27 @@
         <a
           class="link-light social-link mx-2"
           target="_blank"
-          href="https://www.facebook.com/LUDItoulouse"
-          ><i class="bi bi-facebook" style="font-size: 1.7rem"></i
-        ></a>
-        <a
-          class="link-light social-link mx-2"
-          target="_blank"
           href="mailto:luditoulouse@gmail.com"
           ><i class="bi bi-envelope" style="font-size: 1.7rem"></i
         ></a>
       </div>
-    </div>
-    <nav class="my-2 row navbar">
-      <ul class="navbar-nav">
-        <div class="row justify-content-md-center">
-          <li class="nav-item col-md-3">
+      <nav class="hero-nav navbar">
+        <ul class="navbar-nav hero-nav-list">
+          <li class="nav-item">
             <a
               class="h4 bg-white text-black nav-link rotate text-uppercase"
               href="#next-show"
               >Prochaines dates</a
             >
           </li>
-          <li class="nav-item col-md-3">
+          <li class="nav-item">
             <a
               class="h4 bg-white text-black rotate nav-link text-uppercase"
               href="#who"
-              >C'est quoi la ludi ?</a
+              >C'est quoi la LUDI ?</a
             >
-        <li class="nav-item col-md-3">
+          </li>
+          <li class="nav-item">
             <a
               class="h4 bg-white text-black rotate nav-link text-uppercase"
               target="_blank"
@@ -63,7 +52,7 @@
               >Billetterie</a
             >
           </li>
-          <li class="nav-item col-md-3">
+          <li class="nav-item">
             <a
               class="h4 bg-white text-black rotate nav-link text-uppercase"
               target="_blank"
@@ -71,8 +60,8 @@
               >Chapeau numérique</a
             >
           </li>
-        </div>
-      </ul>
-    </nav>
+        </ul>
+      </nav>
+    </div>
   </div>
 </div>

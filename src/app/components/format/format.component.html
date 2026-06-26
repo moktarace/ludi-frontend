@@ -1,205 +1,106 @@
-<div class="container mt-3 mb-0 py-3 bg-grey text-white">
-  <h1 class="text-uppercase">Nos spectacles</h1>
-  <div class="mx-3">
-    <div class="row lead my-3">
-      La LUDI propose plusieurs formats de spectacle. Du classique match d'impro
-      au concept experimental, voici nos principaux spectacles
-    </div>
+<div class="formats-wrap">
+  <div class="container section-block formats-intro text-white">
+    <h1 class="text-uppercase">Nos spectacles</h1>
+    <p class="lead formats-kicker">
+      La LUDI propose plusieurs formats de spectacle d'improvisation à Toulouse.
+      Du classique match d'impro au concept expérimental, voici nos principaux
+      rendez-vous sur scène.
+    </p>
   </div>
-</div>
-<div class="container text-white">
-  <div class="row align-items-center justify-content-around my-1">
-    <div class="col-md-7">
-      <div class="text-center">
-        <img
-          src="/assets/logo/match.png"
-          height="500px"
-          width="500px"
-          style="height: 300px; object-fit: cover"
-          alt="Match au CAP"
-          class="img-fluid"
-        />
-      </div>
-      <div
-        class="rotate shadow text-center text-uppercase text-danger bg-white"
-      >
-        <h2 class="my-auto">Salle le cap - métro paul sabatier</h2>
-      </div>
-      <div class="my-1">
-        <h5 class="d-inline mx-1">
-          <span class="badge bg-light text-black">Réservation conseillée</span>
-        </h5>
-      </div>
-      <p class="lead line-break mx-3 my-2">
-        Un Match d'Impro grand format dans la fameuse Salle du CAP à Paul
-        Sabatier. C'est ici qu'on reçoit d'autres ligues d'impro de France et
-        même du monde entier
-      </p>
-      <app-shows-list
-        [displayLocation]="false"
-        [shows]="capShows"
-      ></app-shows-list>
-    </div>
 
-    <div class="col-md-5 p-3">
-      <div class="row my-1">
-        <img
-          
-          src="/assets/photo/cap05.jpg"
-          alt="Match au CAP"
-          class="col-6 img-fluid rotate img-polaroid"
-        />
-        <img
-          
-          src="/assets/photo/cap06.jpg"
-          alt="Match au CAP"
-          class="col-6 img-fluid negative-rotate img-polaroid"
-        />
-        <img
-          
-          src="/assets/photo/cap01.jpg"
-          alt="Match au CAP"
-          class="col-6 img-fluid negative-rotate img-polaroid"
-        />
-        <img
-          
-          src="/assets/photo/cap04.jpg"
-          alt="Match au CAP"
-          class="col-6 img-fluid negative-rotate img-polaroid"
-        />
+  <div class="container formats-section text-white">
+    <section class="format-feature">
+      <div class="format-copy">
+        <div class="format-logo">
+          <img src="/assets/logo/match.png" alt="Match au CAP" />
+        </div>
+        <div class="format-location text-center text-uppercase">
+          <h2 class="my-auto">Salle le cap - métro paul sabatier</h2>
+        </div>
+        <div class="format-badges">
+          <span class="badge bg-light text-black">Réservation conseillée</span>
+        </div>
+        <p class="lead line-break">
+          Un Match d'Impro grand format dans la fameuse Salle du CAP à Paul
+          Sabatier. C'est ici qu'on reçoit d'autres ligues d'impro de France et
+          même du monde entier.
+        </p>
+        <app-shows-list
+          [displayLocation]="false"
+          [shows]="capShows"
+        ></app-shows-list>
       </div>
-    </div>
-    <div class="row align-items-center justify-content-around my-1">
-      <div class="col-md-7">
-        <div class="text-center">
-          <img
-            
-            src="/assets/logo/improvisem.png"
-            height="500px"
-            width="500px"
-            style="height: 300px; object-fit: cover"
-            alt="Improvisem"
-            class="img-fluid"
-          />
+
+      <div class="format-gallery" aria-label="Photos du match au CAP">
+        <img src="/assets/photo/cap05.jpg" alt="Match au CAP" />
+        <img src="/assets/photo/cap06.jpg" alt="Match au CAP" />
+        <img src="/assets/photo/cap01.jpg" alt="Match au CAP" />
+        <img src="/assets/photo/cap04.jpg" alt="Match au CAP" />
+      </div>
+    </section>
+
+    <section class="format-feature format-feature-reverse">
+      <div class="format-copy">
+        <div class="format-logo">
+          <img src="/assets/logo/improvisem.png" alt="Improvisem" />
         </div>
-        <div
-          class="rotate shadow text-center text-uppercase text-danger bg-white"
-        >
-          <h2 class="my-auto">La turbine - métro palais de justice</h2>
+        <div class="format-location text-center text-uppercase">
+          <h2 class="my-auto">La Turbine - métro Palais de Justice</h2>
         </div>
-        <div class="my-1">
-          <h5 class="d-inline mr-1">
-            <span class="badge bg-light text-black">Participation libre</span>
-          </h5>
-          <h5 class="d-inline mx-1">
-            <span class="badge bg-light text-black">Sans réservation</span>
-          </h5>
+        <div class="format-badges">
+          <span class="badge bg-light text-black">Participation libre</span>
+          <span class="badge bg-light text-black">Sans réservation</span>
         </div>
-        <p class="lead line-break mx-3 my-2">
-          Notre championnat interne ! Tous les membres de la LUDI, débutant
-          comme confirmé, s'affrontent avec à la clef : La Gloire Éternelle
+        <p class="lead line-break">
+          Notre championnat interne ! Tous les membres de la LUDI, débutant·e·s
+          comme confirmé·e·s, s'affrontent avec à la clé : La Gloire Éternelle.
         </p>
         <app-shows-list
           [displayLocation]="false"
           [shows]="improvisemShows"
         ></app-shows-list>
       </div>
-      <div class="col-md-5 p-3 order-md-first">
-        <div class="row my-1">
-          <img
-            
-            src="/assets/photo/improvisem02.jpg"
-            alt="Improvisem"
-            class="col-6 img-fluid negative-rotate img-polaroid"
-          />
-          <img
-            
-            src="/assets/photo/improvisem10.jpg"
-            alt="Improvisem"
-            class="col-6 img-fluid rotate img-polaroid"
-          />
-          <img
-            
-            src="/assets/photo/improvisem05.jpg"
-            alt="Improvisem"
-            class="col-6 rotate img-polaroid"
-          />
-          <img
-            
-            src="/assets/photo/improvisem08.jpg"
-            alt="Improvisem"
-            class="col-6 negative-rotate img-polaroid"
-          />
-        </div>
+
+      <div class="format-gallery" aria-label="Photos Improvisem">
+        <img src="/assets/photo/improvisem02.jpg" alt="Improvisem" />
+        <img src="/assets/photo/improvisem10.jpg" alt="Improvisem" />
+        <img src="/assets/photo/improvisem05.jpg" alt="Improvisem" />
+        <img src="/assets/photo/improvisem08.jpg" alt="Improvisem" />
       </div>
-      <div class="row align-items-center justify-content-around my-1">
-        <div class="col-md-7">
-          <div class="text-center">
-            <img
-              
-              src="/assets/logo/catch.png"
-              height="500px"
-              width="500px"
-              style="height: 300px; object-fit: cover"
-              alt="Catch d'impro"
-              class="img-fluid"
-            />
-          </div>
-          <div
-            class="rotate shadow text-center text-uppercase text-danger bg-white"
-          >
-            <h2 class="my-auto">
-              Bar Ô Boudu Pont - métro Saint-Cyprien République
-            </h2>
-          </div>
-          <div class="my-1">
-            <h5 class="d-inline mr-1">
-              <span class="badge bg-light text-black">Participation libre</span>
-            </h5>
-            <h5 class="d-inline mx-1">
-              <span class="badge bg-light text-black">Sans réservation</span>
-            </h5>
-          </div>
-          <p class="lead line-break mx-3 my-2">
-            Okay, tu connais le Match d'Impro, mais as-tu déjà vu un Catch
-            d'Impro ? C'est presque pareil, mais en 2v2. Et c'est plus nerveux,
-            et c'est aussi plus... J'ai pas le mot... Viens voir, tu vas pas
-            être déçu !
-          </p>
-          <app-shows-list
-            [displayLocation]="false"
-            [shows]="catchShows"
-          ></app-shows-list>
+    </section>
+
+    <section class="format-feature">
+      <div class="format-copy">
+        <div class="format-logo">
+          <img src="/assets/logo/catch.png" alt="Catch d'impro" />
         </div>
-        <div class="col-md-5 p-3">
-          <div class="row my-1">
-            <img
-              
-              src="/assets/photo/catch05.jpg"
-              alt="Improvisem"
-              class="col-6 img-fluid negative-rotate img-polaroid"
-            />
-            <img
-              
-              src="/assets/photo/catch03.jpg"
-              alt="Improvisem"
-              class="col-6 img-fluid rotate img-polaroid"
-            />
-            <img
-              
-              src="/assets/photo/catch02.jpg"
-              alt="Improvisem"
-              class="col-6 rotate img-polaroid"
-            />
-            <img
-              
-              src="/assets/photo/catch04.jpg"
-              alt="Improvisem"
-              class="col-6 negative-rotate img-polaroid"
-            />
-          </div>
+        <div class="format-location text-center text-uppercase">
+          <h2 class="my-auto">
+            Bar Ô Boudu Pont - métro Saint-Cyprien République
+          </h2>
         </div>
+        <div class="format-badges">
+          <span class="badge bg-light text-black">Participation libre</span>
+          <span class="badge bg-light text-black">Sans réservation</span>
+        </div>
+        <p class="lead line-break">
+          OK, tu connais le match d'impro, mais as-tu déjà vu un catch
+          d'Impro ? C'est presque pareil, mais en 2v2. Et c'est plus nerveux,
+          et c'est aussi plus... Je n'ai pas le mot... Viens voir, tu ne vas pas
+          être déçu·e !
+        </p>
+        <app-shows-list
+          [displayLocation]="false"
+          [shows]="catchShows"
+        ></app-shows-list>
       </div>
-    </div>
+
+      <div class="format-gallery" aria-label="Photos Catch d'impro">
+        <img src="/assets/photo/catch05.jpg" alt="Catch d'impro" />
+        <img src="/assets/photo/catch03.jpg" alt="Catch d'impro" />
+        <img src="/assets/photo/catch02.jpg" alt="Catch d'impro" />
+        <img src="/assets/photo/catch04.jpg" alt="Catch d'impro" />
+      </div>
+    </section>
   </div>
 </div>

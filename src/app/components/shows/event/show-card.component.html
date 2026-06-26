@@ -1,4 +1,4 @@
-<div class="my-3 px-3 show-card">
+<div class="my-3 px-3 show-card event-card">
   <div class="mb-3">
     <div class="row text-center">
       <img
@@ -17,7 +17,7 @@
         <h5 class="d-inline mr-1" *ngIf="isFree"><span class="badge bg-white text-black">Participation libre</span></h5>
         <h5 class="d-inline mx-1" *ngIf="!show?.reservationLink"><span class="badge bg-white text-black">Sans réservation</span></h5>  
         <h5 class="d-inline mx-1" *ngIf="show?.reservationLink"><span class="badge bg-white text-black">Réservation conseillée</span></h5>  
-        <h5 class="d-inline mx-1" *ngIf="show?.freeForStudents"><span class="badge bg-white text-black">Gratuit pour les étudiant.es</span></h5> 
+        <h5 class="d-inline mx-1" *ngIf="show?.freeForStudents"><span class="badge bg-white text-black">Gratuit pour les étudiant·e·s</span></h5>
       </div>
       <div class="row text-center m-auto" *ngIf="show?.shortDescription">
         <h5 class="m-auto">{{ show?.shortDescription }}</h5>

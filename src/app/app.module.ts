@@ -13,7 +13,6 @@ import { ShowsListComponent } from './components/shows/event//shows-list.compone
 import { HighlightedShowCardComponent } from './components/shows/event/highlighted-show-card.component';
 import { ShowsComponent } from './components/shows/shows.component';
 import { NoShowsComponent } from './components/no-shows/no-shows.component';
-import { NgbCarouselModule } from '@ng-bootstrap/ng-bootstrap';
 import { FormatComponent } from './components/format/format.component';
 import { NewsComponent } from './components/news/news.component';
 import { ToolsComponent } from './components/tools/tools.component';
@@ -36,7 +35,7 @@ import { JoinUsComponent } from './components/join-us/join-us.component';
     ToolsComponent,
     ShowReservationButtonsComponent
   ],
-  imports: [BrowserModule, HttpClientModule, FormsModule, AppRoutingModule, NgbCarouselModule],
+  imports: [BrowserModule, HttpClientModule, FormsModule, AppRoutingModule],
   bootstrap: [AppComponent],
   providers: [],
 })

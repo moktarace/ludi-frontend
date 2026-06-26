@@ -11,19 +11,23 @@
 <div id="content" *ngIf="shows$ | async as shows">
   <div *ngIf="isLoaded">
     <app-header></app-header>
-    <div *ngIf="shows.length">
-      <app-shows
-        [shows]="shows"
-        [highlightedShow]="highlightedShow"
-      ></app-shows>
-    </div>
-    <div *ngIf="!shows.length">
+    <ng-container *ngIf="!isToolsPage; else toolsPage">
+      <div *ngIf="shows.length">
+        <app-shows
+          [shows]="shows"
+          [highlightedShow]="highlightedShow"
+        ></app-shows>
+      </div>
+      <div *ngIf="!shows.length">
         <app-no-shows></app-no-shows>
       </div>
-    <app-who id="who"></app-who>
-    <app-join-us id="join-us"></app-join-us>
-    <app-format [shows]="shows" id="format"></app-format>
+      <app-who id="who"></app-who>
+      <app-join-us id="join-us"></app-join-us>
+      <app-format [shows]="shows" id="format"></app-format>
+    </ng-container>
+    <ng-template #toolsPage>
+      <app-tools [shows]="shows" [highlightedShow]="highlightedShow"></app-tools>
+    </ng-template>
     <app-footer id="footer"></app-footer>
-    <!--<app-tools [shows]="shows" [highlightedShow]="highlightedShow"></app-tools>-->
   </div>
 </div>

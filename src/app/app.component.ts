@@ -1,4 +1,4 @@
-import { OnInit, Component } from "@angular/core";
+import { OnInit, Component, HostListener } from "@angular/core";
 import { Show } from "./model";
 import { LudiService } from "./services/ludi.service";
 import { Observable, tap } from "rxjs";
@@ -8,6 +8,8 @@ import { Observable, tap } from "rxjs";
   templateUrl: "./app.component.html",
 })
 export class AppComponent implements OnInit {
+  private static TOOLS_HASH = "#kit-reseaux";
+
   static LOADING_TEXT: string[] = [
     "Caucus en cours",
     "Les mains plus haut, on compte les cartons",
@@ -26,6 +28,7 @@ export class AppComponent implements OnInit {
   public shows$!: Observable<Show[] | undefined>;
   public highlightedShow: Show | undefined;
   public isLoaded: boolean | undefined;
+  public isToolsPage = false;
   public loadingText: String;
 
   constructor(private ludiService: LudiService) {
@@ -36,6 +39,8 @@ export class AppComponent implements OnInit {
   }
 
   public ngOnInit(): void {
+    this.updateToolsPage();
+
     this.shows$ = this.ludiService.show().pipe(
       tap((shows) => {
         this.isLoaded = true;
@@ -44,5 +49,10 @@ export class AppComponent implements OnInit {
         shows.filter((s) => s.id !== this.highlightedShow?.id);
       })
     );
+  }
+
+  @HostListener("window:hashchange")
+  public updateToolsPage(): void {
+    this.isToolsPage = window.location.hash === AppComponent.TOOLS_HASH;
   }
 }

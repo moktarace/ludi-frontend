@@ -1,15 +1,164 @@
-<div class="fluid-container p-3 bg-white text-center text-white">
-<div class="grid next-date">
-  <h1 class="text-uppercase">Nos prochaines dates</h1>
-  <div class="row">
-    <app-highlighted-show-card [displayHeader]="false" [displayButtons]="false" [show]="highlightedShow">
-    </app-highlighted-show-card>
+<div class="container-fluid section-band visual-tools text-white">
+  <div class="container visual-tools-inner">
+    <div class="visual-lock-panel" *ngIf="!isUnlocked">
+      <h1 class="text-uppercase">Kit réseaux</h1>
+      <p>Accès réservé à l'équipe LUDI.</p>
+      <form class="visual-lock-form" (ngSubmit)="unlockTools()">
+        <label for="visual-access-code">Code d'accès</label>
+        <input
+          id="visual-access-code"
+          type="password"
+          class="form-control"
+          name="accessCode"
+          [(ngModel)]="accessCode"
+          autocomplete="current-password"
+        />
+        <button type="submit" class="btn btn-danger">Entrer</button>
+        <p class="visual-lock-error" *ngIf="accessError">{{ accessError }}</p>
+      </form>
+    </div>
+
+    <div class="visual-tools-panel" *ngIf="isUnlocked">
+      <h1 class="text-uppercase">Kit réseaux</h1>
+      <p>
+        Génère des visuels Instagram cohérents avec la charte LUDI pour annoncer
+        un spectacle, les dates de la semaine ou les dates du mois.
+      </p>
+
+      <div class="visual-control-group">
+        <label>Format</label>
+        <div class="visual-segmented">
+          <button
+            *ngFor="let format of formats"
+            type="button"
+            [class.active]="selectedFormat === format.value"
+            (click)="selectFormat(format.value)"
+          >
+            {{ format.label }}
+          </button>
+        </div>
+      </div>
+
+      <div class="visual-control-group">
+        <label>Contenu</label>
+        <div class="visual-segmented">
+          <button
+            *ngFor="let mode of availableModes"
+            type="button"
+            [class.active]="selectedMode === mode.value"
+            (click)="selectedMode = mode.value"
+          >
+            {{ mode.label }}
+          </button>
+        </div>
+      </div>
+
+      <div class="visual-control-group" *ngIf="selectedMode === 'show'">
+        <label for="visual-show">Spectacle</label>
+        <select
+          id="visual-show"
+          class="form-select"
+          [(ngModel)]="selectedShowId"
+        >
+          <option value="">À l'affiche / premier spectacle</option>
+          <option *ngFor="let show of sortedShows" [value]="showId(show)">
+            {{ show.name }}
+          </option>
+        </select>
+      </div>
+
+      <details class="visual-custom-panel" *ngIf="hasCustomOptions">
+        <summary>Personnaliser</summary>
+
+        <div class="visual-control-group" *ngIf="selectedMode === 'show'">
+          <label for="visual-poster-upload">Visuel du spectacle</label>
+          <input
+            id="visual-poster-upload"
+            type="file"
+            accept="image/*"
+            class="form-control"
+            (change)="updatePoster($event)"
+          />
+          <div class="visual-inline-actions">
+            <button type="button" (click)="removePoster()">Retirer</button>
+            <button type="button" (click)="resetPoster()">Revenir au visuel du spectacle</button>
+          </div>
+        </div>
+
+        <div class="visual-control-group">
+          <label for="visual-background-upload">Fond personnalisé</label>
+          <input
+            id="visual-background-upload"
+            type="file"
+            accept="image/*"
+            class="form-control"
+            (change)="updateBackground($event)"
+          />
+          <div class="visual-inline-actions">
+            <button type="button" (click)="resetBackground()">Retirer le fond</button>
+          </div>
+        </div>
+      </details>
+
+      <button
+        type="button"
+        class="btn btn-danger visual-export-button"
+        [disabled]="isExporting"
+        (click)="exportVisual()"
+      >
+        {{ exportLabel }}
+      </button>
+      <p class="visual-export-note" *ngIf="isReelFormat">
+        Export vidéo vertical en .webm, prêt à convertir en .mp4 si besoin.
+      </p>
+    </div>
+
+    <div class="visual-preview-shell" *ngIf="isUnlocked">
+      <div
+        #visualCanvas
+        [ngClass]="visualClass"
+        [style.background-image]="visualBackgroundImage"
+      >
+        <div class="visual-background-mark">LUDI</div>
+        <div class="visual-brand">
+          <img src="assets/logo/logo.png" alt="LUDI Toulouse" />
+          <span>Impro Toulouse</span>
+        </div>
+
+        <div class="visual-poster" *ngIf="showPoster">
+          <img [src]="visualPoster" [alt]="selectedShow?.name || 'Spectacle LUDI'" />
+        </div>
+
+        <div class="visual-content">
+          <p class="visual-kicker" *ngIf="!isShowVisual">
+            {{ selectedMode === 'show' ? 'Prochain spectacle' : 'Agenda LUDI' }}
+          </p>
+          <h2 *ngIf="!isShowVisual">{{ visualTitle }}</h2>
+          <p class="visual-subtitle" *ngIf="!isShowVisual">{{ visualSubtitle }}</p>
+
+          <div class="visual-show-details" *ngIf="selectedMode === 'show' && selectedShow as show">
+            <p>{{ formattedDate(show) }}</p>
+            <p>{{ show.location }}</p>
+            <span>{{ priceLabel(show) }}</span>
+          </div>
+
+          <div class="visual-agenda" *ngIf="selectedMode !== 'show'">
+            <div class="visual-agenda-item" *ngFor="let show of visualShows | slice:0:6">
+              <span>{{ formattedDate(show) }}</span>
+              <strong>{{ show.name }}</strong>
+              <small>{{ show.location }}</small>
+            </div>
+            <p class="visual-empty" *ngIf="!visualShows.length">
+              Aucune date sur cette période
+            </p>
+          </div>
+        </div>
+
+        <div class="visual-footer">
+          <span>@luditoulouse</span>
+          <span>luditoulouse.org</span>
+        </div>
+      </div>
+    </div>
   </div>
-  <div class="row m-0">
-    <div *ngFor="let show of shows | slice:0:3; let i=index" class="col-4">
-      <app-show-card [show]="show">
-      </app-show-card>
-  </div>
-  </div>
-</div>
 </div>

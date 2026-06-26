@@ -849,6 +849,38 @@ div.bg-dark.bg-black {
   }
 }
 
+.visual-logo-presets {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.5rem;
+
+  button {
+    display: grid;
+    gap: 0.35rem;
+    min-height: 5.25rem;
+    padding: 0.55rem;
+    border: 1px solid rgb(255 248 237 / 16%);
+    background: rgb(255 248 237 / 8%);
+    color: var(--ludi-paper);
+    font-size: 0.72rem;
+    font-weight: 900;
+    line-height: 1.1;
+    text-align: center;
+
+    &.active {
+      border-color: var(--ludi-gold);
+      background: rgb(244 190 76 / 16%);
+      color: var(--ludi-gold);
+    }
+  }
+
+  img {
+    width: 100%;
+    height: 2.8rem;
+    object-fit: contain;
+  }
+}
+
 .visual-preview-shell {
   display: grid;
   justify-content: center;

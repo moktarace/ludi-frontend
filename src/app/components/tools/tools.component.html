@@ -72,6 +72,17 @@
 
         <div class="visual-control-group" *ngIf="selectedMode === 'show'">
           <label for="visual-poster-upload">Visuel du spectacle</label>
+          <div class="visual-logo-presets">
+            <button
+              type="button"
+              *ngFor="let logo of presetLogos"
+              [class.active]="customPoster === logo.src && !isPosterHidden"
+              (click)="selectPresetPoster(logo)"
+            >
+              <img [src]="logo.src" [alt]="logo.label" />
+              <span>{{ logo.label }}</span>
+            </button>
+          </div>
           <input
             id="visual-poster-upload"
             type="file"
@@ -198,6 +209,17 @@
 
         <div class="visual-control-group">
           <label for="carousel-logo-upload">Logo du spectacle</label>
+          <div class="visual-logo-presets">
+            <button
+              type="button"
+              *ngFor="let logo of presetLogos"
+              [class.active]="customCarouselLogo === logo.src"
+              (click)="selectPresetCarouselLogo(logo)"
+            >
+              <img [src]="logo.src" [alt]="logo.label" />
+              <span>{{ logo.label }}</span>
+            </button>
+          </div>
           <input
             id="carousel-logo-upload"
             type="file"

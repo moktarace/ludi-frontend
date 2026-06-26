@@ -13,6 +13,11 @@ interface CarouselPhoto {
   src: string
 }
 
+interface PresetLogo {
+  label: string
+  src: string
+}
+
 @Component({
   selector: 'app-tools',
   templateUrl: './tools.component.html',
@@ -59,6 +64,15 @@ export class ToolsComponent {
     { label: 'Spectacle', value: 'show' },
     { label: 'Semaine', value: 'week' },
     { label: 'Mois', value: 'month' },
+  ]
+
+  public readonly presetLogos: PresetLogo[] = [
+    { label: 'Improvisem', src: 'assets/logo/kit/improvisem.png' },
+    { label: 'Match', src: 'assets/logo/kit/match.png' },
+    { label: 'Ludidée', src: 'assets/logo/kit/ludidee.png' },
+    { label: 'Catch', src: 'assets/logo/kit/catch.png' },
+    { label: "Cours d'essai", src: 'assets/logo/kit/essai.png' },
+    { label: 'Top Ten', src: 'assets/logo/kit/cercle.png' },
   ]
 
   public selectedFormat: VisualFormat = 'post'
@@ -343,6 +357,11 @@ export class ToolsComponent {
     })
   }
 
+  public selectPresetPoster(logo: PresetLogo): void {
+    this.customPoster = logo.src
+    this.isPosterHidden = false
+  }
+
   public updateBackground(event: Event): void {
     this.readImage(event, (image) => {
       this.customBackground = image
@@ -367,6 +386,10 @@ export class ToolsComponent {
     this.readImage(event, (image) => {
       this.customCarouselLogo = image
     })
+  }
+
+  public selectPresetCarouselLogo(logo: PresetLogo): void {
+    this.customCarouselLogo = logo.src
   }
 
   public resetCarouselLogo(): void {

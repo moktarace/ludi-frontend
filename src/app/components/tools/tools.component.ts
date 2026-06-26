@@ -80,6 +80,8 @@ export class ToolsComponent {
   public selectedShowId: string = ''
   public customPoster?: string
   public customBackground?: string
+  public customQrLink = ''
+  public showQrCode = false
   public isPosterHidden = false
   public accessCode = ''
   public accessError = ''
@@ -200,6 +202,24 @@ export class ToolsComponent {
     }
 
     return `linear-gradient(145deg, rgb(23 18 31 / 72%) 0%, rgb(33 21 40 / 72%) 48%, rgb(223 47 66 / 58%) 100%), url("${this.customBackground}")`
+  }
+
+  public get qrLink(): string {
+    const customLink = this.customQrLink.trim()
+    if (customLink) {
+      return customLink
+    }
+
+    return this.selectedShow?.reservationLink || this.selectedShow?.instagramLink || 'https://luditoulouse.org'
+  }
+
+  public get qrCodeImage(): string {
+    if (!this.isPostFormat || !this.isShowVisual || !this.showQrCode || !this.qrLink) {
+      return ''
+    }
+
+    const url = encodeURIComponent(this.qrLink)
+    return `https://quickchart.io/qr?text=${url}&size=220&margin=1&ecLevel=M&format=png`
   }
 
   public get exportLabel(): string {
@@ -380,6 +400,10 @@ export class ToolsComponent {
 
   public resetBackground(): void {
     this.customBackground = undefined
+  }
+
+  public resetQrLink(): void {
+    this.customQrLink = ''
   }
 
   public updateCarouselLogo(event: Event): void {

@@ -70,7 +70,7 @@
       <details class="visual-custom-panel" *ngIf="hasCustomOptions">
         <summary>Personnaliser</summary>
 
-        <div class="visual-control-group" *ngIf="selectedMode === 'show'">
+        <div class="visual-control-group" *ngIf="isPostFormat && selectedMode === 'show'">
           <label for="visual-poster-upload">Visuel du spectacle</label>
           <div class="visual-logo-presets">
             <button
@@ -107,6 +107,27 @@
           />
           <div class="visual-inline-actions">
             <button type="button" (click)="resetBackground()">Retirer le fond</button>
+          </div>
+        </div>
+
+        <div class="visual-control-group" *ngIf="selectedMode === 'show'">
+          <label for="visual-qr-link">QR code</label>
+          <label class="visual-check-row">
+            <input
+              type="checkbox"
+              [(ngModel)]="showQrCode"
+            />
+            <span>Afficher un QR code</span>
+          </label>
+          <input
+            id="visual-qr-link"
+            type="url"
+            class="form-control"
+            [(ngModel)]="customQrLink"
+            [placeholder]="qrLink"
+          />
+          <div class="visual-inline-actions">
+            <button type="button" (click)="resetQrLink()">Utiliser le lien du spectacle</button>
           </div>
         </div>
       </details>
@@ -176,6 +197,11 @@
         <div class="visual-footer">
           <span>@luditoulouse</span>
           <span>luditoulouse.org</span>
+        </div>
+
+        <div class="visual-qr-code" *ngIf="qrCodeImage">
+          <img [src]="qrCodeImage" crossorigin="anonymous" alt="QR code" />
+          <span>Réserver</span>
         </div>
       </div>
     </div>

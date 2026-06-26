@@ -108,6 +108,14 @@
       >
         {{ exportLabel }}
       </button>
+      <button
+        type="button"
+        class="btn btn-light visual-share-button"
+        [disabled]="isSharing"
+        (click)="shareVisual()"
+      >
+        {{ shareLabel }}
+      </button>
       <p class="visual-export-note" *ngIf="isReelFormat">
         Export vidéo vertical en .webm, prêt à convertir en .mp4 si besoin.
       </p>
@@ -314,6 +322,14 @@
         (click)="exportCarousel()"
       >
         {{ carouselExportLabel }}
+      </button>
+      <button
+        type="button"
+        class="btn btn-light visual-share-button"
+        [disabled]="!carouselPhotos.length || isSharing"
+        (click)="shareCarousel()"
+      >
+        {{ carouselShareLabel }}
       </button>
       <p class="visual-export-note">
         {{ carouselSlideCount || 2 }} slides générées, exportées en PNG 1080x1350.

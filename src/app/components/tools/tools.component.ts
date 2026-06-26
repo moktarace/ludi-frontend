@@ -71,6 +71,7 @@ export class ToolsComponent {
   public accessError = ''
   public isUnlocked = localStorage.getItem(ToolsComponent.ACCESS_STORAGE_KEY) === 'true'
   public isExporting = false
+  public isSharing = false
   public carouselPhotos: CarouselPhoto[] = []
   public customCarouselLogo?: string
   public carouselLogoPlacement: CarouselPlacement = 'top'
@@ -195,6 +196,10 @@ export class ToolsComponent {
     return this.isReelFormat ? 'Télécharger le Reel' : 'Télécharger le PNG'
   }
 
+  public get shareLabel(): string {
+    return this.isSharing ? 'Préparation...' : 'Partager'
+  }
+
   public get carouselPhotoSlides(): CarouselPhoto[] {
     return this.carouselPhotos.slice(1)
   }
@@ -213,6 +218,10 @@ export class ToolsComponent {
 
   public get carouselExportLabel(): string {
     return this.isCarouselExporting ? 'Export du carrousel...' : 'Télécharger le carrousel'
+  }
+
+  public get carouselShareLabel(): string {
+    return this.isSharing ? 'Préparation...' : 'Partager le carrousel'
   }
 
   public get carouselAgendaShows(): Show[] {
@@ -489,41 +498,12 @@ export class ToolsComponent {
     this.isExporting = true
 
     try {
-      const html2canvasModule = await import('html2canvas')
-      const html2canvas = html2canvasModule.default
-
-      if (this.isReelFormat) {
-        await this.exportReel(html2canvas)
-        this.isExporting = false
-        return
-      }
-
-      const canvas = await html2canvas(this.visualCanvas.nativeElement, {
-        allowTaint: false,
-        backgroundColor: null,
-        scale: this.exportScale,
-        useCORS: true,
-      })
-
-      canvas.toBlob((blob) => {
-        if (!blob) {
-          this.isExporting = false
-          return
-        }
-
-        const url = URL.createObjectURL(blob)
-        const link = document.createElement('a')
-        link.href = url
-        link.download = this.exportFileName
-        document.body.appendChild(link)
-        link.click()
-        document.body.removeChild(link)
-        window.setTimeout(() => URL.revokeObjectURL(url), 0)
-        this.isExporting = false
-      })
+      const file = await this.createVisualFile()
+      this.downloadBlob(file, file.name)
     } catch (error) {
-      this.isExporting = false
       throw error
+    } finally {
+      this.isExporting = false
     }
   }
 
@@ -535,22 +515,9 @@ export class ToolsComponent {
     this.isCarouselExporting = true
 
     try {
-      const html2canvasModule = await import('html2canvas')
-      const html2canvas = html2canvasModule.default
-      const slides = this.carouselSlides.toArray()
-
-      for (let index = 0; index < slides.length; index += 1) {
-        const slide = slides[index].nativeElement
-        const canvas = await html2canvas(slides[index].nativeElement, {
-          allowTaint: false,
-          backgroundColor: null,
-          scale: 1080 / slide.clientWidth,
-          useCORS: true,
-        })
-
-        const blob = await this.canvasToBlob(canvas)
-        this.downloadBlob(blob, `ludi-carrousel-${String(index + 1).padStart(2, '0')}.png`)
-
+      const files = await this.createCarouselFiles()
+      for (const file of files) {
+        this.downloadBlob(file, file.name)
         await this.wait(140)
       }
     } finally {
@@ -558,9 +525,115 @@ export class ToolsComponent {
     }
   }
 
-  private async exportReel(html2canvas: Html2Canvas): Promise<void> {
-    if (!this.visualCanvas) {
+  public async shareVisual(): Promise<void> {
+    if (this.isSharing || !this.visualCanvas) {
       return
+    }
+
+    this.isSharing = true
+
+    try {
+      const file = await this.createVisualFile()
+      await this.shareFiles([file], 'Visuel LUDI')
+    } finally {
+      this.isSharing = false
+    }
+  }
+
+  public async shareCarousel(): Promise<void> {
+    if (this.isSharing || !this.carouselSlides?.length) {
+      return
+    }
+
+    this.isSharing = true
+
+    try {
+      const files = await this.createCarouselFiles()
+      await this.shareFiles(files, 'Carrousel LUDI')
+    } finally {
+      this.isSharing = false
+    }
+  }
+
+  private async createVisualFile(): Promise<File> {
+    if (!this.visualCanvas) {
+      throw new Error('Aucun visuel à exporter')
+    }
+
+    const html2canvasModule = await import('html2canvas')
+    const html2canvas = html2canvasModule.default
+
+    if (this.isReelFormat) {
+      return new File([await this.createReelBlob(html2canvas)], this.exportFileName, {
+        type: 'video/webm',
+      })
+    }
+
+    const canvas = await html2canvas(this.visualCanvas.nativeElement, {
+      allowTaint: false,
+      backgroundColor: null,
+      scale: this.exportScale,
+      useCORS: true,
+    })
+
+    return new File([await this.canvasToBlob(canvas)], this.exportFileName, {
+      type: 'image/png',
+    })
+  }
+
+  private async createCarouselFiles(): Promise<File[]> {
+    if (!this.carouselSlides?.length) {
+      return []
+    }
+
+    const html2canvasModule = await import('html2canvas')
+    const html2canvas = html2canvasModule.default
+    const slides = this.carouselSlides.toArray()
+    const files: File[] = []
+
+    for (let index = 0; index < slides.length; index += 1) {
+      const slide = slides[index].nativeElement
+      const canvas = await html2canvas(slide, {
+        allowTaint: false,
+        backgroundColor: null,
+        scale: 1080 / slide.clientWidth,
+        useCORS: true,
+      })
+      const fileName = `ludi-carrousel-${String(index + 1).padStart(2, '0')}.png`
+      files.push(new File([await this.canvasToBlob(canvas)], fileName, { type: 'image/png' }))
+    }
+
+    return files
+  }
+
+  private async shareFiles(files: File[], title: string): Promise<void> {
+    const nav = navigator as Navigator & {
+      canShare?: (data: { files?: File[] }) => boolean
+      share?: (data: { files?: File[]; title?: string; text?: string }) => Promise<void>
+    }
+
+    if (nav.canShare?.({ files }) && nav.share) {
+      await nav.share({
+        files,
+        title,
+        text: '@luditoulouse',
+      })
+      return
+    }
+
+    for (const file of files) {
+      this.downloadBlob(file, file.name)
+      await this.wait(140)
+    }
+  }
+
+  private async exportReel(html2canvas: Html2Canvas): Promise<void> {
+    this.downloadBlob(await this.createReelBlob(html2canvas), this.exportFileName)
+  }
+
+  private async createReelBlob(html2canvas: Html2Canvas): Promise<Blob> {
+    if (!this.visualCanvas) {
+      throw new Error('Aucun reel à exporter')
     }
 
     const width = 1080
@@ -571,7 +644,7 @@ export class ToolsComponent {
 
     const context = recorderCanvas.getContext('2d')
     if (!context) {
-      return
+      throw new Error('Impossible de préparer le canvas du reel')
     }
 
     const stream = recorderCanvas.captureStream(ToolsComponent.REEL_FRAME_RATE)
@@ -630,7 +703,7 @@ export class ToolsComponent {
 
     recorder.stop()
     await stopped
-    this.downloadBlob(new Blob(chunks, { type: mimeType }), this.exportFileName)
+    return new Blob(chunks, { type: mimeType })
   }
 
   private downloadBlob(blob: Blob, fileName: string): void {

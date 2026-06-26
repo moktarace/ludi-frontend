@@ -1,9 +1,17 @@
-import { Component, ElementRef, Input, ViewChild } from '@angular/core'
+import { Component, ElementRef, Input, QueryList, ViewChild, ViewChildren } from '@angular/core'
 import { Show } from 'src/app/model'
 
 type VisualFormat = 'post' | 'story' | 'reel'
 type VisualMode = 'show' | 'week' | 'month'
+type CarouselPlacement = 'top' | 'center' | 'bottom'
+type CarouselLogoSize = 's' | 'm' | 'l' | 'xl'
 type Html2Canvas = typeof import('html2canvas').default
+
+interface CarouselPhoto {
+  id: string
+  name: string
+  src: string
+}
 
 @Component({
   selector: 'app-tools',
@@ -14,6 +22,7 @@ export class ToolsComponent {
   private static ACCESS_STORAGE_KEY = 'ludi-tools-unlocked'
   private static REEL_DURATION_MS = 7000
   private static REEL_FRAME_RATE = 12
+  private static CAROUSEL_MAX_PHOTOS = 19
 
   private static DATE_FORMATTER = new Intl.DateTimeFormat('fr-FR', {
     day: 'numeric',
@@ -37,6 +46,9 @@ export class ToolsComponent {
   @ViewChild('visualCanvas')
   public visualCanvas?: ElementRef<HTMLElement>
 
+  @ViewChildren('carouselSlide')
+  public carouselSlides?: QueryList<ElementRef<HTMLElement>>
+
   public readonly formats: { label: string; value: VisualFormat }[] = [
     { label: 'Post', value: 'post' },
     { label: 'Story', value: 'story' },
@@ -59,6 +71,15 @@ export class ToolsComponent {
   public accessError = ''
   public isUnlocked = localStorage.getItem(ToolsComponent.ACCESS_STORAGE_KEY) === 'true'
   public isExporting = false
+  public carouselPhotos: CarouselPhoto[] = []
+  public customCarouselLogo?: string
+  public carouselLogoPlacement: CarouselPlacement = 'top'
+  public carouselLogoSize: CarouselLogoSize = 'xl'
+  public carouselTextPlacement: CarouselPlacement = 'bottom'
+  public carouselCoverText = 'MERCI'
+  public isCarouselDragActive = false
+  public isCarouselExporting = false
+  public carouselPreviewIndex = 0
 
   public get sortedShows(): Show[] {
     return [...(this.shows || [])].sort((a, b) => (a.date || 0) - (b.date || 0))
@@ -174,6 +195,83 @@ export class ToolsComponent {
     return this.isReelFormat ? 'Télécharger le Reel' : 'Télécharger le PNG'
   }
 
+  public get carouselPhotoSlides(): CarouselPhoto[] {
+    return this.carouselPhotos.slice(1)
+  }
+
+  public get carouselCoverPhoto(): CarouselPhoto | undefined {
+    return this.carouselPhotos[0]
+  }
+
+  public get carouselSlideCount(): number {
+    if (!this.carouselPhotos.length) {
+      return 0
+    }
+
+    return this.carouselPhotos.length + 1
+  }
+
+  public get carouselExportLabel(): string {
+    return this.isCarouselExporting ? 'Export du carrousel...' : 'Télécharger le carrousel'
+  }
+
+  public get carouselAgendaShows(): Show[] {
+    const base = this.selectedShow?.date ? new Date(this.selectedShow.date * 1000) : this.periodBaseDate
+    const start = new Date(base.getFullYear(), base.getMonth(), 1)
+    const end = new Date(base.getFullYear(), base.getMonth() + 1, 1)
+
+    return this.sortedShows
+      .filter((show) => {
+        if (!show.date) {
+          return false
+        }
+
+        const date = new Date(show.date * 1000)
+        return date >= start && date < end
+      })
+      .slice(0, 5)
+  }
+
+  public get carouselLogo(): string {
+    if (this.customCarouselLogo) {
+      return this.customCarouselLogo
+    }
+
+    return this.selectedShow?.logoLink || this.selectedShow?.imgLink || 'assets/logo/logo.png'
+  }
+
+  public get carouselLogoClass(): string {
+    return `carousel-cover-logo carousel-placement-${this.carouselLogoPlacement} carousel-logo-${this.carouselLogoSize}`
+  }
+
+  public get carouselTextClass(): string {
+    return `carousel-cover-text carousel-placement-${this.carouselTextPlacement}`
+  }
+
+  public get carouselPreviewPhoto(): CarouselPhoto | undefined {
+    if (this.carouselPreviewIndex === 0) {
+      return this.carouselCoverPhoto
+    }
+
+    return this.carouselPhotoSlides[this.carouselPreviewIndex - 1]
+  }
+
+  public get isCarouselCoverPreview(): boolean {
+    return this.carouselPreviewIndex === 0
+  }
+
+  public get isCarouselDatesPreview(): boolean {
+    return this.carouselPreviewIndex === Math.max(this.carouselSlideCount - 1, 1)
+  }
+
+  public get canGoToPreviousCarouselSlide(): boolean {
+    return this.carouselPreviewIndex > 0
+  }
+
+  public get canGoToNextCarouselSlide(): boolean {
+    return this.carouselPreviewIndex < this.carouselSlideCount - 1
+  }
+
   private get periodBaseDate(): Date {
     const now = Date.now()
     const future = this.sortedShows.find((show) => show.date && show.date * 1000 >= now)
@@ -256,6 +354,71 @@ export class ToolsComponent {
     this.customBackground = undefined
   }
 
+  public updateCarouselLogo(event: Event): void {
+    this.readImage(event, (image) => {
+      this.customCarouselLogo = image
+    })
+  }
+
+  public resetCarouselLogo(): void {
+    this.customCarouselLogo = undefined
+  }
+
+  public allowCarouselDrop(event: DragEvent): void {
+    event.preventDefault()
+    this.isCarouselDragActive = true
+  }
+
+  public leaveCarouselDrop(event: DragEvent): void {
+    event.preventDefault()
+    this.isCarouselDragActive = false
+  }
+
+  public handleCarouselDrop(event: DragEvent): void {
+    event.preventDefault()
+    this.isCarouselDragActive = false
+    this.addCarouselFiles(event.dataTransfer?.files)
+  }
+
+  public updateCarouselPhotos(event: Event): void {
+    const input = event.target as HTMLInputElement
+    this.addCarouselFiles(input.files)
+    input.value = ''
+  }
+
+  public removeCarouselPhoto(photo: CarouselPhoto): void {
+    this.carouselPhotos = this.carouselPhotos.filter((item) => item.id !== photo.id)
+  }
+
+  public clearCarouselPhotos(): void {
+    this.carouselPhotos = []
+    this.carouselPreviewIndex = 0
+  }
+
+  public photoBackground(photo: CarouselPhoto): string {
+    return `linear-gradient(180deg, rgb(23 18 31 / 18%) 0%, rgb(23 18 31 / 8%) 44%, rgb(23 18 31 / 72%) 100%), url("${photo.src}")`
+  }
+
+  public carouselPhotoBackground(photo: CarouselPhoto): string {
+    return `url("${photo.src}")`
+  }
+
+  public previousCarouselSlide(): void {
+    if (this.canGoToPreviousCarouselSlide) {
+      this.carouselPreviewIndex -= 1
+    }
+  }
+
+  public nextCarouselSlide(): void {
+    if (this.canGoToNextCarouselSlide) {
+      this.carouselPreviewIndex += 1
+    }
+  }
+
+  public selectCarouselPreview(index: number): void {
+    this.carouselPreviewIndex = index
+  }
+
   public unlockTools(): void {
     if (this.accessCode.trim() === ToolsComponent.ACCESS_CODE) {
       this.isUnlocked = true
@@ -282,6 +445,40 @@ export class ToolsComponent {
     }
     reader.readAsDataURL(file)
     input.value = ''
+  }
+
+  private async addCarouselFiles(files?: FileList | null): Promise<void> {
+    if (!files) {
+      return
+    }
+
+    const availableSlots = ToolsComponent.CAROUSEL_MAX_PHOTOS - this.carouselPhotos.length
+    if (availableSlots <= 0) {
+      return
+    }
+
+    const batchId = Date.now()
+    const photos = await Promise.all(
+      Array.from(files)
+      .filter((file) => file.type.startsWith('image/'))
+      .slice(0, availableSlots)
+      .map(async (file, index) => ({
+        id: `${batchId}-${index}-${file.name}`,
+        name: file.name,
+        src: await this.readFileAsDataUrl(file),
+      }))
+    )
+
+    this.carouselPhotos = [...this.carouselPhotos, ...photos]
+    this.carouselPreviewIndex = Math.min(this.carouselPreviewIndex, this.carouselSlideCount - 1)
+  }
+
+  private readFileAsDataUrl(file: File): Promise<string> {
+    return new Promise((resolve) => {
+      const reader = new FileReader()
+      reader.onload = () => resolve(typeof reader.result === 'string' ? reader.result : '')
+      reader.readAsDataURL(file)
+    })
   }
 
   public async exportVisual(): Promise<void> {
@@ -327,6 +524,37 @@ export class ToolsComponent {
     } catch (error) {
       this.isExporting = false
       throw error
+    }
+  }
+
+  public async exportCarousel(): Promise<void> {
+    if (!this.carouselSlides?.length || this.isCarouselExporting) {
+      return
+    }
+
+    this.isCarouselExporting = true
+
+    try {
+      const html2canvasModule = await import('html2canvas')
+      const html2canvas = html2canvasModule.default
+      const slides = this.carouselSlides.toArray()
+
+      for (let index = 0; index < slides.length; index += 1) {
+        const slide = slides[index].nativeElement
+        const canvas = await html2canvas(slides[index].nativeElement, {
+          allowTaint: false,
+          backgroundColor: null,
+          scale: 1080 / slide.clientWidth,
+          useCORS: true,
+        })
+
+        const blob = await this.canvasToBlob(canvas)
+        this.downloadBlob(blob, `ludi-carrousel-${String(index + 1).padStart(2, '0')}.png`)
+
+        await this.wait(140)
+      }
+    } finally {
+      this.isCarouselExporting = false
     }
   }
 
@@ -414,6 +642,19 @@ export class ToolsComponent {
     link.click()
     document.body.removeChild(link)
     window.setTimeout(() => URL.revokeObjectURL(url), 0)
+  }
+
+  private canvasToBlob(canvas: HTMLCanvasElement): Promise<Blob> {
+    return new Promise((resolve, reject) => {
+      canvas.toBlob((blob) => {
+        if (blob) {
+          resolve(blob)
+          return
+        }
+
+        reject(new Error('Export impossible'))
+      })
+    })
   }
 
   private wait(duration: number): Promise<void> {

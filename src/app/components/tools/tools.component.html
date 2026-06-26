@@ -161,4 +161,305 @@
       </div>
     </div>
   </div>
+
+  <div class="container carousel-tools-inner" *ngIf="isUnlocked">
+    <div class="carousel-tools-panel">
+      <h2>Carrousel après spectacle</h2>
+      <p>
+        Dépose jusqu'à 19 photos. La première devient la couverture avec le logo
+        du spectacle et le message de remerciement, la dernière slide rappelle
+        les prochaines dates du mois.
+      </p>
+
+      <div class="visual-control-group">
+        <label for="carousel-show">Spectacle</label>
+        <select
+          id="carousel-show"
+          class="form-select"
+          [(ngModel)]="selectedShowId"
+        >
+          <option value="">À l'affiche / premier spectacle</option>
+          <option *ngFor="let show of sortedShows" [value]="showId(show)">
+            {{ show.name }}
+          </option>
+        </select>
+      </div>
+
+      <details class="visual-custom-panel">
+        <summary>Personnaliser la couverture</summary>
+
+        <div class="visual-control-group">
+          <label for="carousel-logo-upload">Logo du spectacle</label>
+          <input
+            id="carousel-logo-upload"
+            type="file"
+            accept="image/*"
+            class="form-control"
+            (change)="updateCarouselLogo($event)"
+          />
+          <div class="visual-inline-actions">
+            <button type="button" (click)="resetCarouselLogo()">Revenir au logo du spectacle</button>
+          </div>
+        </div>
+
+        <div class="visual-control-group">
+          <label for="carousel-logo-placement">Position du logo</label>
+          <select
+            id="carousel-logo-placement"
+            class="form-select"
+            [(ngModel)]="carouselLogoPlacement"
+          >
+            <option value="top">Haut centre</option>
+            <option value="center">Centre</option>
+            <option value="bottom">Bas centre</option>
+          </select>
+        </div>
+
+        <div class="visual-control-group">
+          <label>Taille du logo</label>
+          <div class="visual-segmented carousel-size-control">
+            <button
+              type="button"
+              [class.active]="carouselLogoSize === 's'"
+              (click)="carouselLogoSize = 's'"
+            >
+              S
+            </button>
+            <button
+              type="button"
+              [class.active]="carouselLogoSize === 'm'"
+              (click)="carouselLogoSize = 'm'"
+            >
+              M
+            </button>
+            <button
+              type="button"
+              [class.active]="carouselLogoSize === 'l'"
+              (click)="carouselLogoSize = 'l'"
+            >
+              L
+            </button>
+            <button
+              type="button"
+              [class.active]="carouselLogoSize === 'xl'"
+              (click)="carouselLogoSize = 'xl'"
+            >
+              XL
+            </button>
+          </div>
+        </div>
+
+        <div class="visual-control-group">
+          <label for="carousel-cover-text">Texte de couverture</label>
+          <input
+            id="carousel-cover-text"
+            type="text"
+            class="form-control"
+            [(ngModel)]="carouselCoverText"
+          />
+        </div>
+
+        <div class="visual-control-group">
+          <label for="carousel-text-placement">Position du texte</label>
+          <select
+            id="carousel-text-placement"
+            class="form-select"
+            [(ngModel)]="carouselTextPlacement"
+          >
+            <option value="top">Haut centre</option>
+            <option value="center">Centre</option>
+            <option value="bottom">Bas centre</option>
+          </select>
+        </div>
+      </details>
+
+      <div
+        class="carousel-dropzone"
+        [class.active]="isCarouselDragActive"
+        (dragover)="allowCarouselDrop($event)"
+        (dragleave)="leaveCarouselDrop($event)"
+        (drop)="handleCarouselDrop($event)"
+      >
+        <input
+          id="carousel-photos"
+          type="file"
+          accept="image/*"
+          multiple
+          (change)="updateCarouselPhotos($event)"
+        />
+        <label for="carousel-photos">
+          <strong>Glisser-déposer les photos</strong>
+          <span>{{ carouselPhotos.length }}/19 photos sélectionnées</span>
+        </label>
+      </div>
+
+      <div class="carousel-photo-list" *ngIf="carouselPhotos.length">
+        <button
+          type="button"
+          *ngFor="let photo of carouselPhotos; let index = index"
+          (click)="removeCarouselPhoto(photo)"
+        >
+          {{ index + 1 }}. {{ photo.name }}
+        </button>
+      </div>
+
+      <div class="visual-inline-actions" *ngIf="carouselPhotos.length">
+        <button type="button" (click)="clearCarouselPhotos()">Vider les photos</button>
+      </div>
+
+      <button
+        type="button"
+        class="btn btn-danger visual-export-button"
+        [disabled]="!carouselPhotos.length || isCarouselExporting"
+        (click)="exportCarousel()"
+      >
+        {{ carouselExportLabel }}
+      </button>
+      <p class="visual-export-note">
+        {{ carouselSlideCount || 2 }} slides générées, exportées en PNG 1080x1350.
+      </p>
+    </div>
+
+    <div class="carousel-export-slides">
+        <div
+          #carouselSlide
+          class="carousel-slide carousel-cover-slide"
+          [style.background-image]="carouselCoverPhoto ? photoBackground(carouselCoverPhoto) : null"
+        >
+          <div [ngClass]="carouselLogoClass">
+            <img [src]="carouselLogo" [alt]="selectedShow?.name || 'Spectacle LUDI'" />
+          </div>
+          <strong [ngClass]="carouselTextClass">{{ carouselCoverText }}</strong>
+        </div>
+
+        <div
+          #carouselSlide
+          class="carousel-slide carousel-photo-slide"
+          *ngFor="let photo of carouselPhotoSlides"
+          [style.background-image]="carouselPhotoBackground(photo)"
+        ></div>
+
+        <div #carouselSlide class="carousel-slide carousel-dates-slide">
+          <div class="carousel-dates-header">
+            <img src="assets/logo/logo.png" alt="LUDI Toulouse" />
+            <span>Prochaines dates</span>
+          </div>
+          <div class="carousel-dates-list" *ngIf="carouselAgendaShows.length">
+            <div class="carousel-date-item" *ngFor="let show of carouselAgendaShows">
+              <span>{{ formattedDate(show) }}</span>
+              <strong>{{ show.name }}</strong>
+              <small>{{ show.location }}</small>
+            </div>
+          </div>
+          <p class="visual-empty" *ngIf="!carouselAgendaShows.length">
+            Aucune autre date sur ce mois
+          </p>
+          <div class="visual-footer">
+            <span>@luditoulouse</span>
+            <span>luditoulouse.org</span>
+          </div>
+        </div>
+    </div>
+
+    <div class="carousel-preview-shell">
+      <div class="instagram-post-preview">
+        <div class="instagram-post-header">
+          <div class="instagram-avatar">
+            <img src="assets/logo/logo.png" alt="LUDI Toulouse" />
+          </div>
+          <div>
+            <strong>luditoulouse</strong>
+            <span>{{ selectedShow?.name || 'Spectacle LUDI' }}</span>
+          </div>
+        </div>
+
+        <div class="instagram-media-frame">
+          <div
+            class="carousel-slide carousel-cover-slide"
+            *ngIf="isCarouselCoverPreview"
+            [style.background-image]="carouselCoverPhoto ? photoBackground(carouselCoverPhoto) : null"
+          >
+            <div [ngClass]="carouselLogoClass">
+              <img [src]="carouselLogo" [alt]="selectedShow?.name || 'Spectacle LUDI'" />
+            </div>
+            <strong [ngClass]="carouselTextClass">{{ carouselCoverText }}</strong>
+          </div>
+
+          <div
+            class="carousel-slide carousel-photo-slide"
+            *ngIf="!isCarouselCoverPreview && !isCarouselDatesPreview && carouselPreviewPhoto as photo"
+            [style.background-image]="carouselPhotoBackground(photo)"
+          ></div>
+
+          <div class="carousel-slide carousel-dates-slide" *ngIf="isCarouselDatesPreview">
+            <div class="carousel-dates-header">
+              <img src="assets/logo/logo.png" alt="LUDI Toulouse" />
+              <span>Prochaines dates</span>
+            </div>
+            <div class="carousel-dates-list" *ngIf="carouselAgendaShows.length">
+              <div class="carousel-date-item" *ngFor="let show of carouselAgendaShows">
+                <span>{{ formattedDate(show) }}</span>
+                <strong>{{ show.name }}</strong>
+                <small>{{ show.location }}</small>
+              </div>
+            </div>
+            <p class="visual-empty" *ngIf="!carouselAgendaShows.length">
+              Aucune autre date sur ce mois
+            </p>
+            <div class="visual-footer">
+              <span>@luditoulouse</span>
+              <span>luditoulouse.org</span>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            class="instagram-arrow instagram-arrow-prev"
+            [disabled]="!canGoToPreviousCarouselSlide"
+            (click)="previousCarouselSlide()"
+          >
+            ‹
+          </button>
+          <button
+            type="button"
+            class="instagram-arrow instagram-arrow-next"
+            [disabled]="!canGoToNextCarouselSlide"
+            (click)="nextCarouselSlide()"
+          >
+            ›
+          </button>
+
+          <span class="instagram-counter">
+            {{ carouselPreviewIndex + 1 }}/{{ carouselSlideCount || 2 }}
+          </span>
+        </div>
+
+        <div class="instagram-actions">
+          <span>Like</span>
+          <span>Comment</span>
+          <span>Share</span>
+          <span>Save</span>
+        </div>
+
+        <div class="instagram-dots" *ngIf="carouselSlideCount">
+          <button
+            type="button"
+            *ngFor="let photo of carouselPhotos; let index = index"
+            [class.active]="carouselPreviewIndex === index"
+            (click)="selectCarouselPreview(index)"
+          ></button>
+          <button
+            type="button"
+            [class.active]="isCarouselDatesPreview"
+            (click)="selectCarouselPreview(carouselSlideCount - 1)"
+          ></button>
+        </div>
+
+        <div class="instagram-caption">
+          <strong>luditoulouse</strong>
+          <span>Merci pour cette soirée. On se retrouve très vite sur scène.</span>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>

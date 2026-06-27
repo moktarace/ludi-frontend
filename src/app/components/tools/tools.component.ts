@@ -1,7 +1,7 @@
 import { Component, ElementRef, Input, QueryList, ViewChild, ViewChildren } from '@angular/core'
 import { Show } from 'src/app/model'
 
-type VisualFormat = 'post' | 'story' | 'reel'
+type VisualFormat = 'post' | 'story' | 'reel' | 'poster'
 type VisualMode = 'show' | 'week' | 'month'
 type CarouselPlacement = 'top' | 'center' | 'bottom'
 type CarouselLogoSize = 's' | 'm' | 'l' | 'xl'
@@ -58,6 +58,7 @@ export class ToolsComponent {
     { label: 'Post', value: 'post' },
     { label: 'Story', value: 'story' },
     { label: 'Reel', value: 'reel' },
+    { label: 'Affiche A2', value: 'poster' },
   ]
 
   public readonly modes: { label: string; value: VisualMode }[] = [
@@ -83,6 +84,8 @@ export class ToolsComponent {
   public customQrLink = ''
   public showQrCode = false
   public isPosterHidden = false
+  public printLogoPlacement: CarouselPlacement = 'center'
+  public printLogoSize: CarouselLogoSize = 'xl'
   public accessCode = ''
   public accessError = ''
   public isUnlocked = localStorage.getItem(ToolsComponent.ACCESS_STORAGE_KEY) === 'true'
@@ -169,7 +172,7 @@ export class ToolsComponent {
   }
 
   public get availableModes(): { label: string; value: VisualMode }[] {
-    if (this.isReelFormat) {
+    if (this.isShowOnlyFormat) {
       return this.modes.filter((mode) => mode.value === 'show')
     }
 
@@ -188,8 +191,32 @@ export class ToolsComponent {
     return this.selectedFormat === 'reel'
   }
 
+  public get isA2Format(): boolean {
+    return this.selectedFormat === 'poster'
+  }
+
+  public get isLargeShowFormat(): boolean {
+    return this.isA2Format
+  }
+
+  public get isShowOnlyFormat(): boolean {
+    return this.isReelFormat || this.isLargeShowFormat
+  }
+
+  public get isQrCapableFormat(): boolean {
+    return this.isPostFormat || this.isLargeShowFormat
+  }
+
+  public get printLogoClass(): string {
+    if (!this.isLargeShowFormat) {
+      return ''
+    }
+
+    return `visual-print-logo visual-print-logo-${this.printLogoPlacement} visual-print-logo-${this.printLogoSize}`
+  }
+
   public get hasCustomOptions(): boolean {
-    return this.isPostFormat || ((this.selectedFormat === 'story' || this.isReelFormat) && this.selectedMode === 'show')
+    return this.isPostFormat || this.isLargeShowFormat || ((this.selectedFormat === 'story' || this.isReelFormat) && this.selectedMode === 'show')
   }
 
   public get showPoster(): boolean {
@@ -214,12 +241,13 @@ export class ToolsComponent {
   }
 
   public get qrCodeImage(): string {
-    if (!this.isPostFormat || !this.isShowVisual || !this.showQrCode || !this.qrLink) {
+    if (!this.isQrCapableFormat || !this.isShowVisual || !this.showQrCode || !this.qrLink) {
       return ''
     }
 
     const url = encodeURIComponent(this.qrLink)
-    return `https://quickchart.io/qr?text=${url}&size=220&margin=1&ecLevel=M&format=png`
+    const size = this.isLargeShowFormat ? 900 : 220
+    return `https://quickchart.io/qr?text=${url}&size=${size}&margin=1&ecLevel=M&format=png`
   }
 
   public get exportLabel(): string {
@@ -365,7 +393,15 @@ export class ToolsComponent {
   public selectFormat(format: VisualFormat): void {
     this.selectedFormat = format
 
-    if (this.isReelFormat) {
+    if (this.isA2Format) {
+      this.showQrCode = true
+    }
+
+    if (!this.isQrCapableFormat) {
+      this.showQrCode = false
+    }
+
+    if (this.isShowOnlyFormat) {
       this.selectedMode = 'show'
     }
   }
@@ -788,6 +824,14 @@ export class ToolsComponent {
   }
 
   private get exportScale(): number {
-    return this.selectedFormat === 'post' ? 1080 / 420 : 1920 / 600
+    if (this.isPostFormat) {
+      return 1080 / 420
+    }
+
+    if (this.isA2Format) {
+      return 4961 / 420
+    }
+
+    return 1920 / 600
   }
 }

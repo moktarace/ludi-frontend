@@ -39,7 +39,7 @@
         </div>
       </div>
 
-      <div class="visual-control-group">
+      <div class="visual-control-group" *ngIf="!isShowOnlyFormat">
         <label>Contenu</label>
         <div class="visual-segmented">
           <button
@@ -70,7 +70,7 @@
       <details class="visual-custom-panel" *ngIf="hasCustomOptions">
         <summary>Personnaliser</summary>
 
-        <div class="visual-control-group" *ngIf="isPostFormat && selectedMode === 'show'">
+        <div class="visual-control-group" *ngIf="selectedMode === 'show'">
           <label for="visual-poster-upload">Visuel du spectacle</label>
           <div class="visual-logo-presets">
             <button
@@ -96,6 +96,53 @@
           </div>
         </div>
 
+        <div class="visual-control-group" *ngIf="isLargeShowFormat">
+          <label for="print-logo-placement">Position du logo</label>
+          <select
+            id="print-logo-placement"
+            class="form-select"
+            [(ngModel)]="printLogoPlacement"
+          >
+            <option value="top">Haut centre</option>
+            <option value="center">Centre</option>
+            <option value="bottom">Bas centre</option>
+          </select>
+        </div>
+
+        <div class="visual-control-group" *ngIf="isLargeShowFormat">
+          <label>Taille du logo</label>
+          <div class="visual-segmented carousel-size-control">
+            <button
+              type="button"
+              [class.active]="printLogoSize === 's'"
+              (click)="printLogoSize = 's'"
+            >
+              S
+            </button>
+            <button
+              type="button"
+              [class.active]="printLogoSize === 'm'"
+              (click)="printLogoSize = 'm'"
+            >
+              M
+            </button>
+            <button
+              type="button"
+              [class.active]="printLogoSize === 'l'"
+              (click)="printLogoSize = 'l'"
+            >
+              L
+            </button>
+            <button
+              type="button"
+              [class.active]="printLogoSize === 'xl'"
+              (click)="printLogoSize = 'xl'"
+            >
+              XL
+            </button>
+          </div>
+        </div>
+
         <div class="visual-control-group">
           <label for="visual-background-upload">Fond personnalisé</label>
           <input
@@ -110,7 +157,7 @@
           </div>
         </div>
 
-        <div class="visual-control-group" *ngIf="selectedMode === 'show'">
+        <div class="visual-control-group" *ngIf="isQrCapableFormat && selectedMode === 'show'">
           <label for="visual-qr-link">QR code</label>
           <label class="visual-check-row">
             <input
@@ -162,10 +209,15 @@
         <div class="visual-background-mark">LUDI</div>
         <div class="visual-brand">
           <img src="assets/logo/logo.png" alt="LUDI Toulouse" />
-          <span>Impro Toulouse</span>
+          <div class="visual-partner-logos" *ngIf="isLargeShowFormat">
+            <img src="assets/logo/cap.png" alt="Le CAP" />
+            <img src="assets/logo/ut3.png" alt="Université Toulouse III Paul Sabatier" />
+            <img src="assets/logo/culture.png" alt="Pôle culture" />
+          </div>
+          <span>Théâtre d'impro</span>
         </div>
 
-        <div class="visual-poster" *ngIf="showPoster">
+        <div class="visual-poster" [ngClass]="printLogoClass" *ngIf="showPoster">
           <img [src]="visualPoster" [alt]="selectedShow?.name || 'Spectacle LUDI'" />
         </div>
 
@@ -197,6 +249,10 @@
         <div class="visual-footer">
           <span>@luditoulouse</span>
           <span>luditoulouse.org</span>
+        </div>
+
+        <div class="visual-legal-mention" *ngIf="isLargeShowFormat">
+          Ne pas jeter sur la voie publique
         </div>
 
         <div class="visual-qr-code" *ngIf="qrCodeImage">

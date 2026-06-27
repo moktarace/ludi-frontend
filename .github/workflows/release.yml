@@ -1,0 +1,50 @@
+name: Build Release
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 16
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - name: Package build
+        run: |
+          cd dist/ludi-frontend
+          zip -r ../../ludi-frontend-${{ github.sha }}.zip .
+
+      - name: Create GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TAG="release-${GITHUB_RUN_NUMBER}"
+          gh release create "$TAG" \
+            "ludi-frontend-${GITHUB_SHA}.zip" \
+            --target "$GITHUB_SHA" \
+            --title "Release ${GITHUB_RUN_NUMBER}" \
+            --notes "Build automatique depuis main (${GITHUB_SHA})."

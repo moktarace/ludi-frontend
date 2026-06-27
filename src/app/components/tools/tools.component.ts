@@ -18,6 +18,14 @@ interface PresetLogo {
   src: string
 }
 
+interface VisualTone {
+  label: string
+  value: string
+  accent: string
+  accentRgb: string
+  customBackgroundRgb: string
+}
+
 @Component({
   selector: 'app-tools',
   templateUrl: './tools.component.html',
@@ -76,11 +84,65 @@ export class ToolsComponent {
     { label: 'Top Ten', src: 'assets/logo/kit/cercle.png' },
   ]
 
+  public readonly visualTones: VisualTone[] = [
+    {
+      label: 'Rouge LUDI',
+      value: 'ludi-red',
+      accent: '#df2f42',
+      accentRgb: '223 47 66',
+      customBackgroundRgb: '223 47 66',
+    },
+    {
+      label: 'Prune',
+      value: 'plum',
+      accent: '#7a315f',
+      accentRgb: '122 49 95',
+      customBackgroundRgb: '122 49 95',
+    },
+    {
+      label: 'Vert scène',
+      value: 'stage-green',
+      accent: '#5cb52e',
+      accentRgb: '92 181 46',
+      customBackgroundRgb: '92 181 46',
+    },
+    {
+      label: 'Orange affiche',
+      value: 'poster-orange',
+      accent: '#d96b35',
+      accentRgb: '217 107 53',
+      customBackgroundRgb: '217 107 53',
+    },
+    {
+      label: 'Turquoise nuit',
+      value: 'night-turquoise',
+      accent: '#00a99a',
+      accentRgb: '0 169 154',
+      customBackgroundRgb: '0 169 154',
+    },
+    {
+      label: 'Jaune projecteur',
+      value: 'spotlight-yellow',
+      accent: '#f0b92e',
+      accentRgb: '240 185 46',
+      customBackgroundRgb: '240 185 46',
+    },
+    {
+      label: 'Toulouse',
+      value: 'toulouse',
+      accent: '#e04f7a',
+      accentRgb: '224 79 122',
+      customBackgroundRgb: '224 79 122',
+    },
+  ]
+
   public selectedFormat: VisualFormat = 'post'
   public selectedMode: VisualMode = 'show'
   public selectedShowId: string = ''
+  public selectedToneValue = this.visualTones[0].value
   public customPoster?: string
   public customBackground?: string
+  public customBackgroundTintEnabled = true
   public customQrLink = ''
   public showQrCode = false
   public isPosterHidden = false
@@ -228,7 +290,23 @@ export class ToolsComponent {
       return null
     }
 
-    return `linear-gradient(145deg, rgb(23 18 31 / 72%) 0%, rgb(33 21 40 / 72%) 48%, rgb(223 47 66 / 58%) 100%), url("${this.customBackground}")`
+    if (!this.customBackgroundTintEnabled) {
+      return `url("${this.customBackground}")`
+    }
+
+    return `linear-gradient(145deg, rgb(23 18 31 / 72%) 0%, rgb(33 21 40 / 72%) 48%, rgb(${this.selectedTone.customBackgroundRgb} / 58%) 100%), url("${this.customBackground}")`
+  }
+
+  public get selectedTone(): VisualTone {
+    return this.visualTones.find((tone) => tone.value === this.selectedToneValue) || this.visualTones[0]
+  }
+
+  public get visualAccent(): string {
+    return this.selectedTone.accent
+  }
+
+  public get visualAccentRgb(): string {
+    return this.selectedTone.accentRgb
   }
 
   public get qrLink(): string {

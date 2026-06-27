@@ -899,6 +899,42 @@ div.bg-dark.bg-black {
   }
 }
 
+.visual-tone-options {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.45rem;
+
+  button {
+    display: flex;
+    gap: 0.45rem;
+    align-items: center;
+    min-height: 2.35rem;
+    padding: 0.35rem 0.5rem;
+    border: 1px solid rgb(255 248 237 / 16%);
+    background: rgb(255 248 237 / 8%);
+    color: var(--ludi-paper);
+    font-size: 0.74rem;
+    font-weight: 900;
+    line-height: 1.05;
+    text-align: left;
+
+    &.active {
+      border-color: var(--ludi-gold);
+      background: rgb(244 190 76 / 16%);
+      color: var(--ludi-gold);
+    }
+  }
+
+  span {
+    flex: 0 0 auto;
+    width: 1.05rem;
+    height: 1.05rem;
+    border: 2px solid rgb(255 248 237 / 72%);
+    background: var(--tone-color);
+    box-shadow: 0 0.2rem 0.45rem rgb(0 0 0 / 24%);
+  }
+}
+
 .visual-preview-shell {
   display: grid;
   justify-content: center;
@@ -911,8 +947,10 @@ div.bg-dark.bg-black {
   display: grid;
   grid-template-rows: auto auto 1fr auto;
   overflow: hidden;
+  --visual-accent: var(--ludi-red);
+  --visual-accent-rgb: 223 47 66;
   background:
-    linear-gradient(145deg, rgb(23 18 31 / 96%) 0%, rgb(33 21 40 / 96%) 48%, rgb(223 47 66 / 92%) 100%),
+    linear-gradient(145deg, rgb(23 18 31 / 96%) 0%, rgb(33 21 40 / 96%) 48%, rgb(var(--visual-accent-rgb) / 92%) 100%),
     url(/assets/background/bg02.jpg);
   background-position: center;
   background-size: cover;
@@ -1240,7 +1278,7 @@ div.bg-dark.bg-black {
     align-items: center;
     margin: 0;
     padding: 0.26rem 0.9rem 0.16rem;
-    background: var(--ludi-red);
+    background: var(--visual-accent);
     color: var(--ludi-paper);
     font-family: "The Bold Font", system-ui, sans-serif;
     font-size: 1.46rem;

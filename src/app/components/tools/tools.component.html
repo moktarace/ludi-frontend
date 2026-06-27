@@ -70,6 +70,22 @@
       <details class="visual-custom-panel" *ngIf="hasCustomOptions">
         <summary>Personnaliser</summary>
 
+        <div class="visual-control-group">
+          <label>Teinte principale</label>
+          <div class="visual-tone-options">
+            <button
+              type="button"
+              *ngFor="let tone of visualTones"
+              [class.active]="selectedToneValue === tone.value"
+              [style.--tone-color]="tone.accent"
+              (click)="selectedToneValue = tone.value"
+            >
+              <span></span>
+              {{ tone.label }}
+            </button>
+          </div>
+        </div>
+
         <div class="visual-control-group" *ngIf="selectedMode === 'show'">
           <label for="visual-poster-upload">Visuel du spectacle</label>
           <div class="visual-logo-presets">
@@ -152,6 +168,13 @@
             class="form-control"
             (change)="updateBackground($event)"
           />
+          <label class="visual-check-row">
+            <input
+              type="checkbox"
+              [(ngModel)]="customBackgroundTintEnabled"
+            />
+            <span>Appliquer la teinte sur le fond</span>
+          </label>
           <div class="visual-inline-actions">
             <button type="button" (click)="resetBackground()">Retirer le fond</button>
           </div>
@@ -205,6 +228,8 @@
         #visualCanvas
         [ngClass]="visualClass"
         [style.background-image]="visualBackgroundImage"
+        [style.--visual-accent]="visualAccent"
+        [style.--visual-accent-rgb]="visualAccentRgb"
       >
         <div class="visual-background-mark">LUDI</div>
         <div class="visual-brand">

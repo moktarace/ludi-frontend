@@ -217,11 +217,45 @@
             </label>
             <label>
               Fond du visuel
-              <input class="form-control" type="url" [(ngModel)]="show.imgLink" [ngModelOptions]="{standalone: true}" />
+              <span class="programmation-media-field">
+                <img *ngIf="show.imgLink" [src]="show.imgLink" alt="" />
+                <select class="form-select" [(ngModel)]="show.imgLink" [ngModelOptions]="{standalone: true}">
+                  <option value="">Aucun fond</option>
+                  <option *ngFor="let media of mediaOptions('imgLink')" [value]="media.url">
+                    {{ media.label }}
+                  </option>
+                </select>
+                <input
+                  type="file"
+                  accept="image/jpeg,image/png"
+                  (change)="uploadShowMedia($event, show, 'imgLink')"
+                />
+                <span class="programmation-media-actions">
+                  <span *ngIf="isUploadingMedia(show, 'imgLink')">Upload...</span>
+                  <button type="button" [disabled]="!show.imgLink" (click)="clearShowMedia(show, 'imgLink')">Vider</button>
+                </span>
+              </span>
             </label>
             <label>
               Logo
-              <input class="form-control" type="url" [(ngModel)]="show.logoLink" [ngModelOptions]="{standalone: true}" />
+              <span class="programmation-media-field">
+                <img *ngIf="show.logoLink" [src]="show.logoLink" alt="" />
+                <select class="form-select" [(ngModel)]="show.logoLink" [ngModelOptions]="{standalone: true}">
+                  <option value="">Aucun logo</option>
+                  <option *ngFor="let media of mediaOptions('logoLink')" [value]="media.url">
+                    {{ media.label }}
+                  </option>
+                </select>
+                <input
+                  type="file"
+                  accept="image/jpeg,image/png"
+                  (change)="uploadShowMedia($event, show, 'logoLink')"
+                />
+                <span class="programmation-media-actions">
+                  <span *ngIf="isUploadingMedia(show, 'logoLink')">Upload...</span>
+                  <button type="button" [disabled]="!show.logoLink" (click)="clearShowMedia(show, 'logoLink')">Vider</button>
+                </span>
+              </span>
             </label>
             <label>
               Lien de réservation

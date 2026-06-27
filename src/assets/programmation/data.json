@@ -985,10 +985,26 @@
     "reducedPrice": 0,
     "freeForStudents": false,
     "location": "La turbine - métro palais de justice",
-    "imgLink": "https://luditoulouse.org/assets/logo/improvisem.png",
-    "logoLink": "https://luditoulouse.org/assets/logo/improvisem.png",
+    "imgLink": "",
+    "logoLink": "assets/logo/kit/match.png",
     "reservationLink": "",
     "isPublished": true,
     "isHighlighted": false
+  },
+  {
+    "id": "show-1782585138821",
+    "name": "Championnat IMPROVISEM - GRANDE FINALE",
+    "date": 1813773600,
+    "description": "IMPROVISEM, notre championnat interne, revient pour une saison 2024-2025 qui commence dès ce mois de novembre !\nLes équipes des rouges, noirs, blancs et jaunes n'attendent qu'une chose : en découdre sur scène !\nVenez les voir s'affronter dans des matchs d'improvisation au sein de la Turbine ! \n\nÀ la fin, il n'y aura qu'un vainqueur…",
+    "shortDescription": "Improvisem, notre championnat interne continue sa saison 2025-2026",
+    "price": 0,
+    "reducedPrice": 0,
+    "freeForStudents": false,
+    "location": "La turbine - métro palais de justice",
+    "imgLink": "",
+    "logoLink": "assets/logo/kit/improvisem.png",
+    "reservationLink": "",
+    "isPublished": true,
+    "isHighlighted": true
   }
 ]

@@ -7,10 +7,22 @@ type DateFilter = 'all' | 'future' | 'past'
 type PublishFilter = 'all' | 'published' | 'draft'
 type HighlightFilter = 'all' | 'highlighted'
 type SortMode = 'date-asc' | 'date-desc' | 'name-asc' | 'updated'
+type MediaField = 'imgLink' | 'logoLink'
 
 interface AdminSession {
   authenticated: boolean
   csrfToken: string
+}
+
+interface MediaItem {
+  label: string
+  url: string
+  kind: 'logo' | 'upload'
+}
+
+interface MediaLibrary {
+  kitLogos: MediaItem[]
+  uploads: MediaItem[]
 }
 
 @Component({
@@ -33,6 +45,8 @@ export class ProgrammationAdminComponent implements OnInit {
   public reviveShowId = ''
   public reviveDateValue = ''
   public keepRevivalLinks = false
+  public mediaLibrary: MediaLibrary = { kitLogos: [], uploads: [] }
+  public uploadingMediaKey = ''
   public isAuthenticated = false
   public isLoading = true
   public isSaving = false
@@ -119,6 +133,7 @@ export class ProgrammationAdminComponent implements OnInit {
         this.password = ''
         this.applySession(session)
         this.loadShows()
+        this.loadMedia()
       },
       error: () => {
         this.error = 'Connexion impossible'
@@ -137,6 +152,7 @@ export class ProgrammationAdminComponent implements OnInit {
         this.csrfToken = ''
         this.shows = []
         this.selectedShowIds.clear()
+        this.mediaLibrary = { kitLogos: [], uploads: [] }
       },
     })
   }
@@ -283,12 +299,69 @@ export class ProgrammationAdminComponent implements OnInit {
         this.selectedShowIds.clear()
         this.message = 'Dates sauvegardées'
         this.isSaving = false
+        this.loadMedia()
       },
       error: () => {
         this.error = 'Sauvegarde impossible'
         this.isSaving = false
       },
     })
+  }
+
+  public mediaOptions(field: MediaField): MediaItem[] {
+    return field === 'logoLink'
+      ? [...this.mediaLibrary.kitLogos, ...this.mediaLibrary.uploads]
+      : this.mediaLibrary.uploads
+  }
+
+  public async uploadShowMedia(event: Event, show: Show, field: MediaField): Promise<void> {
+    const input = event.target as HTMLInputElement
+    const file = input.files?.[0]
+    input.value = ''
+    if (!file) {
+      return
+    }
+
+    if (!['image/jpeg', 'image/png'].includes(file.type)) {
+      this.error = 'Utilise une image JPEG ou PNG'
+      return
+    }
+
+    const key = `${this.showKey(show)}-${field}`
+    this.uploadingMediaKey = key
+    this.error = ''
+    this.message = ''
+
+    try {
+      const compressed = await this.compressImage(file)
+      this.http.post<MediaItem>(
+        `${this.endpoint}?action=upload`,
+        compressed,
+        { headers: this.authHeaders, withCredentials: true }
+      ).subscribe({
+        next: (media) => {
+          show[field] = media.url
+          this.uploadingMediaKey = ''
+          this.message = 'Image ajoutée'
+          this.loadMedia()
+        },
+        error: () => {
+          this.uploadingMediaKey = ''
+          this.error = "Upload impossible"
+        },
+      })
+    } catch (error) {
+      this.uploadingMediaKey = ''
+      this.error = "Impossible de préparer l'image"
+    }
+  }
+
+  public isUploadingMedia(show: Show, field: MediaField): boolean {
+    return this.uploadingMediaKey === `${this.showKey(show)}-${field}`
+  }
+
+  public clearShowMedia(show: Show, field: MediaField): void {
+    show[field] = ''
   }
 
   public dateInputValue(show: Show): string {
@@ -338,6 +411,7 @@ export class ProgrammationAdminComponent implements OnInit {
         this.applySession(session)
         if (session.authenticated) {
           this.loadShows()
+          this.loadMedia()
           return
         }
         this.isLoading = false
@@ -363,6 +437,54 @@ export class ProgrammationAdminComponent implements OnInit {
         this.error = 'Chargement impossible'
         this.isLoading = false
       },
+    })
+  }
+
+  private loadMedia(): void {
+    this.http.get<MediaLibrary>(
+      `${this.endpoint}?action=media`,
+      { headers: this.authHeaders, withCredentials: true }
+    ).subscribe({
+      next: (mediaLibrary) => {
+        this.mediaLibrary = mediaLibrary
+      },
+    })
+  }
+
+  private compressImage(file: File): Promise<{ fileName: string; mimeType: string; dataUrl: string }> {
+    const outputType = file.type === 'image/png' ? 'image/png' : 'image/jpeg'
+    const maxDimension = 2400
+    const quality = 0.88
+
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader()
+      reader.onerror = () => reject(reader.error)
+      reader.onload = () => {
+        const image = new Image()
+        image.onerror = () => reject(new Error('Image invalide'))
+        image.onload = () => {
+          const ratio = Math.min(1, maxDimension / Math.max(image.naturalWidth, image.naturalHeight))
+          const width = Math.max(1, Math.round(image.naturalWidth * ratio))
+          const height = Math.max(1, Math.round(image.naturalHeight * ratio))
+          const canvas = document.createElement('canvas')
+          canvas.width = width
+          canvas.height = height
+          const context = canvas.getContext('2d')
+          if (!context) {
+            reject(new Error('Canvas indisponible'))
+            return
+          }
+
+          context.drawImage(image, 0, 0, width, height)
+          resolve({
+            fileName: file.name,
+            mimeType: outputType,
+            dataUrl: canvas.toDataURL(outputType, outputType === 'image/jpeg' ? quality : undefined),
+          })
+        }
+        image.src = String(reader.result || '')
+      }
+      reader.readAsDataURL(file)
     })
   }
 

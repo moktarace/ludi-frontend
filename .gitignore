@@ -49,5 +49,8 @@ Thumbs.db
 src/assets/programmation/config.php
 src/assets/programmation/*.local.json
 src/assets/programmation/*.backup.json
+src/assets/programmation/uploads/*
+!src/assets/programmation/uploads/.gitkeep
+!src/assets/programmation/uploads/.htaccess
 .env
 .env.*

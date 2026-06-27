@@ -8,6 +8,10 @@ if (file_exists(__DIR__ . "/config.php")) {
 }
 
 $DATA_FILE = $GESTION_DATES_DATA_FILE ?? ($PROGRAMMATION_DATA_FILE ?? (__DIR__ . "/data.json"));
+$UPLOAD_DIR = $GESTION_DATES_UPLOAD_DIR ?? (__DIR__ . "/uploads");
+$UPLOAD_URL = rtrim($GESTION_DATES_UPLOAD_URL ?? "assets/programmation/uploads", "/");
+$KIT_LOGO_DIR = __DIR__ . "/../logo/kit";
+$KIT_LOGO_URL = "assets/logo/kit";
 
 session_name("ludi_gestion_dates_admin");
 session_start([
@@ -50,6 +54,13 @@ try {
         require_csrf();
         save_shows(read_json_body());
         json_response(read_shows());
+    } elseif ($action === "media") {
+        require_admin();
+        json_response(media_library());
+    } elseif ($action === "upload") {
+        require_admin();
+        require_csrf();
+        json_response(upload_media(read_json_body()));
     } else {
         json_response(public_shows(read_shows(), $ONE_HOUR_DELAY));
     }
@@ -140,6 +151,8 @@ function save_shows(array $shows): void
     if (file_put_contents($DATA_FILE, $json . PHP_EOL, LOCK_EX) === false) {
         throw new RuntimeException("Impossible d'enregistrer les dates", 500);
     }
+
+    cleanup_unused_uploads($normalized);
 }
 
 function normalize_show(array $show): array
@@ -192,6 +205,127 @@ function public_shows(array $shows, int $one_hour_delay): array
 function compare_show_dates(array $a, array $b): int
 {
     return ($a["date"] ?? 0) <=> ($b["date"] ?? 0);
+}
+
+function media_library(): array
+{
+    return [
+        "kitLogos" => list_media_files($GLOBALS["KIT_LOGO_DIR"], $GLOBALS["KIT_LOGO_URL"], "logo"),
+        "uploads" => list_media_files($GLOBALS["UPLOAD_DIR"], $GLOBALS["UPLOAD_URL"], "upload"),
+    ];
+}
+
+function list_media_files(string $directory, string $base_url, string $kind): array
+{
+    if (!is_dir($directory)) {
+        return [];
+    }
+
+    $items = [];
+    foreach (scandir($directory) ?: [] as $file) {
+        if ($file === "." || $file === ".." || !is_allowed_image_name($file)) {
+            continue;
+        }
+
+        $items[] = [
+            "label" => media_label($file),
+            "url" => $base_url . "/" . rawurlencode($file),
+            "kind" => $kind,
+        ];
+    }
+
+    usort($items, fn($a, $b) => strcmp($a["label"], $b["label"]));
+    return $items;
+}
+
+function upload_media(array $body): array
+{
+    global $UPLOAD_DIR, $UPLOAD_URL;
+
+    $file_name = sanitize_filename((string)($body["fileName"] ?? "image"));
+    $mime_type = (string)($body["mimeType"] ?? "");
+    $data_url = (string)($body["dataUrl"] ?? "");
+
+    if (!in_array($mime_type, ["image/jpeg", "image/png"], true)) {
+        throw new RuntimeException("Format refusé. Utilise une image JPEG ou PNG.", 400);
+    }
+
+    if (!preg_match("#^data:image/(jpeg|png);base64,#", $data_url)) {
+        throw new RuntimeException("Image invalide", 400);
+    }
+
+    $binary = base64_decode(preg_replace("#^data:image/(jpeg|png);base64,#", "", $data_url), true);
+    if ($binary === false || strlen($binary) > 8 * 1024 * 1024) {
+        throw new RuntimeException("Image trop lourde", 400);
+    }
+
+    $info = @getimagesizefromstring($binary);
+    if (!$info || !in_array($info["mime"] ?? "", ["image/jpeg", "image/png"], true)) {
+        throw new RuntimeException("Image invalide", 400);
+    }
+
+    if (!is_dir($UPLOAD_DIR) && !mkdir($UPLOAD_DIR, 0775, true)) {
+        throw new RuntimeException("Impossible de préparer le dossier d'upload", 500);
+    }
+
+    $extension = ($info["mime"] ?? "") === "image/png" ? "png" : "jpg";
+    $target_name = pathinfo($file_name, PATHINFO_FILENAME) . "-" . date("Ymd-His") . "-" . bin2hex(random_bytes(4)) . "." . $extension;
+    $target_path = $UPLOAD_DIR . "/" . $target_name;
+
+    if (file_put_contents($target_path, $binary, LOCK_EX) === false) {
+        throw new RuntimeException("Impossible d'enregistrer l'image", 500);
+    }
+
+    return [
+        "label" => media_label($target_name),
+        "url" => $UPLOAD_URL . "/" . rawurlencode($target_name),
+        "kind" => "upload",
+    ];
+}
+
+function cleanup_unused_uploads(array $shows): void
+{
+    global $UPLOAD_DIR, $UPLOAD_URL;
+    if (!is_dir($UPLOAD_DIR)) {
+        return;
+    }
+
+    $used = [];
+    foreach ($shows as $show) {
+        foreach (["imgLink", "logoLink"] as $field) {
+            $value = (string)($show[$field] ?? "");
+            if (strpos($value, $UPLOAD_URL . "/") === 0) {
+                $used[basename(parse_url($value, PHP_URL_PATH) ?: "")] = true;
+            }
+        }
+    }
+
+    foreach (scandir($UPLOAD_DIR) ?: [] as $file) {
+        if ($file === "." || $file === ".." || !is_allowed_image_name($file) || isset($used[$file])) {
+            continue;
+        }
+        @unlink($UPLOAD_DIR . "/" . $file);
+    }
+}
+
+function is_allowed_image_name(string $file): bool
+{
+    return (bool)preg_match("/\.(jpe?g|png)$/i", $file);
+}
+
+function sanitize_filename(string $file_name): string
+{
+    $base = strtolower(pathinfo($file_name, PATHINFO_FILENAME) ?: "image");
+    $base = iconv("UTF-8", "ASCII//TRANSLIT//IGNORE", $base) ?: $base;
+    $base = preg_replace("/[^a-z0-9]+/", "-", $base);
+    return trim($base ?: "image", "-");
+}
+
+function media_label(string $file): string
+{
+    $label = preg_replace("/\.(jpe?g|png)$/i", "", $file);
+    $label = preg_replace("/-\d{8}-\d{6}-[a-f0-9]{8}$/", "", $label);
+    return ucfirst(str_replace("-", " ", $label));
 }
 
 function json_response($payload): void

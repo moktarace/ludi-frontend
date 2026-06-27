@@ -39,6 +39,16 @@ src/assets/programmation/data.json
 
 L'interface permet d'ajouter, modifier, dupliquer, supprimer, filtrer, trier et modifier plusieurs dates en meme temps.
 
+Pour les visuels, l'interface permet de choisir un logo du kit LUDI ou d'uploader une image JPEG/PNG. Les images sont reduites avant l'envoi pour garder une bonne qualite sans stocker des fichiers enormes.
+
+Les images envoyees depuis l'interface sont stockees dans :
+
+```text
+src/assets/programmation/uploads
+```
+
+Quand les dates sont sauvegardees, les images uploadees qui ne sont plus utilisees par aucune date sont supprimees automatiquement.
+
 ## Configuration en production
 
 Le fichier `src/assets/programmation/config.php` n'est pas versionne. Il faut le creer sur le serveur a partir de :
@@ -56,6 +66,8 @@ php -r 'echo password_hash("TON_MOT_DE_PASSE", PASSWORD_DEFAULT) . PHP_EOL;'
 Puis mettre le resultat dans `config.php`.
 
 Si possible, stocker le fichier JSON en dehors du dossier public du site et indiquer son chemin dans `config.php` avec `$GESTION_DATES_DATA_FILE`.
+
+Le dossier d'upload doit rester accessible publiquement et inscriptible par PHP. Les variables optionnelles `$GESTION_DATES_UPLOAD_DIR` et `$GESTION_DATES_UPLOAD_URL` permettent de changer son emplacement.
 
 ## Build
 

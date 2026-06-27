@@ -26,6 +26,20 @@ interface VisualTone {
   customBackgroundRgb: string
 }
 
+interface PedagogySlide {
+  eyebrow: string
+  title: string
+  text: string
+  image?: string
+}
+
+interface PedagogyTemplate {
+  id: string
+  label: string
+  caption: string
+  slides: PedagogySlide[]
+}
+
 @Component({
   selector: 'app-tools',
   templateUrl: './tools.component.html',
@@ -36,6 +50,7 @@ export class ToolsComponent {
   private static REEL_DURATION_MS = 7000
   private static REEL_FRAME_RATE = 12
   private static CAROUSEL_MAX_PHOTOS = 19
+  private static PEDAGOGY_MAX_CONTENT_SLIDES = 18
 
   private static DATE_FORMATTER = new Intl.DateTimeFormat('fr-FR', {
     day: 'numeric',
@@ -61,6 +76,9 @@ export class ToolsComponent {
 
   @ViewChildren('carouselSlide')
   public carouselSlides?: QueryList<ElementRef<HTMLElement>>
+
+  @ViewChildren('pedagogySlide')
+  public pedagogySlidesRef?: QueryList<ElementRef<HTMLElement>>
 
   public readonly formats: { label: string; value: VisualFormat }[] = [
     { label: 'Post', value: 'post' },
@@ -136,6 +154,137 @@ export class ToolsComponent {
     },
   ]
 
+  public readonly pedagogyTemplates: PedagogyTemplate[] = [
+    {
+      id: 'match',
+      label: "C'est quoi un match d'impro ?",
+      caption: "Petit mode d'emploi avant de venir voir un match d'impro à la LUDI.",
+      slides: [
+        {
+          eyebrow: 'Impro 101',
+          title: "C'est quoi un match d'impro ?",
+          text: "Deux équipes montent sur scène. Personne ne connaît l'histoire à l'avance.",
+        },
+        {
+          eyebrow: 'Le principe',
+          title: 'Une contrainte, zéro filet',
+          text: "L'arbitre annonce un thème, une durée, parfois une catégorie. Les joueur·euse·s inventent tout en direct.",
+        },
+        {
+          eyebrow: 'Le public',
+          title: 'Tu votes',
+          text: "À la fin de chaque improvisation, le public choisit l'équipe qui l'a embarqué.",
+        },
+        {
+          eyebrow: 'La soirée',
+          title: 'Ça rit, ça tente, ça surprend',
+          text: "Un match peut être drôle, absurde, touchant, chaotique. C'est vivant, donc ça ne se rejoue jamais pareil.",
+        },
+        {
+          eyebrow: 'À Toulouse',
+          title: 'Viens voir ça en vrai',
+          text: "La LUDI joue toute l'année à Toulouse. Prochaine date sur luditoulouse.org.",
+        },
+      ],
+    },
+    {
+      id: 'first-time',
+      label: 'Première fois à la LUDI',
+      caption: "Tu n'as jamais vu d'impro ? Voilà comment se passe une soirée LUDI.",
+      slides: [
+        {
+          eyebrow: 'Première fois',
+          title: 'Tu peux venir sans rien connaître',
+          text: "Pas besoin d'avoir déjà vu de l'impro. Tu t'installes, le spectacle fait le reste.",
+        },
+        {
+          eyebrow: 'Avant le show',
+          title: 'On arrive, on se pose',
+          text: "La plupart des spectacles se jouent à Paul Sabatier, souvent au CAP ou autour du campus.",
+        },
+        {
+          eyebrow: 'Pendant',
+          title: 'Tout est inventé devant toi',
+          text: "Les comédien·ne·s construisent les scènes avec les contraintes du moment et l'énergie du public.",
+        },
+        {
+          eyebrow: 'Ambiance',
+          title: "C'est simple et vivant",
+          text: "Tu peux rire fort, voter, réagir, découvrir une équipe. L'impro aime le public présent.",
+        },
+        {
+          eyebrow: 'On se voit ?',
+          title: 'Prochaines dates',
+          text: "Toutes les infos sont sur luditoulouse.org et sur @luditoulouse.",
+        },
+      ],
+    },
+    {
+      id: 'why-impro',
+      label: "Pourquoi venir voir de l'impro ?",
+      caption: "Quelques bonnes raisons de venir voir du théâtre d'impro à Toulouse.",
+      slides: [
+        {
+          eyebrow: 'Pourquoi venir ?',
+          title: "Parce que c'est vivant",
+          text: "Chaque spectacle existe une seule fois. Ce que tu vois ce soir-là ne reviendra pas pareil.",
+        },
+        {
+          eyebrow: 'Sur scène',
+          title: "L'histoire se fabrique en direct",
+          text: "Les personnages, les enjeux, les accidents et les grandes idées naissent sous tes yeux.",
+        },
+        {
+          eyebrow: 'Dans la salle',
+          title: 'Le public compte',
+          text: "Ton énergie change la soirée. À la LUDI, la salle fait partie du spectacle.",
+        },
+        {
+          eyebrow: 'À Toulouse',
+          title: 'Une troupe historique',
+          text: "Depuis 1997, la LUDI joue, forme et fait circuler l'impro à Toulouse et ailleurs.",
+        },
+        {
+          eyebrow: 'À bientôt',
+          title: 'Viens essayer',
+          text: "Choisis une date, réserve si besoin, et laisse-toi surprendre.",
+        },
+      ],
+    },
+    {
+      id: 'catch',
+      label: "C'est quoi un catch d'impro ?",
+      caption: "Le catch d'impro, c'est une soirée intense, théâtrale et très joueuse.",
+      slides: [
+        {
+          eyebrow: 'Format',
+          title: "C'est quoi un catch d'impro ?",
+          text: "Des duos, des personnages, une énergie de ring, et des impros qui partent très vite.",
+        },
+        {
+          eyebrow: 'Sur scène',
+          title: 'Deux binômes entrent en jeu',
+          text: "Chaque duo défend son univers avec du jeu, de la mauvaise foi théâtrale et beaucoup d'écoute.",
+        },
+        {
+          eyebrow: 'Règles',
+          title: 'Des contraintes très visibles',
+          text: "L'arbitre ou le maître de cérémonie lance les thèmes et garde la tension du spectacle.",
+        },
+        {
+          eyebrow: 'Public',
+          title: 'Tu choisis ton camp',
+          text: "Le public encourage, réagit, vote, et fait monter la température.",
+        },
+        {
+          eyebrow: 'À voir',
+          title: "C'est du théâtre en direct",
+          text: "Drôle, physique, imprévisible. Bref : parfait pour découvrir l'impro autrement.",
+        },
+      ],
+    },
+  ]
+
   public selectedFormat: VisualFormat = 'post'
   public selectedMode: VisualMode = 'show'
   public selectedShowId: string = ''
@@ -162,6 +311,10 @@ export class ToolsComponent {
   public isCarouselDragActive = false
   public isCarouselExporting = false
   public carouselPreviewIndex = 0
+  public selectedPedagogyTemplateId = this.pedagogyTemplates[0].id
+  public pedagogySlides: PedagogySlide[] = this.clonePedagogySlides(this.pedagogyTemplates[0])
+  public pedagogyPreviewIndex = 0
+  public isPedagogyExporting = false
 
   public get sortedShows(): Show[] {
     return [...(this.shows || [])].sort((a, b) => (a.date || 0) - (b.date || 0))
@@ -421,6 +574,46 @@ export class ToolsComponent {
     return this.carouselPreviewIndex < this.carouselSlideCount - 1
   }
 
+  public get selectedPedagogyTemplate(): PedagogyTemplate {
+    return this.pedagogyTemplates.find((template) => template.id === this.selectedPedagogyTemplateId) || this.pedagogyTemplates[0]
+  }
+
+  public get pedagogySlideCount(): number {
+    return this.pedagogySlides.length
+  }
+
+  public get pedagogyTotalSlideCount(): number {
+    return this.pedagogySlideCount + 1
+  }
+
+  public get canAddPedagogySlide(): boolean {
+    return this.pedagogySlides.length < ToolsComponent.PEDAGOGY_MAX_CONTENT_SLIDES
+  }
+
+  public get currentPedagogySlide(): PedagogySlide {
+    return this.pedagogySlides[this.pedagogyPreviewIndex] || this.pedagogySlides[0]
+  }
+
+  public get isPedagogyDatesPreview(): boolean {
+    return this.pedagogyPreviewIndex === this.pedagogyTotalSlideCount - 1
+  }
+
+  public get canGoToPreviousPedagogySlide(): boolean {
+    return this.pedagogyPreviewIndex > 0
+  }
+
+  public get canGoToNextPedagogySlide(): boolean {
+    return this.pedagogyPreviewIndex < this.pedagogyTotalSlideCount - 1
+  }
+
+  public get pedagogyExportLabel(): string {
+    return this.isPedagogyExporting ? 'Export du carrousel...' : 'Télécharger le carrousel'
+  }
+
+  public get pedagogyShareLabel(): string {
+    return this.isSharing ? 'Préparation...' : 'Partager le carrousel'
+  }
+
   private get periodBaseDate(): Date {
     const now = Date.now()
     const future = this.sortedShows.find((show) => show.date && show.date * 1000 >= now)
@@ -589,6 +782,79 @@ export class ToolsComponent {
     this.carouselPreviewIndex = index
   }
 
+  public selectPedagogyTemplate(templateId: string): void {
+    this.selectedPedagogyTemplateId = templateId
+    this.pedagogySlides = this.clonePedagogySlides(this.selectedPedagogyTemplate)
+    this.pedagogyPreviewIndex = 0
+  }
+
+  public previousPedagogySlide(): void {
+    if (this.canGoToPreviousPedagogySlide) {
+      this.pedagogyPreviewIndex -= 1
+    }
+  }
+
+  public nextPedagogySlide(): void {
+    if (this.canGoToNextPedagogySlide) {
+      this.pedagogyPreviewIndex += 1
+    }
+  }
+
+  public selectPedagogyPreview(index: number): void {
+    this.pedagogyPreviewIndex = index
+  }
+
+  public addPedagogySlide(): void {
+    if (!this.canAddPedagogySlide) {
+      return
+    }
+
+    this.pedagogySlides = [
+      ...this.pedagogySlides,
+      {
+        eyebrow: 'À compléter',
+        title: 'Nouvelle slide',
+        text: 'Ajoute ici le message de cette slide.',
+      },
+    ]
+    this.pedagogyPreviewIndex = this.pedagogySlides.length - 1
+  }
+
+  public removePedagogySlide(index: number): void {
+    if (this.pedagogySlides.length <= 1) {
+      return
+    }
+
+    this.pedagogySlides = this.pedagogySlides.filter((slide, slideIndex) => slideIndex !== index)
+    this.pedagogyPreviewIndex = Math.min(this.pedagogyPreviewIndex, this.pedagogyTotalSlideCount - 1)
+  }
+
+  public pedagogySlideClass(slide: PedagogySlide, index: number = this.pedagogyPreviewIndex): string {
+    const density = this.pedagogyTextLength(slide) > 190 ? 'dense' : this.pedagogyTextLength(slide) > 135 ? 'compact' : 'regular'
+    const imageClass = slide.image ? ' pedagogy-slide-with-image' : ''
+    const imagePlacementClass = slide.image && index % 2 === 1 ? ' pedagogy-slide-image-left' : ''
+    return `carousel-slide pedagogy-slide pedagogy-slide-${density}${imageClass}${imagePlacementClass}`
+  }
+
+  public updatePedagogySlideImage(event: Event, index: number): void {
+    this.readImage(event, (image) => {
+      this.pedagogySlides = this.pedagogySlides.map((slide, slideIndex) => (
+        slideIndex === index ? { ...slide, image } : slide
+      ))
+    })
+  }
+
+  public removePedagogySlideImage(index: number): void {
+    this.pedagogySlides = this.pedagogySlides.map((slide, slideIndex) => {
+      if (slideIndex !== index) {
+        return slide
+      }
+
+      const { image, ...slideWithoutImage } = slide
+      return slideWithoutImage
+    })
+  }
+
   public unlockTools(): void {
     if (this.accessCode.trim() === ToolsComponent.ACCESS_CODE) {
       this.isUnlocked = true
@@ -649,6 +915,14 @@ export class ToolsComponent {
       reader.onload = () => resolve(typeof reader.result === 'string' ? reader.result : '')
       reader.readAsDataURL(file)
     })
+  }
+
+  private clonePedagogySlides(template: PedagogyTemplate): PedagogySlide[] {
+    return template.slides.map((slide) => ({ ...slide }))
+  }
+
+  private pedagogyTextLength(slide: PedagogySlide): number {
+    return `${slide.eyebrow} ${slide.title} ${slide.text}`.length
   }
 
   public async exportVisual(): Promise<void> {
@@ -716,6 +990,39 @@ export class ToolsComponent {
     }
   }
 
+  public async exportPedagogyCarousel(): Promise<void> {
+    if (!this.pedagogySlidesRef?.length || this.isPedagogyExporting) {
+      return
+    }
+
+    this.isPedagogyExporting = true
+
+    try {
+      const files = await this.createPedagogyFiles()
+      for (const file of files) {
+        this.downloadBlob(file, file.name)
+        await this.wait(140)
+      }
+    } finally {
+      this.isPedagogyExporting = false
+    }
+  }
+
+  public async sharePedagogyCarousel(): Promise<void> {
+    if (this.isSharing || !this.pedagogySlidesRef?.length) {
+      return
+    }
+
+    this.isSharing = true
+
+    try {
+      const files = await this.createPedagogyFiles()
+      await this.shareFiles(files, 'Carrousel pédagogique LUDI')
+    } finally {
+      this.isSharing = false
+    }
+  }
+
   private async createVisualFile(): Promise<File> {
     if (!this.visualCanvas) {
       throw new Error('Aucun visuel à exporter')
@@ -761,6 +1068,31 @@ export class ToolsComponent {
         useCORS: true,
       })
       const fileName = `ludi-carrousel-${String(index + 1).padStart(2, '0')}.png`
+      files.push(new File([await this.canvasToBlob(canvas)], fileName, { type: 'image/png' }))
+    }
+
+    return files
+  }
+
+  private async createPedagogyFiles(): Promise<File[]> {
+    if (!this.pedagogySlidesRef?.length) {
+      return []
+    }
+
+    const html2canvasModule = await import('html2canvas')
+    const html2canvas = html2canvasModule.default
+    const slides = this.pedagogySlidesRef.toArray()
+    const files: File[] = []
+
+    for (let index = 0; index < slides.length; index += 1) {
+      const slide = slides[index].nativeElement
+      const canvas = await html2canvas(slide, {
+        allowTaint: false,
+        backgroundColor: null,
+        scale: 1080 / slide.clientWidth,
+        useCORS: true,
+      })
+      const fileName = `ludi-carrousel-pedagogique-${String(index + 1).padStart(2, '0')}.png`
       files.push(new File([await this.canvasToBlob(canvas)], fileName, { type: 'image/png' }))
     }
 

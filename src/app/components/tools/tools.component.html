@@ -607,4 +607,302 @@
       </div>
     </div>
   </div>
+
+  <div class="container carousel-tools-inner pedagogy-tools-inner" *ngIf="isUnlocked">
+    <div class="carousel-tools-panel">
+      <h2>Carrousel pédagogique</h2>
+      <p>
+        Crée des carrousels pour expliquer l'impro, les formats de spectacle et
+        l'ambiance LUDI. Choisis un modèle, ajuste les textes, puis exporte les
+        slides en PNG.
+      </p>
+
+      <div class="visual-control-group">
+        <label for="pedagogy-template">Modèle</label>
+        <select
+          id="pedagogy-template"
+          class="form-select"
+          [ngModel]="selectedPedagogyTemplateId"
+          (ngModelChange)="selectPedagogyTemplate($event)"
+        >
+          <option *ngFor="let template of pedagogyTemplates" [value]="template.id">
+            {{ template.label }}
+          </option>
+        </select>
+      </div>
+
+      <div class="visual-control-group">
+        <label>Teinte principale</label>
+        <div class="visual-tone-options">
+          <button
+            type="button"
+            *ngFor="let tone of visualTones"
+            [class.active]="selectedToneValue === tone.value"
+            [style.--tone-color]="tone.accent"
+            (click)="selectedToneValue = tone.value"
+          >
+            <span></span>
+            {{ tone.label }}
+          </button>
+        </div>
+      </div>
+
+      <details class="visual-custom-panel" open>
+        <summary>Modifier les slides</summary>
+
+        <div class="pedagogy-editor-list">
+          <div
+            class="pedagogy-editor-item"
+            *ngFor="let slide of pedagogySlides; let index = index"
+          >
+            <div class="pedagogy-editor-heading">
+              <button
+                type="button"
+                [class.active]="pedagogyPreviewIndex === index"
+                (click)="selectPedagogyPreview(index)"
+              >
+                Slide {{ index + 1 }}
+              </button>
+              <button
+                type="button"
+                [disabled]="pedagogySlideCount <= 1"
+                (click)="removePedagogySlide(index)"
+              >
+                Supprimer
+              </button>
+            </div>
+            <input
+              type="text"
+              class="form-control"
+              [(ngModel)]="slide.eyebrow"
+              placeholder="Accroche"
+            />
+            <input
+              type="text"
+              class="form-control"
+              [(ngModel)]="slide.title"
+              placeholder="Titre"
+            />
+            <textarea
+              class="form-control"
+              rows="3"
+              [(ngModel)]="slide.text"
+              placeholder="Texte"
+            ></textarea>
+            <div class="pedagogy-image-tools">
+              <label>
+                Image
+                <input
+                  type="file"
+                  accept="image/*"
+                  class="form-control"
+                  (change)="updatePedagogySlideImage($event, index)"
+                />
+              </label>
+              <button
+                type="button"
+                *ngIf="slide.image"
+                (click)="removePedagogySlideImage(index)"
+              >
+                Retirer l'image
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="visual-inline-actions">
+          <button
+            type="button"
+            [disabled]="!canAddPedagogySlide"
+            (click)="addPedagogySlide()"
+          >
+            Ajouter une slide
+          </button>
+        </div>
+        <p class="visual-export-note">
+          {{ pedagogySlideCount }}/18 slides éditables, plus le rappel des prochaines dates.
+        </p>
+      </details>
+
+      <button
+        type="button"
+        class="btn btn-danger visual-export-button"
+        [disabled]="isPedagogyExporting"
+        (click)="exportPedagogyCarousel()"
+      >
+        {{ pedagogyExportLabel }}
+      </button>
+      <button
+        type="button"
+        class="btn btn-light visual-share-button"
+        [disabled]="isSharing"
+        (click)="sharePedagogyCarousel()"
+      >
+        {{ pedagogyShareLabel }}
+      </button>
+      <p class="visual-export-note">
+        {{ pedagogyTotalSlideCount }} slides générées, exportées en PNG 1080x1350.
+      </p>
+    </div>
+
+    <div class="carousel-export-slides">
+      <div
+        #pedagogySlide
+        [ngClass]="pedagogySlideClass(slide, index)"
+        *ngFor="let slide of pedagogySlides; let index = index"
+        [style.--visual-accent]="visualAccent"
+        [style.--visual-accent-rgb]="visualAccentRgb"
+      >
+        <div class="pedagogy-slide-brand">
+          <img src="assets/logo/logo.png" alt="LUDI Toulouse" />
+          <span>{{ index + 1 }}/{{ pedagogyTotalSlideCount }}</span>
+        </div>
+        <div class="pedagogy-slide-body">
+          <div class="pedagogy-slide-content">
+            <span>{{ slide.eyebrow }}</span>
+            <strong>{{ slide.title }}</strong>
+            <p>{{ slide.text }}</p>
+          </div>
+          <figure class="pedagogy-slide-photo" *ngIf="slide.image">
+            <img [src]="slide.image" alt="" />
+          </figure>
+        </div>
+        <div class="visual-footer">
+          <span>@luditoulouse</span>
+          <span>luditoulouse.org</span>
+        </div>
+      </div>
+
+      <div #pedagogySlide class="carousel-slide carousel-dates-slide">
+        <div class="carousel-dates-header">
+          <img src="assets/logo/logo.png" alt="LUDI Toulouse" />
+          <span>Prochaines dates</span>
+        </div>
+        <div class="carousel-dates-list" *ngIf="carouselAgendaShows.length">
+          <div class="carousel-date-item" *ngFor="let show of carouselAgendaShows">
+            <span>{{ formattedDate(show) }}</span>
+            <strong>{{ show.name }}</strong>
+            <small>{{ show.location }}</small>
+          </div>
+        </div>
+        <p class="visual-empty" *ngIf="!carouselAgendaShows.length">
+          Aucune autre date sur ce mois
+        </p>
+        <div class="visual-footer">
+          <span>@luditoulouse</span>
+          <span>luditoulouse.org</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="carousel-preview-shell">
+      <div class="instagram-post-preview">
+        <div class="instagram-post-header">
+          <div class="instagram-avatar">
+            <img src="assets/logo/logo.png" alt="LUDI Toulouse" />
+          </div>
+          <div>
+            <strong>luditoulouse</strong>
+            <span>{{ selectedPedagogyTemplate.label }}</span>
+          </div>
+        </div>
+
+        <div class="instagram-media-frame">
+          <div
+            [ngClass]="pedagogySlideClass(currentPedagogySlide)"
+            *ngIf="!isPedagogyDatesPreview"
+            [style.--visual-accent]="visualAccent"
+            [style.--visual-accent-rgb]="visualAccentRgb"
+          >
+            <div class="pedagogy-slide-brand">
+              <img src="assets/logo/logo.png" alt="LUDI Toulouse" />
+              <span>{{ pedagogyPreviewIndex + 1 }}/{{ pedagogyTotalSlideCount }}</span>
+            </div>
+            <div class="pedagogy-slide-body">
+              <div class="pedagogy-slide-content">
+                <span>{{ currentPedagogySlide.eyebrow }}</span>
+                <strong>{{ currentPedagogySlide.title }}</strong>
+                <p>{{ currentPedagogySlide.text }}</p>
+              </div>
+              <figure class="pedagogy-slide-photo" *ngIf="currentPedagogySlide.image">
+                <img [src]="currentPedagogySlide.image" alt="" />
+              </figure>
+            </div>
+            <div class="visual-footer">
+              <span>@luditoulouse</span>
+              <span>luditoulouse.org</span>
+            </div>
+          </div>
+
+          <div class="carousel-slide carousel-dates-slide" *ngIf="isPedagogyDatesPreview">
+            <div class="carousel-dates-header">
+              <img src="assets/logo/logo.png" alt="LUDI Toulouse" />
+              <span>Prochaines dates</span>
+            </div>
+            <div class="carousel-dates-list" *ngIf="carouselAgendaShows.length">
+              <div class="carousel-date-item" *ngFor="let show of carouselAgendaShows">
+                <span>{{ formattedDate(show) }}</span>
+                <strong>{{ show.name }}</strong>
+                <small>{{ show.location }}</small>
+              </div>
+            </div>
+            <p class="visual-empty" *ngIf="!carouselAgendaShows.length">
+              Aucune autre date sur ce mois
+            </p>
+            <div class="visual-footer">
+              <span>@luditoulouse</span>
+              <span>luditoulouse.org</span>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            class="instagram-arrow instagram-arrow-prev"
+            [disabled]="!canGoToPreviousPedagogySlide"
+            (click)="previousPedagogySlide()"
+          >
+            ‹
+          </button>
+          <button
+            type="button"
+            class="instagram-arrow instagram-arrow-next"
+            [disabled]="!canGoToNextPedagogySlide"
+            (click)="nextPedagogySlide()"
+          >
+            ›
+          </button>
+
+          <span class="instagram-counter">
+            {{ pedagogyPreviewIndex + 1 }}/{{ pedagogyTotalSlideCount }}
+          </span>
+        </div>
+
+        <div class="instagram-actions">
+          <span>Like</span>
+          <span>Comment</span>
+          <span>Share</span>
+          <span>Save</span>
+        </div>
+
+        <div class="instagram-dots">
+          <button
+            type="button"
+            *ngFor="let slide of pedagogySlides; let index = index"
+            [class.active]="pedagogyPreviewIndex === index"
+            (click)="selectPedagogyPreview(index)"
+          ></button>
+          <button
+            type="button"
+            [class.active]="isPedagogyDatesPreview"
+            (click)="selectPedagogyPreview(pedagogyTotalSlideCount - 1)"
+          ></button>
+        </div>
+
+        <div class="instagram-caption">
+          <strong>luditoulouse</strong>
+          <span>{{ selectedPedagogyTemplate.caption }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>

@@ -14,9 +14,9 @@ import { HighlightedShowCardComponent } from './components/shows/event/highlight
 import { ShowsComponent } from './components/shows/shows.component';
 import { NoShowsComponent } from './components/no-shows/no-shows.component';
 import { FormatComponent } from './components/format/format.component';
-import { NewsComponent } from './components/news/news.component';
 import { ToolsComponent } from './components/tools/tools.component';
 import { JoinUsComponent } from './components/join-us/join-us.component';
+import { ProgrammationAdminComponent } from './components/programmation-admin/programmation-admin.component';
 
 @NgModule({
   declarations: [
@@ -30,9 +30,9 @@ import { JoinUsComponent } from './components/join-us/join-us.component';
     ShowsListComponent,
     HighlightedShowCardComponent,
     FormatComponent,
-    NewsComponent,
     JoinUsComponent,
     ToolsComponent,
+    ProgrammationAdminComponent,
     ShowReservationButtonsComponent
   ],
   imports: [BrowserModule, HttpClientModule, FormsModule, AppRoutingModule],

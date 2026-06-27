@@ -9,6 +9,7 @@ import { Observable, tap } from "rxjs";
 })
 export class AppComponent implements OnInit {
   private static TOOLS_HASH = "#kit-reseaux";
+  private static PROGRAMMATION_ADMIN_HASH = "#programmation-admin";
 
   static LOADING_TEXT: string[] = [
     "Caucus en cours",
@@ -29,6 +30,7 @@ export class AppComponent implements OnInit {
   public highlightedShow: Show | undefined;
   public isLoaded: boolean | undefined;
   public isToolsPage = false;
+  public isProgrammationAdminPage = false;
   public loadingText: String;
 
   constructor(private ludiService: LudiService) {
@@ -54,5 +56,6 @@ export class AppComponent implements OnInit {
   @HostListener("window:hashchange")
   public updateToolsPage(): void {
     this.isToolsPage = window.location.hash === AppComponent.TOOLS_HASH;
+    this.isProgrammationAdminPage = window.location.hash === AppComponent.PROGRAMMATION_ADMIN_HASH;
   }
 }

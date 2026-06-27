@@ -17,14 +17,8 @@ export class ShowReservationButtonsComponent {
     reducedPrice: 0,
   }
 
-  @Input()
-  public socialLink: boolean | null = true;
-
-  @Input()
-  public outline: boolean | null = true;
-
   public get mainLink(): string {
-    return this.show?.reservationLink || this.show?.instagramLink || '';
+    return this.show?.reservationLink || '';
   }
 
   constructor() { }

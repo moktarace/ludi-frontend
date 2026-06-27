@@ -4,7 +4,7 @@
   "homepage": "https://moktarace.github.io/ludi-frontend/",
   "scripts": {
     "ng": "ng",
-    "start": "ng serve",
+    "start": "node scripts/dev.js",
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
     "deploy": "ng deploy"

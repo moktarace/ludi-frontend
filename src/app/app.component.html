@@ -11,7 +11,7 @@
 <div id="content" *ngIf="shows$ | async as shows">
   <div *ngIf="isLoaded">
     <app-header></app-header>
-    <ng-container *ngIf="!isToolsPage; else toolsPage">
+    <ng-container *ngIf="!isToolsPage && !isProgrammationAdminPage; else privatePage">
       <div *ngIf="shows.length">
         <app-shows
           [shows]="shows"
@@ -25,8 +25,13 @@
       <app-join-us id="join-us"></app-join-us>
       <app-format [shows]="shows" id="format"></app-format>
     </ng-container>
-    <ng-template #toolsPage>
-      <app-tools [shows]="shows" [highlightedShow]="highlightedShow"></app-tools>
+    <ng-template #privatePage>
+      <app-tools
+        *ngIf="isToolsPage"
+        [shows]="shows"
+        [highlightedShow]="highlightedShow"
+      ></app-tools>
+      <app-programmation-admin *ngIf="isProgrammationAdminPage"></app-programmation-admin>
     </ng-template>
     <app-footer id="footer"></app-footer>
   </div>

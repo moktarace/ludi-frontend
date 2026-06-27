@@ -468,7 +468,7 @@ export class ToolsComponent {
       return customLink
     }
 
-    return this.selectedShow?.reservationLink || this.selectedShow?.instagramLink || 'https://luditoulouse.org'
+    return this.selectedShow?.reservationLink || 'https://luditoulouse.org'
   }
 
   public get qrCodeImage(): string {

@@ -1058,6 +1058,7 @@ export class ToolsComponent {
     const html2canvas = html2canvasModule.default
     const slides = this.carouselSlides.toArray()
     const files: File[] = []
+    const baseFileName = this.fileNameBase('carrousel-apres-spectacle')
 
     for (let index = 0; index < slides.length; index += 1) {
       const slide = slides[index].nativeElement
@@ -1067,7 +1068,7 @@ export class ToolsComponent {
         scale: 1080 / slide.clientWidth,
         useCORS: true,
       })
-      const fileName = `ludi-carrousel-${String(index + 1).padStart(2, '0')}.png`
+      const fileName = `${baseFileName}-${String(index + 1).padStart(2, '0')}.png`
       files.push(new File([await this.canvasToBlob(canvas)], fileName, { type: 'image/png' }))
     }
 
@@ -1083,6 +1084,7 @@ export class ToolsComponent {
     const html2canvas = html2canvasModule.default
     const slides = this.pedagogySlidesRef.toArray()
     const files: File[] = []
+    const baseFileName = this.fileNameBase(`carrousel-pedagogique-${this.selectedPedagogyTemplate.id}`)
 
     for (let index = 0; index < slides.length; index += 1) {
       const slide = slides[index].nativeElement
@@ -1092,7 +1094,7 @@ export class ToolsComponent {
         scale: 1080 / slide.clientWidth,
         useCORS: true,
       })
-      const fileName = `ludi-carrousel-pedagogique-${String(index + 1).padStart(2, '0')}.png`
+      const fileName = `${baseFileName}-${String(index + 1).padStart(2, '0')}.png`
       files.push(new File([await this.canvasToBlob(canvas)], fileName, { type: 'image/png' }))
     }
 
@@ -1228,9 +1230,54 @@ export class ToolsComponent {
   }
 
   private get exportFileName(): string {
-    const mode = this.selectedMode === 'show' ? 'spectacle' : this.selectedMode
     const extension = this.isReelFormat ? 'webm' : 'png'
-    return `ludi-${mode}-${this.selectedFormat}.${extension}`
+    const base = this.fileNameBase(this.visualExportKind)
+    return `${base}-${this.selectedFormat}.${extension}`
+  }
+
+  private get visualExportKind(): string {
+    if (this.selectedMode === 'show') {
+      return 'spectacle'
+    }
+
+    return this.selectedMode === 'week' ? 'dates-semaine' : 'dates-mois'
+  }
+
+  private fileNameBase(kind: string): string {
+    const show = this.selectedMode === 'show' || kind.includes('spectacle')
+      ? this.selectedShow
+      : undefined
+    const parts = ['ludi', kind]
+    const showName = show?.name ? this.slugify(show.name) : ''
+    const date = show?.date
+      ? this.fileDate(new Date(show.date * 1000))
+      : (!kind.includes('pedagogique') ? this.fileDate(this.periodBaseDate) : '')
+
+    if (showName) {
+      parts.push(showName)
+    }
+
+    if (date) {
+      parts.push(date)
+    }
+
+    return parts.filter(Boolean).join('-')
+  }
+
+  private fileDate(date: Date): string {
+    const year = date.getFullYear()
+    const month = String(date.getMonth() + 1).padStart(2, '0')
+    const day = String(date.getDate()).padStart(2, '0')
+    return `${year}-${month}-${day}`
+  }
+
+  private slugify(value: string): string {
+    return value
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '')
   }
 
   private get exportScale(): number {

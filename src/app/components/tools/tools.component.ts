@@ -378,7 +378,7 @@ export class ToolsComponent {
     }
 
     const show = this.visualShows[0] || this.selectedShow
-    return show?.imgLink || show?.logoLink || 'assets/logo/logo.png'
+    return show?.logoLink || 'assets/logo/logo.png'
   }
 
   public get visualClass(): string {
@@ -539,7 +539,7 @@ export class ToolsComponent {
       return this.customCarouselLogo
     }
 
-    return this.selectedShow?.logoLink || this.selectedShow?.imgLink || 'assets/logo/logo.png'
+    return this.selectedShow?.logoLink || 'assets/logo/logo.png'
   }
 
   public get carouselLogoClass(): string {

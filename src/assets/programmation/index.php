@@ -167,7 +167,6 @@ function normalize_show(array $show): array
         "reducedPrice" => normalize_int($show["reducedPrice"] ?? 0),
         "freeForStudents" => !empty($show["freeForStudents"]),
         "location" => trim((string)($show["location"] ?? "")),
-        "imgLink" => trim((string)($show["imgLink"] ?? "")),
         "logoLink" => trim((string)($show["logoLink"] ?? "")),
         "reservationLink" => trim((string)($show["reservationLink"] ?? "")),
         "isPublished" => !empty($show["isPublished"]),
@@ -292,7 +291,7 @@ function cleanup_unused_uploads(array $shows): void
 
     $used = [];
     foreach ($shows as $show) {
-        foreach (["imgLink", "logoLink"] as $field) {
+        foreach (["logoLink"] as $field) {
             $value = (string)($show[$field] ?? "");
             if (strpos($value, $UPLOAD_URL . "/") === 0) {
                 $used[basename(parse_url($value, PHP_URL_PATH) ?: "")] = true;

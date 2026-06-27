@@ -39,7 +39,6 @@ function normalizeShow(show) {
     reducedPrice: toInt(show.reducedPrice),
     freeForStudents: Boolean(show.freeForStudents),
     location: String(show.location || '').trim(),
-    imgLink: String(show.imgLink || '').trim(),
     logoLink: String(show.logoLink || '').trim(),
     reservationLink: String(show.reservationLink || '').trim(),
     isPublished: Boolean(show.isPublished),
@@ -125,7 +124,7 @@ function cleanupUnusedUploads(shows) {
 
   const used = new Set()
   for (const show of shows) {
-    for (const field of ['imgLink', 'logoLink']) {
+    for (const field of ['logoLink']) {
       const value = String(show[field] || '')
       if (value.startsWith(`${uploadUrl}/`)) {
         used.add(path.basename(decodeURIComponent(value)))

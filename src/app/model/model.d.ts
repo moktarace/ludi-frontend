@@ -8,7 +8,6 @@ export interface Show {
   reservationLink?: string;
   price?: number;
   reducedPrice?: number;
-  imgLink?: string;
   logoLink?: string;
   isHighlighted?: boolean;
   freeForStudents?:boolean;

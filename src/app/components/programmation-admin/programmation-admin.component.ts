@@ -7,7 +7,8 @@ type DateFilter = 'all' | 'future' | 'past'
 type PublishFilter = 'all' | 'published' | 'draft'
 type HighlightFilter = 'all' | 'highlighted'
 type SortMode = 'date-asc' | 'date-desc' | 'name-asc' | 'updated'
-type MediaField = 'imgLink' | 'logoLink'
+type MediaField = 'logoLink'
+type ShowField = 'isPublished' | 'isHighlighted' | 'freeForStudents'
 
 interface AdminSession {
   authenticated: boolean
@@ -30,6 +31,14 @@ interface MediaLibrary {
   templateUrl: './programmation-admin.component.html',
 })
 export class ProgrammationAdminComponent implements OnInit {
+  private static ADMIN_DATE_FORMATTER = new Intl.DateTimeFormat('fr-FR', {
+    weekday: 'short',
+    day: '2-digit',
+    month: 'short',
+    hour: '2-digit',
+    minute: '2-digit',
+  })
+
   private readonly endpoint = environment.url
 
   public shows: Show[] = []
@@ -37,19 +46,17 @@ export class ProgrammationAdminComponent implements OnInit {
   public password = ''
   public csrfToken = ''
   public search = ''
-  public dateFilter: DateFilter = 'all'
+  public dateFilter: DateFilter = 'future'
   public publishFilter: PublishFilter = 'all'
   public highlightFilter: HighlightFilter = 'all'
   public sortMode: SortMode = 'date-desc'
   public bulkLocation = ''
-  public reviveShowId = ''
-  public reviveDateValue = ''
-  public keepRevivalLinks = false
   public mediaLibrary: MediaLibrary = { kitLogos: [], uploads: [] }
   public uploadingMediaKey = ''
   public isAuthenticated = false
   public isLoading = true
   public isSaving = false
+  public hasUnsavedChanges = false
   public message = ''
   public error = ''
 
@@ -111,15 +118,21 @@ export class ProgrammationAdminComponent implements OnInit {
     return Boolean(visible.length) && visible.every((show) => this.selectedShowIds.has(this.showKey(show)))
   }
 
-  public get revivalCandidates(): Show[] {
-    const now = Math.floor(Date.now() / 1000)
-    return this.shows
-      .filter((show) => (show.date || 0) < now)
-      .sort((a, b) => (b.date || 0) - (a.date || 0))
+  public get publishedCount(): number {
+    return this.shows.filter((show) => show.isPublished).length
   }
 
-  public get selectedRevivalShow(): Show | undefined {
-    return this.shows.find((show) => this.showKey(show) === this.reviveShowId)
+  public get futureCount(): number {
+    const now = Math.floor(Date.now() / 1000)
+    return this.shows.filter((show) => (show.date || 0) >= now).length
+  }
+
+  public get hasActiveFilters(): boolean {
+    return Boolean(this.search.trim())
+      || this.dateFilter !== 'future'
+      || this.publishFilter !== 'all'
+      || this.highlightFilter !== 'all'
+      || this.sortMode !== 'date-desc'
   }
 
   public login(): void {
@@ -170,7 +183,6 @@ export class ProgrammationAdminComponent implements OnInit {
         price: 0,
         reducedPrice: 0,
         freeForStudents: false,
-        imgLink: '',
         logoLink: '',
         reservationLink: '',
         isPublished: false,
@@ -178,6 +190,7 @@ export class ProgrammationAdminComponent implements OnInit {
       },
       ...this.shows,
     ]
+    this.markUnsaved()
   }
 
   public duplicateShow(show: Show): void {
@@ -191,54 +204,13 @@ export class ProgrammationAdminComponent implements OnInit {
       },
       ...this.shows,
     ]
-  }
-
-  public prepareRevival(show: Show): void {
-    this.reviveShowId = this.showKey(show)
-    this.reviveDateValue = this.nextRevivalDateInputValue(show)
-  }
-
-  public prepareSelectedRevival(): void {
-    const source = this.selectedRevivalShow
-    this.reviveDateValue = source ? this.nextRevivalDateInputValue(source) : ''
-  }
-
-  public reviveSelectedShow(): void {
-    const source = this.selectedRevivalShow
-    if (!source || !this.reviveDateValue) {
-      return
-    }
-
-    this.reviveShow(source, this.reviveDateValue)
-  }
-
-  public reviveShow(show: Show, dateValue?: string): void {
-    const nextDateValue = dateValue || this.nextRevivalDateInputValue(show)
-    const timestamp = Math.floor(new Date(nextDateValue).getTime() / 1000)
-    const revivedShow: Show = {
-      ...show,
-      id: `show-${Date.now()}`,
-      date: timestamp,
-      reservationLink: this.keepRevivalLinks ? show.reservationLink : '',
-      isPublished: false,
-      isHighlighted: false,
-    }
-
-    this.shows = [revivedShow, ...this.shows]
-    this.selectedShowIds.clear()
-    this.search = String(revivedShow.name || '')
-    this.dateFilter = 'all'
-    this.publishFilter = 'draft'
-    this.sortMode = 'updated'
-    this.reviveShowId = this.showKey(revivedShow)
-    this.reviveDateValue = this.dateInputValue(revivedShow)
-    this.message = 'Date repêchée en brouillon'
-    this.error = ''
+    this.markUnsaved()
   }
 
   public removeShow(show: Show): void {
     this.selectedShowIds.delete(this.showKey(show))
     this.shows = this.shows.filter((item) => item !== show)
+    this.markUnsaved()
   }
 
   public toggleShowSelection(show: Show, checked: boolean): void {
@@ -260,14 +232,17 @@ export class ProgrammationAdminComponent implements OnInit {
 
   public bulkSetPublished(value: boolean): void {
     this.selectedShows.forEach((show) => show.isPublished = value)
+    this.markUnsaved()
   }
 
   public bulkSetHighlighted(value: boolean): void {
     this.selectedShows.forEach((show) => show.isHighlighted = value)
+    this.markUnsaved()
   }
 
   public bulkSetFreeForStudents(value: boolean): void {
     this.selectedShows.forEach((show) => show.freeForStudents = value)
+    this.markUnsaved()
   }
 
   public bulkApplyLocation(): void {
@@ -277,11 +252,21 @@ export class ProgrammationAdminComponent implements OnInit {
     }
     this.selectedShows.forEach((show) => show.location = location)
     this.bulkLocation = ''
+    this.markUnsaved()
   }
 
   public bulkRemoveSelected(): void {
     this.shows = this.shows.filter((show) => !this.selectedShowIds.has(this.showKey(show)))
     this.clearSelection()
+    this.markUnsaved()
+  }
+
+  public resetFilters(): void {
+    this.search = ''
+    this.dateFilter = 'future'
+    this.publishFilter = 'all'
+    this.highlightFilter = 'all'
+    this.sortMode = 'date-desc'
   }
 
   public save(): void {
@@ -299,6 +284,7 @@ export class ProgrammationAdminComponent implements OnInit {
         this.selectedShowIds.clear()
         this.message = 'Dates sauvegardées'
         this.isSaving = false
+        this.hasUnsavedChanges = false
         this.loadMedia()
       },
       error: () => {
@@ -308,10 +294,9 @@ export class ProgrammationAdminComponent implements OnInit {
     })
   }
 
-  public mediaOptions(field: MediaField): MediaItem[] {
-    return field === 'logoLink'
-      ? [...this.mediaLibrary.kitLogos, ...this.mediaLibrary.uploads]
-      : this.mediaLibrary.uploads
+  public selectShowMedia(show: Show, field: MediaField, url: string): void {
+    show[field] = url
+    this.markUnsaved()
   }
 
   public async uploadShowMedia(event: Event, show: Show, field: MediaField): Promise<void> {
@@ -343,6 +328,7 @@ export class ProgrammationAdminComponent implements OnInit {
           show[field] = media.url
           this.uploadingMediaKey = ''
           this.message = 'Image ajoutée'
+          this.markUnsaved()
           this.loadMedia()
         },
         error: () => {
@@ -362,6 +348,12 @@ export class ProgrammationAdminComponent implements OnInit {
 
   public clearShowMedia(show: Show, field: MediaField): void {
     show[field] = ''
+    this.markUnsaved()
+  }
+
+  public markUnsaved(): void {
+    this.hasUnsavedChanges = true
+    this.message = ''
   }
 
   public dateInputValue(show: Show): string {
@@ -370,6 +362,23 @@ export class ProgrammationAdminComponent implements OnInit {
     }
 
     return this.dateToInputValue(new Date(show.date * 1000))
+  }
+
+  public adminDateLabel(show: Show): string {
+    if (!show.date) {
+      return 'Date à renseigner'
+    }
+
+    return ProgrammationAdminComponent.ADMIN_DATE_FORMATTER.format(new Date(show.date * 1000))
+  }
+
+  public isPastShow(show: Show): boolean {
+    return Boolean(show.date) && (show.date || 0) < Math.floor(Date.now() / 1000)
+  }
+
+  public toggleShowFlag(show: Show, field: ShowField): void {
+    show[field] = !show[field]
+    this.markUnsaved()
   }
 
   private dateToInputValue(date: Date): string {
@@ -381,17 +390,9 @@ export class ProgrammationAdminComponent implements OnInit {
     return `${year}-${month}-${day}T${hour}:${minute}`
   }
 
-  private nextRevivalDateInputValue(show: Show): string {
-    const nextDate = show.date ? new Date(show.date * 1000) : new Date()
-    const now = new Date()
-    do {
-      nextDate.setFullYear(nextDate.getFullYear() + 1)
-    } while (nextDate.getTime() <= now.getTime())
-    return this.dateToInputValue(nextDate)
-  }
-
   public updateDate(show: Show, value: string): void {
     show.date = value ? Math.floor(new Date(value).getTime() / 1000) : undefined
+    this.markUnsaved()
   }
 
   public showKey(show: Show): string {
@@ -431,6 +432,7 @@ export class ProgrammationAdminComponent implements OnInit {
       next: (shows) => {
         this.shows = shows
         this.selectedShowIds.clear()
+        this.hasUnsavedChanges = false
         this.isLoading = false
       },
       error: () => {

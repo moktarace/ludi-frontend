@@ -39,7 +39,7 @@ src/assets/programmation/data.json
 
 L'interface permet d'ajouter, modifier, dupliquer, supprimer, filtrer, trier et modifier plusieurs dates en meme temps.
 
-Pour les visuels, l'interface permet de choisir un logo du kit LUDI ou d'uploader une image JPEG/PNG. Les images sont reduites avant l'envoi pour garder une bonne qualite sans stocker des fichiers enormes.
+Pour les logos des dates, l'interface permet de choisir un logo du kit LUDI ou d'uploader une image JPEG/PNG. Les images sont reduites avant l'envoi pour garder une bonne qualite sans stocker des fichiers enormes.
 
 Les images envoyees depuis l'interface sont stockees dans :
 

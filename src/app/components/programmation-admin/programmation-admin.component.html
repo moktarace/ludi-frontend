@@ -1,19 +1,20 @@
 <div class="container-fluid section-band programmation-admin text-white">
   <div class="container programmation-admin-inner">
-    <div class="programmation-admin-header">
+    <header class="programmation-admin-header">
       <div>
+        <span class="programmation-kicker">Espace privé</span>
         <h1>Gestion des dates</h1>
-        <p>Ajoute, modifie, trie et publie les dates visibles sur le site.</p>
+        <p>Ajoute, retrouve et prépare les spectacles visibles sur le site.</p>
       </div>
       <button
         type="button"
-        class="btn btn-light"
+        class="programmation-ghost-button"
         *ngIf="isAuthenticated"
         (click)="logout()"
       >
         Déconnexion
       </button>
-    </div>
+    </header>
 
     <form class="programmation-login" *ngIf="!isAuthenticated && !isLoading" (ngSubmit)="login()">
       <label for="programmation-password">Mot de passe</label>
@@ -25,7 +26,7 @@
         [(ngModel)]="password"
         autocomplete="current-password"
       />
-      <button type="submit" class="btn btn-danger">Entrer</button>
+      <button type="submit">Entrer</button>
     </form>
 
     <p class="programmation-feedback" *ngIf="isLoading">Chargement...</p>
@@ -33,102 +34,127 @@
     <p class="programmation-feedback programmation-success" *ngIf="message">{{ message }}</p>
 
     <ng-container *ngIf="isAuthenticated">
-      <div class="programmation-toolbar">
-        <button type="button" class="btn btn-danger" (click)="addShow()">Ajouter une date</button>
-        <button type="button" class="btn btn-light" [disabled]="isSaving" (click)="save()">
-          {{ isSaving ? 'Sauvegarde...' : 'Sauvegarder' }}
+      <section class="programmation-command-panel">
+        <div class="programmation-stats">
+          <span>
+            <strong>{{ filteredShows.length }}</strong>
+            affichées
+          </span>
+          <span>
+            <strong>{{ futureCount }}</strong>
+            à venir
+          </span>
+          <span>
+            <strong>{{ publishedCount }}</strong>
+            publiées
+          </span>
+        </div>
+
+        <div class="programmation-primary-actions">
+          <button type="button" class="programmation-primary-button" (click)="addShow()">Ajouter</button>
+          <button
+            type="button"
+            class="programmation-save-button"
+            [class.needs-save]="hasUnsavedChanges"
+            [disabled]="isSaving || !hasUnsavedChanges"
+            (click)="save()"
+          >
+            {{ isSaving ? 'Enregistrement...' : (hasUnsavedChanges ? 'Enregistrer les modifications' : 'Tout est enregistré') }}
+          </button>
+        </div>
+      </section>
+
+      <div class="programmation-save-reminder" *ngIf="hasUnsavedChanges">
+        <span>Modifications non enregistrées</span>
+        <button type="button" [disabled]="isSaving" (click)="save()">
+          {{ isSaving ? 'Enregistrement...' : 'Enregistrer maintenant' }}
         </button>
-        <span>{{ filteredShows.length }} affichées / {{ shows.length }} dates</span>
       </div>
 
-      <div class="programmation-filters">
-        <label>
-          Rechercher
+      <section class="programmation-search-panel">
+        <label class="programmation-search-field">
+          <span>Recherche</span>
           <input
-            class="form-control"
             type="search"
             [(ngModel)]="search"
             [ngModelOptions]="{standalone: true}"
             placeholder="Nom, lieu, texte..."
           />
         </label>
-        <label>
-          Dates
-          <select class="form-select" [(ngModel)]="dateFilter" [ngModelOptions]="{standalone: true}">
-            <option value="all">Toutes</option>
-            <option value="future">À venir</option>
-            <option value="past">Passées</option>
-          </select>
-        </label>
-        <label>
-          Publication
-          <select class="form-select" [(ngModel)]="publishFilter" [ngModelOptions]="{standalone: true}">
-            <option value="all">Toutes</option>
-            <option value="published">Publiées</option>
-            <option value="draft">Non publiées</option>
-          </select>
-        </label>
-        <label>
-          Mise en avant
-          <select class="form-select" [(ngModel)]="highlightFilter" [ngModelOptions]="{standalone: true}">
-            <option value="all">Toutes</option>
-            <option value="highlighted">Mises en avant</option>
-          </select>
-        </label>
-        <label>
-          Trier
-          <select class="form-select" [(ngModel)]="sortMode" [ngModelOptions]="{standalone: true}">
-            <option value="date-desc">Date récente d'abord</option>
-            <option value="date-asc">Date ancienne d'abord</option>
-            <option value="name-asc">Nom A-Z</option>
-            <option value="updated">Ordre actuel</option>
-          </select>
-        </label>
-      </div>
 
-      <div class="programmation-revival">
-        <div>
-          <h2>Repêcher une date</h2>
-          <p>Repars d'un ancien catch, championnat ou cours d'essai, puis crée une nouvelle date en brouillon.</p>
+        <details class="programmation-drawer" [open]="hasActiveFilters">
+          <summary>
+            Filtres et tri
+            <span *ngIf="hasActiveFilters">actif</span>
+          </summary>
+          <div class="programmation-filter-grid">
+            <label>
+              Dates
+              <select class="form-select" [(ngModel)]="dateFilter" [ngModelOptions]="{standalone: true}">
+                <option value="all">Toutes</option>
+                <option value="future">À venir</option>
+                <option value="past">Passées</option>
+              </select>
+            </label>
+            <label>
+              Publication
+              <select class="form-select" [(ngModel)]="publishFilter" [ngModelOptions]="{standalone: true}">
+                <option value="all">Toutes</option>
+                <option value="published">Publiées</option>
+                <option value="draft">Brouillons</option>
+              </select>
+            </label>
+            <label>
+              Mise en avant
+              <select class="form-select" [(ngModel)]="highlightFilter" [ngModelOptions]="{standalone: true}">
+                <option value="all">Toutes</option>
+                <option value="highlighted">À l'affiche</option>
+              </select>
+            </label>
+            <label>
+              Trier
+              <select class="form-select" [(ngModel)]="sortMode" [ngModelOptions]="{standalone: true}">
+                <option value="date-desc">Plus récentes</option>
+                <option value="date-asc">Plus anciennes</option>
+                <option value="name-asc">Nom A-Z</option>
+                <option value="updated">Ordre actuel</option>
+              </select>
+            </label>
+          </div>
+          <button type="button" class="programmation-ghost-button" [disabled]="!hasActiveFilters" (click)="resetFilters()">Réinitialiser</button>
+        </details>
+      </section>
+
+      <details class="programmation-drawer programmation-bulk-drawer" *ngIf="selectedCount">
+        <summary>
+          Actions groupées
+          <span>{{ selectedCount }} sélectionnée{{ selectedCount > 1 ? 's' : '' }}</span>
+        </summary>
+        <div class="programmation-bulk">
+          <button type="button" (click)="bulkSetPublished(true)">Publier</button>
+          <button type="button" (click)="bulkSetPublished(false)">Dépublier</button>
+          <button type="button" (click)="bulkSetHighlighted(true)">Mettre à l'affiche</button>
+          <button type="button" (click)="bulkSetHighlighted(false)">Retirer l'affiche</button>
+          <button type="button" (click)="bulkSetFreeForStudents(true)">Gratuit étudiant·e·s</button>
+          <button type="button" (click)="bulkSetFreeForStudents(false)">Non gratuit étudiant·e·s</button>
+          <label>
+            Lieu à appliquer
+            <input
+              class="form-control"
+              type="text"
+              [(ngModel)]="bulkLocation"
+              [ngModelOptions]="{standalone: true}"
+              placeholder="Ex: Salle Le CAP"
+            />
+          </label>
+          <button type="button" [disabled]="!bulkLocation.trim()" (click)="bulkApplyLocation()">Appliquer le lieu</button>
+          <button type="button" (click)="clearSelection()">Vider la sélection</button>
+          <button type="button" class="danger" (click)="bulkRemoveSelected()">Supprimer</button>
         </div>
-        <label>
-          Ancienne date
-          <select
-            class="form-select"
-            [(ngModel)]="reviveShowId"
-            (ngModelChange)="prepareSelectedRevival()"
-            [ngModelOptions]="{standalone: true}"
-          >
-            <option value="">Choisir une date à repêcher</option>
-            <option *ngFor="let show of revivalCandidates; trackBy: trackShow" [value]="showKey(show)">
-              {{ show.name }} - {{ show.date ? (show.date * 1000 | date:'dd/MM/yyyy HH:mm') : 'date inconnue' }}
-            </option>
-          </select>
-        </label>
-        <label>
-          Nouvelle date
-          <input
-            class="form-control"
-            type="datetime-local"
-            [(ngModel)]="reviveDateValue"
-            [ngModelOptions]="{standalone: true}"
-          />
-        </label>
-        <label class="programmation-revival-links">
-          <input type="checkbox" [(ngModel)]="keepRevivalLinks" [ngModelOptions]="{standalone: true}" />
-          Garder les liens de réservation
-        </label>
-        <button
-          type="button"
-          [disabled]="!selectedRevivalShow || !reviveDateValue"
-          (click)="reviveSelectedShow()"
-        >
-          Créer la nouvelle date
-        </button>
-      </div>
+      </details>
 
-      <div class="programmation-bulk">
-        <label class="programmation-select-all">
+      <div class="programmation-selection-row">
+        <label>
           <input
             type="checkbox"
             [checked]="areAllVisibleSelected"
@@ -136,155 +162,154 @@
           />
           Sélectionner les dates affichées
         </label>
-        <span>{{ selectedCount }} sélectionnée{{ selectedCount > 1 ? 's' : '' }}</span>
-        <button type="button" [disabled]="!selectedCount" (click)="bulkSetPublished(true)">Publier</button>
-        <button type="button" [disabled]="!selectedCount" (click)="bulkSetPublished(false)">Dépublier</button>
-        <button type="button" [disabled]="!selectedCount" (click)="bulkSetHighlighted(true)">Mettre en avant</button>
-        <button type="button" [disabled]="!selectedCount" (click)="bulkSetHighlighted(false)">Retirer mise en avant</button>
-        <button type="button" [disabled]="!selectedCount" (click)="bulkSetFreeForStudents(true)">Gratuit étudiant·e·s</button>
-        <button type="button" [disabled]="!selectedCount" (click)="bulkSetFreeForStudents(false)">Non gratuit étudiant·e·s</button>
-        <input
-          class="form-control"
-          type="text"
-          [(ngModel)]="bulkLocation"
-          [ngModelOptions]="{standalone: true}"
-          placeholder="Lieu à appliquer"
-        />
-        <button type="button" [disabled]="!selectedCount || !bulkLocation.trim()" (click)="bulkApplyLocation()">Appliquer le lieu</button>
-        <button type="button" [disabled]="!selectedCount" (click)="clearSelection()">Vider la sélection</button>
-        <button type="button" [disabled]="!selectedCount" (click)="bulkRemoveSelected()">Supprimer la sélection</button>
       </div>
 
-      <div class="programmation-list">
-        <article class="programmation-item" *ngFor="let show of filteredShows; trackBy: trackShow">
-          <div class="programmation-item-select">
-            <label>
+      <section class="programmation-list">
+        <article
+          class="programmation-card"
+          [class.past]="isPastShow(show)"
+          [class.draft]="!show.isPublished"
+          [class.published]="show.isPublished"
+          [class.highlighted]="show.isHighlighted"
+          *ngFor="let show of filteredShows; trackBy: trackShow"
+        >
+          <div class="programmation-card-summary">
+            <label class="programmation-card-check">
               <input
                 type="checkbox"
                 [checked]="selectedShowIds.has(showKey(show))"
                 (change)="toggleShowSelection(show, $any($event.target).checked)"
               />
-              Sélectionner
             </label>
+
+            <img
+              class="programmation-card-logo"
+              [src]="show.logoLink || 'assets/event/noimg.png'"
+              [alt]="show.name || 'Logo du spectacle'"
+            />
+
+            <div class="programmation-card-main">
+              <span class="programmation-card-date">{{ adminDateLabel(show) }}</span>
+              <h2>{{ show.name || 'Date sans titre' }}</h2>
+              <p>{{ show.location || 'Lieu à renseigner' }}</p>
+            </div>
+
+            <div class="programmation-card-statuses">
+              <span class="past" *ngIf="isPastShow(show)">Passée</span>
+              <span class="draft" *ngIf="!show.isPublished">Brouillon</span>
+              <span class="published" *ngIf="show.isPublished">Publiée</span>
+              <span class="highlighted" *ngIf="show.isHighlighted">À l'affiche</span>
+            </div>
           </div>
 
-          <div class="programmation-item-main">
-            <label>
-              Nom
-              <input class="form-control" type="text" [(ngModel)]="show.name" [ngModelOptions]="{standalone: true}" />
-            </label>
-            <label>
-              Date et heure
-              <input
-                class="form-control"
-                type="datetime-local"
-                [ngModel]="dateInputValue(show)"
-                (ngModelChange)="updateDate(show, $event)"
-                [ngModelOptions]="{standalone: true}"
-              />
-            </label>
-            <label>
-              Lieu
-              <input class="form-control" type="text" [(ngModel)]="show.location" [ngModelOptions]="{standalone: true}" />
-            </label>
+          <div class="programmation-card-quick-actions">
+            <button type="button" [class.active]="show.isPublished" (click)="toggleShowFlag(show, 'isPublished')">
+              {{ show.isPublished ? 'Publié' : 'Brouillon' }}
+            </button>
+            <button type="button" [class.active]="show.isHighlighted" (click)="toggleShowFlag(show, 'isHighlighted')">
+              À l'affiche
+            </button>
+            <button type="button" [class.active]="show.freeForStudents" (click)="toggleShowFlag(show, 'freeForStudents')">
+              Étudiant·e·s
+            </button>
           </div>
 
-          <div class="programmation-item-texts">
-            <label>
-              Description courte
-              <textarea class="form-control" rows="2" [(ngModel)]="show.shortDescription" [ngModelOptions]="{standalone: true}"></textarea>
-            </label>
-            <label>
-              Description
-              <textarea class="form-control" rows="5" [(ngModel)]="show.description" [ngModelOptions]="{standalone: true}"></textarea>
-            </label>
-          </div>
+          <details class="programmation-card-editor">
+            <summary>Modifier la date</summary>
 
-          <div class="programmation-item-grid">
-            <label>
-              Tarif
-              <span class="programmation-money-input">
-                <input class="form-control" type="number" min="0" [(ngModel)]="show.price" [ngModelOptions]="{standalone: true}" />
-                <span>€</span>
-              </span>
-            </label>
-            <label>
-              Tarif réduit
-              <span class="programmation-money-input">
-                <input class="form-control" type="number" min="0" [(ngModel)]="show.reducedPrice" [ngModelOptions]="{standalone: true}" />
-                <span>€</span>
-              </span>
-            </label>
-            <label>
-              Fond du visuel
-              <span class="programmation-media-field">
-                <img *ngIf="show.imgLink" [src]="show.imgLink" alt="" />
-                <select class="form-select" [(ngModel)]="show.imgLink" [ngModelOptions]="{standalone: true}">
-                  <option value="">Aucun fond</option>
-                  <option *ngFor="let media of mediaOptions('imgLink')" [value]="media.url">
-                    {{ media.label }}
-                  </option>
-                </select>
+            <div class="programmation-editor-grid">
+              <label class="wide">
+                Nom
+                <input class="form-control" type="text" [(ngModel)]="show.name" (ngModelChange)="markUnsaved()" [ngModelOptions]="{standalone: true}" />
+              </label>
+              <label>
+                Date et heure
                 <input
-                  type="file"
-                  accept="image/jpeg,image/png"
-                  (change)="uploadShowMedia($event, show, 'imgLink')"
+                  class="form-control"
+                  type="datetime-local"
+                  [ngModel]="dateInputValue(show)"
+                  (ngModelChange)="updateDate(show, $event)"
+                  [ngModelOptions]="{standalone: true}"
                 />
-                <span class="programmation-media-actions">
-                  <span *ngIf="isUploadingMedia(show, 'imgLink')">Upload...</span>
-                  <button type="button" [disabled]="!show.imgLink" (click)="clearShowMedia(show, 'imgLink')">Vider</button>
+              </label>
+              <label>
+                Lieu
+                <input class="form-control" type="text" [(ngModel)]="show.location" (ngModelChange)="markUnsaved()" [ngModelOptions]="{standalone: true}" />
+              </label>
+              <label>
+                Tarif
+                <span class="programmation-money-input">
+                  <input class="form-control" type="number" min="0" [(ngModel)]="show.price" (ngModelChange)="markUnsaved()" [ngModelOptions]="{standalone: true}" />
+                  <span>€</span>
                 </span>
-              </span>
-            </label>
-            <label>
-              Logo
-              <span class="programmation-media-field">
-                <img *ngIf="show.logoLink" [src]="show.logoLink" alt="" />
-                <select class="form-select" [(ngModel)]="show.logoLink" [ngModelOptions]="{standalone: true}">
-                  <option value="">Aucun logo</option>
-                  <option *ngFor="let media of mediaOptions('logoLink')" [value]="media.url">
-                    {{ media.label }}
-                  </option>
-                </select>
+              </label>
+              <label>
+                Tarif réduit
+                <span class="programmation-money-input">
+                  <input class="form-control" type="number" min="0" [(ngModel)]="show.reducedPrice" (ngModelChange)="markUnsaved()" [ngModelOptions]="{standalone: true}" />
+                  <span>€</span>
+                </span>
+              </label>
+              <label class="wide">
+                Lien de réservation
+                <input class="form-control" type="url" [(ngModel)]="show.reservationLink" (ngModelChange)="markUnsaved()" [ngModelOptions]="{standalone: true}" />
+              </label>
+              <label class="wide">
+                Description courte
+                <textarea class="form-control" rows="2" [(ngModel)]="show.shortDescription" (ngModelChange)="markUnsaved()" [ngModelOptions]="{standalone: true}"></textarea>
+              </label>
+              <label class="wide">
+                Description
+                <textarea class="form-control" rows="5" [(ngModel)]="show.description" (ngModelChange)="markUnsaved()" [ngModelOptions]="{standalone: true}"></textarea>
+              </label>
+            </div>
+
+            <section class="programmation-logo-editor">
+              <h3>Logo</h3>
+              <div class="visual-logo-presets programmation-logo-presets">
+                <button
+                  type="button"
+                  *ngFor="let media of mediaLibrary.kitLogos"
+                  [class.active]="show.logoLink === media.url"
+                  (click)="selectShowMedia(show, 'logoLink', media.url)"
+                >
+                  <img [src]="media.url" [alt]="media.label" />
+                  <span>{{ media.label }}</span>
+                </button>
+              </div>
+
+              <div class="programmation-upload-card compact">
                 <input
                   type="file"
                   accept="image/jpeg,image/png"
                   (change)="uploadShowMedia($event, show, 'logoLink')"
+                  [disabled]="isUploadingMedia(show, 'logoLink')"
                 />
-                <span class="programmation-media-actions">
-                  <span *ngIf="isUploadingMedia(show, 'logoLink')">Upload...</span>
-                  <button type="button" [disabled]="!show.logoLink" (click)="clearShowMedia(show, 'logoLink')">Vider</button>
-                </span>
-              </span>
-            </label>
-            <label>
-              Lien de réservation
-              <input class="form-control" type="url" [(ngModel)]="show.reservationLink" [ngModelOptions]="{standalone: true}" />
-            </label>
-          </div>
+                <strong>{{ isUploadingMedia(show, 'logoLink') ? 'Upload...' : 'Uploader un logo' }}</strong>
+              </div>
 
-          <div class="programmation-item-flags">
-            <label>
-              <input type="checkbox" [(ngModel)]="show.isPublished" [ngModelOptions]="{standalone: true}" />
-              Publié
-            </label>
-            <label>
-              <input type="checkbox" [(ngModel)]="show.isHighlighted" [ngModelOptions]="{standalone: true}" />
-              Mis en avant
-            </label>
-            <label>
-              <input type="checkbox" [(ngModel)]="show.freeForStudents" [ngModelOptions]="{standalone: true}" />
-              Gratuit étudiant·e·s
-            </label>
-          </div>
+              <div class="programmation-media-strip" *ngIf="mediaLibrary.uploads.length">
+                <button
+                  type="button"
+                  *ngFor="let media of mediaLibrary.uploads"
+                  [class.active]="show.logoLink === media.url"
+                  (click)="selectShowMedia(show, 'logoLink', media.url)"
+                >
+                  <img [src]="media.url" [alt]="media.label" />
+                  <span>{{ media.label }}</span>
+                </button>
+              </div>
 
-          <div class="programmation-item-actions">
-            <button type="button" (click)="reviveShow(show)">Repêcher</button>
-            <button type="button" (click)="duplicateShow(show)">Dupliquer</button>
-            <button type="button" (click)="removeShow(show)">Supprimer</button>
-          </div>
+              <button class="programmation-clear-media" type="button" [disabled]="!show.logoLink" (click)="clearShowMedia(show, 'logoLink')">Retirer le logo</button>
+            </section>
+
+            <div class="programmation-card-actions">
+              <button type="button" (click)="duplicateShow(show)">Dupliquer</button>
+              <button type="button" class="danger" (click)="removeShow(show)">Supprimer</button>
+            </div>
+          </details>
         </article>
-      </div>
+      </section>
     </ng-container>
   </div>
 </div>

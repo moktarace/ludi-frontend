@@ -100,6 +100,8 @@ export class ToolsComponent {
     { label: 'Catch', src: 'assets/logo/kit/catch.png' },
     { label: "Cours d'essai", src: 'assets/logo/kit/essai.png' },
     { label: 'Top Ten', src: 'assets/logo/kit/cercle.png' },
+    { label: 'Impro', src: 'assets/logo/kit/improv.png' },
+    { label: 'Question', src: 'assets/logo/kit/question.png' },
   ]
 
   public readonly visualTones: VisualTone[] = [
@@ -296,7 +298,7 @@ export class ToolsComponent {
   public showQrCode = false
   public isPosterHidden = false
   public printLogoPlacement: CarouselPlacement = 'center'
-  public printLogoSize: CarouselLogoSize = 'xl'
+  public printLogoSize: CarouselLogoSize = 'm'
   public accessCode = ''
   public accessError = ''
   public isUnlocked = localStorage.getItem(ToolsComponent.ACCESS_STORAGE_KEY) === 'true'
@@ -305,7 +307,7 @@ export class ToolsComponent {
   public carouselPhotos: CarouselPhoto[] = []
   public customCarouselLogo?: string
   public carouselLogoPlacement: CarouselPlacement = 'top'
-  public carouselLogoSize: CarouselLogoSize = 'xl'
+  public carouselLogoSize: CarouselLogoSize = 'm'
   public carouselTextPlacement: CarouselPlacement = 'bottom'
   public carouselCoverText = 'MERCI'
   public isCarouselDragActive = false

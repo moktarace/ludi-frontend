@@ -520,9 +520,8 @@ export class ToolsComponent {
   }
 
   public get carouselAgendaShows(): Show[] {
-    const base = this.selectedShow?.date ? new Date(this.selectedShow.date * 1000) : this.periodBaseDate
-    const start = new Date(base.getFullYear(), base.getMonth(), 1)
-    const end = new Date(base.getFullYear(), base.getMonth() + 1, 1)
+    const start = new Date(this.periodBaseDate)
+    start.setHours(0, 0, 0, 0)
 
     return this.sortedShows
       .filter((show) => {
@@ -531,9 +530,9 @@ export class ToolsComponent {
         }
 
         const date = new Date(show.date * 1000)
-        return date >= start && date < end
+        return date >= start
       })
-      .slice(0, 5)
+      .slice(0, 4)
   }
 
   public get carouselLogo(): string {

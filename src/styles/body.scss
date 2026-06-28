@@ -1255,10 +1255,10 @@ div.bg-dark.bg-black {
 }
 
 .visual-preview-poster.visual-mode-show .visual-print-logo-s {
-  width: 58%;
+  width: 42%;
 
   img {
-    max-height: 190px;
+    max-height: 150px;
   }
 }
 
@@ -1393,7 +1393,9 @@ div.bg-dark.bg-black {
   bottom: 5.2rem;
   z-index: 3;
   display: grid;
-  width: calc(100% - 5.8rem);
+  width: 100%;
+  padding-inline: 1.45rem;
+  box-sizing: border-box;
   justify-items: center;
   transform: translateX(-50%);
 }

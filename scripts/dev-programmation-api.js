@@ -14,7 +14,17 @@ const sessions = new Map()
 const oneHourDelay = 3600
 const maxUploadBytes = 8 * 1024 * 1024
 
+function ensureDataFile() {
+  if (fs.existsSync(dataFile)) {
+    return
+  }
+
+  fs.mkdirSync(path.dirname(dataFile), { recursive: true })
+  fs.writeFileSync(dataFile, '[]\n')
+}
+
 function readShows() {
+  ensureDataFile()
   if (!fs.existsSync(dataFile)) {
     return []
   }
@@ -346,6 +356,7 @@ const server = http.createServer(async (request, response) => {
 })
 
 server.listen(port, '127.0.0.1', () => {
+  ensureDataFile()
   console.log(`[dates] Serveur local prêt sur http://127.0.0.1:${port}/assets/programmation`)
   console.log(`[dates] Mot de passe local : ${devPassword}`)
 })

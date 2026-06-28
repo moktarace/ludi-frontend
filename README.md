@@ -37,6 +37,9 @@ Les dates sont stockees dans :
 src/assets/programmation/data.json
 ```
 
+Ce fichier est local et n'est pas versionne. S'il n'existe pas, le service local
+le cree automatiquement au demarrage.
+
 L'interface permet d'ajouter, modifier, dupliquer, supprimer, filtrer, trier et modifier plusieurs dates en meme temps.
 
 Pour les logos des dates, l'interface permet de choisir un logo du kit LUDI ou d'uploader une image JPEG/PNG. Les images sont reduites avant l'envoi pour garder une bonne qualite sans stocker des fichiers enormes.
@@ -50,6 +53,11 @@ src/assets/programmation/uploads
 Quand les dates sont sauvegardees, les images uploadees qui ne sont plus utilisees par aucune date sont supprimees automatiquement.
 
 ## Configuration en production
+
+Les fichiers `src/assets/programmation/data.json`, `src/assets/programmation/config.php`
+et le dossier `src/assets/programmation/uploads` ne sont pas inclus dans les releases.
+Ils doivent rester propres a chaque serveur pour eviter d'ecraser les dates,
+la configuration ou les images uploadees lors d'un deploiement.
 
 Le fichier `src/assets/programmation/config.php` n'est pas versionne. Il faut le creer sur le serveur a partir de :
 

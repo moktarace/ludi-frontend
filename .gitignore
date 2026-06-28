@@ -47,6 +47,7 @@ Thumbs.db
 
 # Config API
 src/assets/programmation/config.php
+src/assets/programmation/data.json
 src/assets/programmation/*.local.json
 src/assets/programmation/*.backup.json
 src/assets/programmation/uploads/*

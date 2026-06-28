@@ -659,8 +659,8 @@ export class ToolsComponent {
     }
 
     return show.reducedPrice
-      ? `${show.price} euros / ${show.reducedPrice} euros réduit`
-      : `${show.price} euros`
+      ? `${show.price} € / ${show.reducedPrice} €`
+      : `${show.price} €`
   }
 
   public selectFormat(format: VisualFormat): void {

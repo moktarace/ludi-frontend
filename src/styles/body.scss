@@ -1414,6 +1414,7 @@ div.bg-dark.bg-black {
   border-top: 1px solid rgb(255 248 237 / 24%);
 
   span {
+    grid-row: 1 / span 3;
     color: var(--ludi-gold);
     font-size: 0.72rem;
     font-weight: 900;
@@ -1433,13 +1434,26 @@ div.bg-dark.bg-black {
     font-weight: 700;
     line-height: 1.15;
   }
+
+  em {
+    grid-column: 2;
+    color: rgb(255 248 237 / 88%);
+    font-size: 0.7rem;
+    font-style: normal;
+    font-weight: 900;
+    line-height: 1.05;
+    text-transform: uppercase;
+  }
 }
 
 .visual-preview-story .visual-agenda-item {
   grid-template-columns: 1fr;
 
-  small {
+  span,
+  small,
+  em {
     grid-column: auto;
+    grid-row: auto;
   }
 }
 
@@ -2766,6 +2780,15 @@ button:disabled {
     color: rgb(255 248 237 / 72%);
     font-weight: 700;
     line-height: 1.15;
+  }
+
+  em {
+    color: rgb(255 248 237 / 88%);
+    font-size: 0.64rem;
+    font-style: normal;
+    font-weight: 900;
+    line-height: 1.05;
+    text-transform: uppercase;
   }
 }
 

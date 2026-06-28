@@ -5,6 +5,7 @@
         [src]="show?.logoLink || 'assets/event/noimg.png'"
         loading="lazy"
         class="img-fluid m-auto"
+        [class.kit-logo-image]="isKitLogo"
         [alt]="show?.name"
       />
       <div class="my-2 rotate shadow text-uppercase bg-danger">

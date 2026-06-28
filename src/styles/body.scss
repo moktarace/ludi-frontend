@@ -222,7 +222,7 @@ h1 {
 .join-us {
   background:
     linear-gradient(135deg, rgb(23 18 31 / 96%) 0%, rgb(33 21 40 / 94%) 48%, rgb(223 47 66 / 92%) 100%),
-    url(/assets/background/bgessai.png);
+    url(/assets/background/bg02.jpg);
   background-position: center;
   background-repeat: no-repeat;
   background-size: cover;
@@ -425,6 +425,13 @@ div.bg-dark.bg-black {
     box-shadow: var(--ludi-shadow);
   }
 
+  img.kit-logo-image {
+    width: 100%;
+    max-height: 26rem;
+    object-fit: contain;
+    box-shadow: none;
+  }
+
   h3.bg-white {
     display: flex;
     align-items: center;
@@ -455,6 +462,11 @@ div.bg-dark.bg-black {
     aspect-ratio: 1;
     object-fit: cover;
     border-radius: calc(var(--ludi-radius) - 0.15rem);
+  }
+
+  img.kit-logo-image {
+    padding: 0.45rem;
+    object-fit: contain;
   }
 
   > .mb-3 > .row > .bg-danger,

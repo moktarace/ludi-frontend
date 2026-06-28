@@ -38,4 +38,8 @@ export class HighlightedShowCardComponent {
     }
     return HighlightedShowCardComponent.DATE_FORMATTER.format(new Date(this.show.date * 1000));
   }
+
+  public get isKitLogo(): boolean {
+    return Boolean(this.show?.logoLink?.includes('/kit/') || this.show?.logoLink?.includes('logo/kit/'))
+  }
 }

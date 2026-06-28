@@ -655,7 +655,7 @@ export class ToolsComponent {
 
   public priceLabel(show: Show): string {
     if (!show.price) {
-      return 'Participation libre'
+      return 'Gratuit pour tou·te·s'
     }
 
     return show.reducedPrice

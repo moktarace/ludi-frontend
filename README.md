@@ -84,3 +84,30 @@ npm run build
 ```
 
 Le resultat est genere dans `dist/`.
+
+## Deploiement FTP
+
+Le workflow GitHub `Build Release` construit le site puis l'envoie sur le FTP
+dans `/www`.
+
+Il faut creer ces secrets dans GitHub :
+
+```text
+FTP_HOST
+FTP_USER
+FTP_PASSWORD
+```
+
+Pour deployer depuis la machine locale apres un build :
+
+```bash
+FTP_HOST=... FTP_USER=... FTP_PASSWORD=... npm run build:ftp
+```
+
+Le deploiement FTP n'efface pas les fichiers distants. Il n'upload jamais :
+
+```text
+assets/programmation/config.php
+assets/programmation/data.json
+assets/programmation/uploads
+```

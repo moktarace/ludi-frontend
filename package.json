@@ -7,7 +7,9 @@
     "start": "node scripts/dev.js",
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
-    "deploy": "ng deploy"
+    "deploy": "ng deploy",
+    "deploy:ftp": "node scripts/deploy-ftp.js",
+    "build:ftp": "npm run build && npm run deploy:ftp"
   },
   "private": true,
   "dependencies": {

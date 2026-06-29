@@ -1,0 +1,46 @@
+<div class="container-fluid section-band private-tools-home text-white">
+  <div class="container private-tools-home-inner">
+    <div class="visual-lock-panel" *ngIf="!isUnlocked">
+      <h1 class="text-uppercase">Outils LUDI</h1>
+      <p>
+        Entre le code adhérent·e. Une fois déverrouillé, le planning et le kit
+        réseaux restent accessibles sur cet appareil.
+      </p>
+      <form class="visual-lock-form" (ngSubmit)="unlockToolsHome()">
+        <label for="private-tools-access-code">Code adhérent·e</label>
+        <input
+          id="private-tools-access-code"
+          type="password"
+          class="form-control"
+          name="privateToolsAccessCode"
+          [(ngModel)]="accessCode"
+          autocomplete="current-password"
+        />
+        <button type="submit" class="btn btn-danger">Entrer</button>
+        <p class="visual-lock-error" *ngIf="accessError">{{ accessError }}</p>
+      </form>
+    </div>
+
+    <ng-container *ngIf="isUnlocked">
+      <header class="private-tools-heading">
+        <p>Accès équipe</p>
+        <h1>Outils LUDI</h1>
+        <span>Si tu ne sais pas par où commencer, commence par le planning.</span>
+      </header>
+
+      <nav class="private-tools-grid" aria-label="Outils internes LUDI">
+        <a
+          *ngFor="let tool of tools"
+          [href]="tool.href"
+          [class.private-tool-priority]="tool.priority"
+          class="private-tool-card"
+        >
+          <em>{{ tool.access }}</em>
+          <span>{{ tool.intent }}</span>
+          <strong>{{ tool.title }}</strong>
+          <p>{{ tool.description }}</p>
+        </a>
+      </nav>
+    </ng-container>
+  </div>
+</div>

@@ -11,6 +11,8 @@ export class AppComponent implements OnInit {
   private static TOOLS_HASH = "#kit-reseaux";
   private static PROGRAMMATION_ADMIN_HASH = "#programmation-admin";
   private static PLANNING_HASH = "#planning";
+  private static PRIVATE_TOOLS_HOME_HASH = "#outils-ludi";
+  private static LEGAL_NOTICE_HASH = "#mentions-legales";
 
   static LOADING_TEXT: string[] = [
     "Caucus en cours",
@@ -33,6 +35,8 @@ export class AppComponent implements OnInit {
   public isToolsPage = false;
   public isProgrammationAdminPage = false;
   public isPlanningPage = false;
+  public isPrivateToolsHomePage = false;
+  public isLegalNoticePage = false;
   public loadingText: String;
 
   constructor(private ludiService: LudiService) {
@@ -61,5 +65,7 @@ export class AppComponent implements OnInit {
     this.isToolsPage = hash === AppComponent.TOOLS_HASH;
     this.isProgrammationAdminPage = hash === AppComponent.PROGRAMMATION_ADMIN_HASH;
     this.isPlanningPage = hash === AppComponent.PLANNING_HASH;
+    this.isPrivateToolsHomePage = hash === AppComponent.PRIVATE_TOOLS_HOME_HASH;
+    this.isLegalNoticePage = hash === AppComponent.LEGAL_NOTICE_HASH;
   }
 }

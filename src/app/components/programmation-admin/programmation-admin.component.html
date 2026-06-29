@@ -2,9 +2,12 @@
   <div class="container programmation-admin-inner">
     <header class="programmation-admin-header">
       <div>
-        <span class="programmation-kicker">Espace privé</span>
+        <span class="programmation-kicker">Accès bureau</span>
         <h1>Gestion des dates</h1>
-        <p>Ajoute, retrouve et prépare les spectacles visibles sur le site.</p>
+        <p>
+          Ajoute, retrouve et prépare les spectacles visibles sur le site.
+          Cet outil utilise le mot de passe bureau configuré côté serveur.
+        </p>
       </div>
       <button
         type="button"
@@ -17,7 +20,7 @@
     </header>
 
     <form class="programmation-login" *ngIf="!isAuthenticated && !isLoading" (ngSubmit)="login()">
-      <label for="programmation-password">Mot de passe</label>
+      <label for="programmation-password">Mot de passe bureau</label>
       <input
         id="programmation-password"
         type="password"

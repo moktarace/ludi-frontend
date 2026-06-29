@@ -1,4 +1,5 @@
 import { Component, ElementRef, Input, QueryList, ViewChild, ViewChildren } from '@angular/core'
+import { isPrivateAccessUnlocked, PRIVATE_ACCESS_CODE, unlockPrivateAccess } from 'src/app/config/private-access'
 import { Show } from 'src/app/model'
 
 type VisualFormat = 'post' | 'story' | 'reel' | 'poster'
@@ -46,8 +47,6 @@ interface PedagogyTemplate {
   templateUrl: './tools.component.html',
 })
 export class ToolsComponent {
-  private static ACCESS_CODE = 'ludi1997'
-  private static ACCESS_STORAGE_KEY = 'ludi-tools-unlocked'
   private static REEL_DURATION_MS = 7000
   private static REEL_FRAME_RATE = 12
   private static CAROUSEL_MAX_PHOTOS = 19
@@ -337,7 +336,7 @@ export class ToolsComponent {
   public printLogoSize: CarouselLogoSize = 'm'
   public accessCode = ''
   public accessError = ''
-  public isUnlocked = localStorage.getItem(ToolsComponent.ACCESS_STORAGE_KEY) === 'true'
+  public isUnlocked = isPrivateAccessUnlocked()
   public isExporting = false
   public isSharing = false
   public carouselPhotos: CarouselPhoto[] = []
@@ -925,10 +924,10 @@ export class ToolsComponent {
   }
 
   public unlockTools(): void {
-    if (this.accessCode.trim() === ToolsComponent.ACCESS_CODE) {
+    if (this.accessCode.trim() === PRIVATE_ACCESS_CODE) {
       this.isUnlocked = true
       this.accessError = ''
-      localStorage.setItem(ToolsComponent.ACCESS_STORAGE_KEY, 'true')
+      unlockPrivateAccess()
       return
     }
 

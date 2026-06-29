@@ -17,6 +17,24 @@ npm start
 
 Il n'y a pas besoin de PHP, Docker ou Google Sheets pour tester en local.
 
+## Acces aux outils prives
+
+L'espace d'entree des outils est disponible sur :
+
+```text
+http://127.0.0.1:4200/#outils-ludi
+```
+
+Le code adherent local est :
+
+```text
+ludi1997
+```
+
+Il deverrouille les outils LUDI, le planning spectacle et le kit reseaux sur
+l'appareil utilise. La Gestion des dates demande un mot de passe separe, reserve
+au bureau et configure cote serveur.
+
 ## Gestion des dates
 
 L'espace d'edition est disponible sur :
@@ -25,11 +43,7 @@ L'espace d'edition est disponible sur :
 http://127.0.0.1:4200/#programmation-admin
 ```
 
-En local, le mot de passe de test est :
-
-```text
-ludi1997
-```
+En local, le mot de passe de test est defini par le service local de Gestion des dates.
 
 Les dates sont stockees dans :
 

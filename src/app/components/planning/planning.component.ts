@@ -1,4 +1,5 @@
 import { Component, Input } from '@angular/core'
+import { isPrivateAccessUnlocked, PRIVATE_ACCESS_CODE, unlockPrivateAccess } from 'src/app/config/private-access'
 import { Show } from 'src/app/model'
 
 interface PlanningAction {
@@ -23,9 +24,6 @@ interface PlanningPeriod {
   templateUrl: './planning.component.html',
 })
 export class PlanningComponent {
-  private static ACCESS_CODE = 'ludi1997'
-  private static ACCESS_STORAGE_KEY = 'ludi-tools-unlocked'
-
   private static DATE_FORMATTER = new Intl.DateTimeFormat('fr-FR', {
     day: 'numeric',
     month: 'long',
@@ -38,7 +36,7 @@ export class PlanningComponent {
   public accessCode = ''
   public accessError = ''
   public selectedShowId = ''
-  public isUnlocked = localStorage.getItem(PlanningComponent.ACCESS_STORAGE_KEY) === 'true'
+  public isUnlocked = isPrivateAccessUnlocked()
 
   public readonly periods: PlanningPeriod[] = [
     {
@@ -190,10 +188,10 @@ export class PlanningComponent {
   }
 
   public unlockPlanning(): void {
-    if (this.accessCode.trim() === PlanningComponent.ACCESS_CODE) {
+    if (this.accessCode.trim() === PRIVATE_ACCESS_CODE) {
       this.isUnlocked = true
       this.accessError = ''
-      localStorage.setItem(PlanningComponent.ACCESS_STORAGE_KEY, 'true')
+      unlockPrivateAccess()
       return
     }
 

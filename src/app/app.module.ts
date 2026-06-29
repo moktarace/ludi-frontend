@@ -18,6 +18,8 @@ import { ToolsComponent } from './components/tools/tools.component';
 import { JoinUsComponent } from './components/join-us/join-us.component';
 import { ProgrammationAdminComponent } from './components/programmation-admin/programmation-admin.component';
 import { PlanningComponent } from './components/planning/planning.component';
+import { PrivateToolsHomeComponent } from './components/private-tools-home/private-tools-home.component';
+import { LegalNoticeComponent } from './components/legal-notice/legal-notice.component';
 
 @NgModule({
   declarations: [
@@ -35,6 +37,8 @@ import { PlanningComponent } from './components/planning/planning.component';
     ToolsComponent,
     ProgrammationAdminComponent,
     PlanningComponent,
+    PrivateToolsHomeComponent,
+    LegalNoticeComponent,
     ShowReservationButtonsComponent
   ],
   imports: [BrowserModule, HttpClientModule, FormsModule, AppRoutingModule],

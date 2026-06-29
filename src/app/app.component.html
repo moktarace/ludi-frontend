@@ -11,7 +11,7 @@
 <div id="content" *ngIf="shows$ | async as shows">
   <div *ngIf="isLoaded">
     <app-header></app-header>
-    <ng-container *ngIf="!isToolsPage && !isProgrammationAdminPage && !isPlanningPage; else privatePage">
+    <ng-container *ngIf="!isToolsPage && !isProgrammationAdminPage && !isPlanningPage && !isPrivateToolsHomePage && !isLegalNoticePage; else privatePage">
       <div *ngIf="shows.length">
         <app-shows
           [shows]="shows"
@@ -36,6 +36,8 @@
         *ngIf="isPlanningPage"
         [shows]="shows"
       ></app-planning>
+      <app-private-tools-home *ngIf="isPrivateToolsHomePage"></app-private-tools-home>
+      <app-legal-notice *ngIf="isLegalNoticePage"></app-legal-notice>
     </ng-template>
     <app-footer id="footer"></app-footer>
   </div>

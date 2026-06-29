@@ -2,9 +2,9 @@
   <div class="container planning-tools-inner">
     <div class="visual-lock-panel" *ngIf="!isUnlocked">
       <h1 class="text-uppercase">Planning spectacle</h1>
-      <p>Accès réservé à l'équipe LUDI.</p>
+      <p>Accès adhérent·e LUDI. Le même code déverrouille aussi les outils LUDI et le kit réseaux.</p>
       <form class="visual-lock-form" (ngSubmit)="unlockPlanning()">
-        <label for="planning-access-code">Code d'accès</label>
+        <label for="planning-access-code">Code adhérent·e</label>
         <input
           id="planning-access-code"
           type="password"

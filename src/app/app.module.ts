@@ -17,6 +17,7 @@ import { FormatComponent } from './components/format/format.component';
 import { ToolsComponent } from './components/tools/tools.component';
 import { JoinUsComponent } from './components/join-us/join-us.component';
 import { ProgrammationAdminComponent } from './components/programmation-admin/programmation-admin.component';
+import { PlanningComponent } from './components/planning/planning.component';
 
 @NgModule({
   declarations: [
@@ -33,6 +34,7 @@ import { ProgrammationAdminComponent } from './components/programmation-admin/pr
     JoinUsComponent,
     ToolsComponent,
     ProgrammationAdminComponent,
+    PlanningComponent,
     ShowReservationButtonsComponent
   ],
   imports: [BrowserModule, HttpClientModule, FormsModule, AppRoutingModule],

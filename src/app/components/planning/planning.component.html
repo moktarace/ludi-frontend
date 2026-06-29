@@ -1,0 +1,102 @@
+<div class="container-fluid section-band planning-tools text-white">
+  <div class="container planning-tools-inner">
+    <div class="visual-lock-panel" *ngIf="!isUnlocked">
+      <h1 class="text-uppercase">Planning spectacle</h1>
+      <p>Accès réservé à l'équipe LUDI.</p>
+      <form class="visual-lock-form" (ngSubmit)="unlockPlanning()">
+        <label for="planning-access-code">Code d'accès</label>
+        <input
+          id="planning-access-code"
+          type="password"
+          class="form-control"
+          name="planningAccessCode"
+          [(ngModel)]="accessCode"
+          autocomplete="current-password"
+        />
+        <button type="submit" class="btn btn-danger">Entrer</button>
+        <p class="visual-lock-error" *ngIf="accessError">{{ accessError }}</p>
+      </form>
+    </div>
+
+    <ng-container *ngIf="isUnlocked">
+      <aside class="planning-sidebar">
+        <p class="planning-kicker">Prod LUDI</p>
+        <h1>Planning spectacle</h1>
+        <p>
+          Une timeline conseillée pour transformer une date reçue en spectacle
+          annoncé, publié, photographié puis valorisé.
+        </p>
+
+        <label for="planning-show">Spectacle</label>
+        <select
+          id="planning-show"
+          class="form-select"
+          [(ngModel)]="selectedShowId"
+        >
+          <option value="">Prochain spectacle</option>
+          <option *ngFor="let show of sortedShows" [value]="showId(show)">
+            {{ show.name }}
+          </option>
+        </select>
+
+        <div class="planning-selected-show">
+          <span>{{ selectedShow?.name || 'Aucune date' }}</span>
+          <strong>{{ showDate(selectedShow) }}</strong>
+        </div>
+
+        <div class="planning-tool-links">
+          <a href="#programmation-admin">Gestion des dates</a>
+          <a href="#kit-reseaux">Kit réseaux</a>
+        </div>
+      </aside>
+
+      <section class="planning-timeline" aria-label="Planning conseillé">
+        <article
+          class="planning-period"
+          *ngFor="let period of periods"
+          [class.planning-period-complete]="isPeriodComplete(period)"
+        >
+          <div class="planning-period-header">
+            <div>
+              <p>{{ dueLabel(period) }}</p>
+              <h2>{{ period.title }}</h2>
+            </div>
+            <div class="planning-due-date">
+              <strong>{{ dueDateLabel(period) }}</strong>
+              <span>date indicative</span>
+            </div>
+            <span [class]="'planning-status planning-status-' + periodStatusClass(period)">
+              {{ periodStatus(period) }}
+            </span>
+          </div>
+
+          <ol class="planning-actions">
+            <li
+              *ngFor="let action of period.actions"
+              [class]="actionClass(action)"
+            >
+              <span class="planning-step">{{ action.step }}</span>
+              <div>
+                <h3>
+                  {{ action.title }}
+                  <span class="planning-auto-check" *ngIf="isActionComplete(action)">
+                    vérifié
+                  </span>
+                </h3>
+                <p *ngIf="action.note">{{ action.note }}</p>
+                <a
+                  *ngIf="action.link"
+                  [href]="action.link"
+                  [target]="action.external ? '_blank' : null"
+                  [rel]="action.external ? 'noopener noreferrer' : null"
+                >
+                  {{ action.linkLabel || 'Ouvrir' }}
+                </a>
+              </div>
+            </li>
+          </ol>
+        </article>
+      </section>
+    </ng-container>
+  </div>
+</div>

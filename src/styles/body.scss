@@ -1134,7 +1134,8 @@ div.bg-dark.bg-black {
   }
 }
 
-.visual-preview-poster.visual-mode-show .visual-brand {
+.visual-preview-poster.visual-mode-show .visual-brand,
+.visual-preview-post.visual-mode-show .visual-brand {
   position: absolute;
   left: 50%;
   top: 1.45rem;
@@ -1202,26 +1203,13 @@ div.bg-dark.bg-black {
   box-shadow: none;
 }
 
-.visual-preview-post.visual-mode-show .visual-poster {
-  align-self: center;
-  width: 72%;
-  margin: 0.95rem 0 1.05rem;
-}
-
-.visual-preview-post.visual-mode-show .visual-poster img {
-  height: auto;
-  aspect-ratio: auto;
-  max-height: 260px;
-  object-fit: contain;
-  border: 0;
-  box-shadow: none;
-}
-
-.visual-preview-poster.visual-mode-show {
+.visual-preview-poster.visual-mode-show,
+.visual-preview-post.visual-mode-show {
   grid-template-rows: auto minmax(0, 1fr) auto auto;
 }
 
-.visual-preview-poster.visual-mode-show .visual-poster {
+.visual-preview-poster.visual-mode-show .visual-poster,
+.visual-preview-post.visual-mode-show .visual-poster {
   position: absolute;
   left: 50%;
   z-index: 2;
@@ -1230,7 +1218,8 @@ div.bg-dark.bg-black {
   transform: translateX(-50%);
 }
 
-.visual-preview-poster.visual-mode-show .visual-poster img {
+.visual-preview-poster.visual-mode-show .visual-poster img,
+.visual-preview-post.visual-mode-show .visual-poster img {
   height: auto;
   aspect-ratio: auto;
   max-height: 295px;
@@ -1254,11 +1243,34 @@ div.bg-dark.bg-black {
   transform: translate(-50%, -50%);
 }
 
+.visual-preview-post.visual-mode-show .visual-print-logo-top {
+  top: 7.75rem;
+  transform: translate(-50%, -50%);
+}
+
+.visual-preview-post.visual-mode-show .visual-print-logo-center {
+  top: 13.35rem;
+  transform: translate(-50%, -50%);
+}
+
+.visual-preview-post.visual-mode-show .visual-print-logo-bottom {
+  top: 18rem;
+  transform: translate(-50%, -50%);
+}
+
 .visual-preview-poster.visual-mode-show .visual-print-logo-s {
   width: 42%;
 
   img {
     max-height: 150px;
+  }
+}
+
+.visual-preview-post.visual-mode-show .visual-print-logo-s {
+  width: 42%;
+
+  img {
+    max-height: 130px;
   }
 }
 
@@ -1270,6 +1282,14 @@ div.bg-dark.bg-black {
   }
 }
 
+.visual-preview-post.visual-mode-show .visual-print-logo-m {
+  width: 70%;
+
+  img {
+    max-height: 200px;
+  }
+}
+
 .visual-preview-poster.visual-mode-show .visual-print-logo-l {
   width: 84%;
 
@@ -1278,11 +1298,27 @@ div.bg-dark.bg-black {
   }
 }
 
+.visual-preview-post.visual-mode-show .visual-print-logo-l {
+  width: 82%;
+
+  img {
+    max-height: 235px;
+  }
+}
+
 .visual-preview-poster.visual-mode-show .visual-print-logo-xl {
   width: 94%;
 
   img {
     max-height: 310px;
+  }
+}
+
+.visual-preview-post.visual-mode-show .visual-print-logo-xl {
+  width: 92%;
+
+  img {
+    max-height: 260px;
   }
 }
 
@@ -1341,7 +1377,8 @@ div.bg-dark.bg-black {
   }
 }
 
-.visual-preview-poster .visual-show-details {
+.visual-preview-poster .visual-show-details,
+.visual-preview-post.visual-mode-show .visual-show-details {
   justify-items: center;
   gap: 0.34rem;
   margin-top: 0;
@@ -1387,7 +1424,8 @@ div.bg-dark.bg-black {
   }
 }
 
-.visual-preview-poster .visual-content {
+.visual-preview-poster .visual-content,
+.visual-preview-post.visual-mode-show .visual-content {
   position: absolute;
   left: 50%;
   bottom: 5.2rem;
@@ -1398,6 +1436,10 @@ div.bg-dark.bg-black {
   box-sizing: border-box;
   justify-items: center;
   transform: translateX(-50%);
+}
+
+.visual-preview-post.visual-mode-show .visual-content {
+  bottom: 4.65rem;
 }
 
 .visual-agenda {
@@ -1472,7 +1514,8 @@ div.bg-dark.bg-black {
   font-weight: 800;
 }
 
-.visual-preview-poster .visual-footer {
+.visual-preview-poster .visual-footer,
+.visual-preview-post.visual-mode-show .visual-footer {
   position: absolute;
   left: 1.35rem;
   bottom: 1.55rem;
@@ -1483,6 +1526,10 @@ div.bg-dark.bg-black {
   align-items: flex-start;
   font-size: 0.68rem;
   line-height: 1.05;
+}
+
+.visual-preview-post.visual-mode-show .visual-footer {
+  bottom: 1.35rem;
 }
 
 .visual-partner-logos {
@@ -1540,7 +1587,8 @@ div.bg-dark.bg-black {
   }
 }
 
-.visual-preview-poster .visual-qr-code {
+.visual-preview-poster .visual-qr-code,
+.visual-preview-post.visual-mode-show .visual-qr-code {
   right: 1.45rem;
   bottom: 1.55rem;
   padding: 0.24rem;
@@ -1550,6 +1598,10 @@ div.bg-dark.bg-black {
     width: 2.85rem;
     height: 2.85rem;
   }
+}
+
+.visual-preview-post.visual-mode-show .visual-qr-code {
+  bottom: 1.35rem;
 }
 
 .programmation-admin {

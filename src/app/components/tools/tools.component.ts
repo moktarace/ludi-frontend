@@ -295,7 +295,7 @@ export class ToolsComponent {
   public customBackground?: string
   public customBackgroundTintEnabled = true
   public customQrLink = ''
-  public showQrCode = false
+  public showQrCode = true
   public isPosterHidden = false
   public printLogoPlacement: CarouselPlacement = 'center'
   public printLogoSize: CarouselLogoSize = 'm'
@@ -416,6 +416,10 @@ export class ToolsComponent {
     return this.isA2Format
   }
 
+  public get usesPrintShowLayout(): boolean {
+    return this.selectedMode === 'show' && (this.isPostFormat || this.isLargeShowFormat)
+  }
+
   public get isShowOnlyFormat(): boolean {
     return this.isReelFormat || this.isLargeShowFormat
   }
@@ -425,7 +429,7 @@ export class ToolsComponent {
   }
 
   public get printLogoClass(): string {
-    if (!this.isLargeShowFormat) {
+    if (!this.usesPrintShowLayout) {
       return ''
     }
 
@@ -665,7 +669,7 @@ export class ToolsComponent {
   public selectFormat(format: VisualFormat): void {
     this.selectedFormat = format
 
-    if (this.isA2Format) {
+    if (this.usesPrintShowLayout) {
       this.showQrCode = true
     }
 

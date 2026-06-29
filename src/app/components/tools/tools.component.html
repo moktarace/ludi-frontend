@@ -112,7 +112,7 @@
           </div>
         </div>
 
-        <div class="visual-control-group" *ngIf="isLargeShowFormat">
+        <div class="visual-control-group" *ngIf="usesPrintShowLayout">
           <label for="print-logo-placement">Position du logo</label>
           <select
             id="print-logo-placement"
@@ -125,7 +125,7 @@
           </select>
         </div>
 
-        <div class="visual-control-group" *ngIf="isLargeShowFormat">
+        <div class="visual-control-group" *ngIf="usesPrintShowLayout">
           <label>Taille du logo</label>
           <div class="visual-segmented carousel-size-control">
             <button
@@ -234,7 +234,7 @@
         <div class="visual-background-mark">LUDI</div>
         <div class="visual-brand">
           <img src="assets/logo/logo.png" alt="LUDI Toulouse" />
-          <div class="visual-partner-logos" *ngIf="isLargeShowFormat">
+          <div class="visual-partner-logos" *ngIf="usesPrintShowLayout">
             <img src="assets/logo/cap.png" alt="Le CAP" />
             <img src="assets/logo/ut3.png" alt="Université Toulouse III Paul Sabatier" />
             <img src="assets/logo/culture.png" alt="Pôle culture" />

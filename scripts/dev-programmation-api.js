@@ -9,10 +9,48 @@ const uploadDir = path.resolve(__dirname, '../src/assets/programmation/uploads')
 const uploadUrl = 'assets/programmation/uploads'
 const kitLogoDir = path.resolve(__dirname, '../src/assets/logo/kit')
 const kitLogoUrl = 'assets/logo/kit'
+const legacyLogoDir = path.resolve(kitLogoDir, 'legacy')
+const legacyLogoUrl = `${kitLogoUrl}/legacy`
 const devPassword = process.env.LUDI_DATES_PASSWORD || 'ludi1997'
 const sessions = new Map()
 const oneHourDelay = 3600
 const maxUploadBytes = 8 * 1024 * 1024
+const legacyLogoLabels = {
+  'a-la-maniere-ludienne.png': 'À la manière ludienne',
+  'avez-vous-deja-vu-un-spectacle-dimpro.png': "Avez-vous déjà vu un spectacle d'impro",
+  'championnat-etudiant-dimpro.png': "Championnat étudiant d'impro",
+  'comment-faire-peter-une-histoire-dans-la-minute.png': 'Comment faire péter une histoire dans la minute',
+  'el-dia-del-muerto.png': 'El Día del Muerto',
+  'face-a-face.png': 'Face à Face',
+  'festival-de-la-ludi.png': 'Festival de la LUDI',
+  'festival-de-si-si-ludi.png': 'Festival de si si LUDI',
+  'impro-et-faits-divers.png': 'Impro & Faits Divers',
+  'impro-football-club.png': 'Impro Football Club',
+  'improv-on-the-corner.png': 'Improv on the Corner',
+  'letrange-noel-de-la-ludi.png': "L'étrange Noël de la LUDI",
+  'limpro-fait-sa-rentree.png': "L'impro fait sa rentrée",
+  'la-crim-ne-paie-pas.png': 'La crim ne paie pas',
+  'la-ludi-face-a-la-guilde-de-limprobable.png': "La LUDI face à la Guilde de l'Improbable",
+  'le-cercle-des-menteurs-fieffes.png': 'Le Cercle des menteurs fieffés',
+  'le-dernier-festival-de-la-ludi-pour-linstant.png': "Le dernier festival de la LUDI (pour l'instant)",
+  'le-dernier-festival-de-la-ludi.png': 'Le dernier festival de la LUDI',
+  'le-voyage-exquis.png': 'Le Voyage exquis',
+  'les-inedits-de-la-ludi.png': 'Les Inédits de la LUDI',
+  'les-ludiens-du-pere-noel.png': 'Les Ludiens du Père Noël',
+  'les-pirates-du-midi.png': 'Les Pirates du Midi',
+  'love-and-improv.png': 'Love & Improv',
+  'maman-jai-rate-limpro.png': "Maman, j'ai raté l'impro",
+  'match-des-pioupioux.png': 'Match des Pioupioux',
+  'match-dimpro.png': "Match d'impro",
+  'menu-maxi-best-of.png': 'Menu Maxi Best Of',
+  'milla-palace-et-vincent-las-vegas.png': 'Milla Palace & Vincent Las Vegas',
+  'objectif-liqa.png': 'Objectif LIQA',
+  'objectif-ludi.png': 'Objectif LUDI',
+  'old-school-vs-new-school.png': 'Old School vs New School',
+  'question-pour-impro.png': 'Question pour Impro',
+  'toulouse-suisse.png': 'Toulouse + Suisse',
+  'voyage-au-centre-de-limpro.png': "Voyage au centre de l'impro",
+}
 
 function ensureDataFile() {
   if (fs.existsSync(dataFile)) {
@@ -81,6 +119,7 @@ function toInt(value) {
 function mediaLibrary() {
   return {
     kitLogos: listMediaFiles(kitLogoDir, kitLogoUrl, 'logo'),
+    legacyLogos: listMediaFiles(legacyLogoDir, legacyLogoUrl, 'legacy'),
     uploads: listMediaFiles(uploadDir, uploadUrl, 'upload'),
   }
 }
@@ -94,7 +133,7 @@ function listMediaFiles(directory, baseUrl, kind) {
     .filter(isAllowedImageName)
     .sort((a, b) => mediaLabel(a).localeCompare(mediaLabel(b)))
     .map((file) => ({
-      label: mediaLabel(file),
+      label: kind === 'legacy' ? legacyLogoLabels[file] || mediaLabel(file) : mediaLabel(file),
       url: `${baseUrl}/${encodeURIComponent(file)}`,
       kind,
     }))

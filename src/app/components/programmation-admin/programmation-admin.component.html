@@ -277,6 +277,13 @@
                   <span>{{ media.label }}</span>
                 </button>
               </div>
+              <button
+                class="legacy-logo-open-button"
+                type="button"
+                (click)="openLegacyLogoPicker(show)"
+              >
+                Anciens spectacles
+              </button>
 
               <div class="programmation-upload-card compact">
                 <input
@@ -311,5 +318,27 @@
         </article>
       </section>
     </ng-container>
+
+  </div>
+
+  <div class="legacy-logo-modal" *ngIf="isLegacyLogoPickerOpen">
+    <div class="legacy-logo-backdrop" (click)="closeLegacyLogoPicker()"></div>
+    <section class="legacy-logo-dialog">
+      <header>
+        <h2>Anciens spectacles</h2>
+        <button type="button" (click)="closeLegacyLogoPicker()">Fermer</button>
+      </header>
+      <div class="legacy-logo-grid">
+        <button
+          type="button"
+          *ngFor="let media of legacyLogoItems"
+          [class.active]="legacyLogoTarget?.logoLink === media.url"
+          (click)="selectLegacyLogo(media)"
+        >
+          <img [src]="media.url" [alt]="media.label" />
+          <span>{{ media.label }}</span>
+        </button>
+      </div>
+    </section>
   </div>
 </div>

@@ -5,6 +5,7 @@ type VisualFormat = 'post' | 'story' | 'reel' | 'poster'
 type VisualMode = 'show' | 'week' | 'month'
 type CarouselPlacement = 'top' | 'center' | 'bottom'
 type CarouselLogoSize = 's' | 'm' | 'l' | 'xl'
+type LegacyLogoPickerTarget = 'poster' | 'carousel'
 type Html2Canvas = typeof import('html2canvas').default
 
 interface CarouselPhoto {
@@ -100,8 +101,43 @@ export class ToolsComponent {
     { label: 'Catch', src: 'assets/logo/kit/catch.png' },
     { label: "Cours d'essai", src: 'assets/logo/kit/essai.png' },
     { label: 'Top Ten', src: 'assets/logo/kit/cercle.png' },
-    { label: 'Impro', src: 'assets/logo/kit/improv.png' },
-    { label: 'Question', src: 'assets/logo/kit/question.png' },
+  ]
+
+  public readonly legacyLogos: PresetLogo[] = [
+    { label: 'À la manière ludienne', src: 'assets/logo/kit/legacy/a-la-maniere-ludienne.png' },
+    { label: "Avez-vous déjà vu un spectacle d'impro", src: 'assets/logo/kit/legacy/avez-vous-deja-vu-un-spectacle-dimpro.png' },
+    { label: "Championnat étudiant d'impro", src: 'assets/logo/kit/legacy/championnat-etudiant-dimpro.png' },
+    { label: 'Comment faire péter une histoire dans la minute', src: 'assets/logo/kit/legacy/comment-faire-peter-une-histoire-dans-la-minute.png' },
+    { label: 'El Día del Muerto', src: 'assets/logo/kit/legacy/el-dia-del-muerto.png' },
+    { label: 'Face à Face', src: 'assets/logo/kit/legacy/face-a-face.png' },
+    { label: 'Festival de la LUDI', src: 'assets/logo/kit/legacy/festival-de-la-ludi.png' },
+    { label: 'Festival de si si LUDI', src: 'assets/logo/kit/legacy/festival-de-si-si-ludi.png' },
+    { label: 'Impro & Faits Divers', src: 'assets/logo/kit/legacy/impro-et-faits-divers.png' },
+    { label: 'Impro Football Club', src: 'assets/logo/kit/legacy/impro-football-club.png' },
+    { label: 'Improv on the Corner', src: 'assets/logo/kit/legacy/improv-on-the-corner.png' },
+    { label: "L'étrange Noël de la LUDI", src: 'assets/logo/kit/legacy/letrange-noel-de-la-ludi.png' },
+    { label: "L'impro fait sa rentrée", src: 'assets/logo/kit/legacy/limpro-fait-sa-rentree.png' },
+    { label: 'La crim ne paie pas', src: 'assets/logo/kit/legacy/la-crim-ne-paie-pas.png' },
+    { label: "La LUDI face à la Guilde de l'Improbable", src: 'assets/logo/kit/legacy/la-ludi-face-a-la-guilde-de-limprobable.png' },
+    { label: 'Le Cercle des menteurs fieffés', src: 'assets/logo/kit/legacy/le-cercle-des-menteurs-fieffes.png' },
+    { label: 'Le dernier festival de la LUDI', src: 'assets/logo/kit/legacy/le-dernier-festival-de-la-ludi.png' },
+    { label: "Le dernier festival de la LUDI (pour l'instant)", src: 'assets/logo/kit/legacy/le-dernier-festival-de-la-ludi-pour-linstant.png' },
+    { label: 'Le Voyage exquis', src: 'assets/logo/kit/legacy/le-voyage-exquis.png' },
+    { label: 'Les Inédits de la LUDI', src: 'assets/logo/kit/legacy/les-inedits-de-la-ludi.png' },
+    { label: 'Les Ludiens du Père Noël', src: 'assets/logo/kit/legacy/les-ludiens-du-pere-noel.png' },
+    { label: 'Les Pirates du Midi', src: 'assets/logo/kit/legacy/les-pirates-du-midi.png' },
+    { label: 'Love & Improv', src: 'assets/logo/kit/legacy/love-and-improv.png' },
+    { label: "Maman, j'ai raté l'impro", src: 'assets/logo/kit/legacy/maman-jai-rate-limpro.png' },
+    { label: "Match d'impro", src: 'assets/logo/kit/legacy/match-dimpro.png' },
+    { label: 'Match des Pioupioux', src: 'assets/logo/kit/legacy/match-des-pioupioux.png' },
+    { label: 'Menu Maxi Best Of', src: 'assets/logo/kit/legacy/menu-maxi-best-of.png' },
+    { label: 'Milla Palace & Vincent Las Vegas', src: 'assets/logo/kit/legacy/milla-palace-et-vincent-las-vegas.png' },
+    { label: 'Objectif LIQA', src: 'assets/logo/kit/legacy/objectif-liqa.png' },
+    { label: 'Objectif LUDI', src: 'assets/logo/kit/legacy/objectif-ludi.png' },
+    { label: 'Old School vs New School', src: 'assets/logo/kit/legacy/old-school-vs-new-school.png' },
+    { label: 'Question pour Impro', src: 'assets/logo/kit/legacy/question-pour-impro.png' },
+    { label: 'Toulouse + Suisse', src: 'assets/logo/kit/legacy/toulouse-suisse.png' },
+    { label: "Voyage au centre de l'impro", src: 'assets/logo/kit/legacy/voyage-au-centre-de-limpro.png' },
   ]
 
   public readonly visualTones: VisualTone[] = [
@@ -313,6 +349,8 @@ export class ToolsComponent {
   public isCarouselDragActive = false
   public isCarouselExporting = false
   public carouselPreviewIndex = 0
+  public isLegacyLogoPickerOpen = false
+  public legacyLogoPickerTarget: LegacyLogoPickerTarget = 'poster'
   public selectedPedagogyTemplateId = this.pedagogyTemplates[0].id
   public pedagogySlides: PedagogySlide[] = this.clonePedagogySlides(this.pedagogyTemplates[0])
   public pedagogyPreviewIndex = 0
@@ -704,6 +742,20 @@ export class ToolsComponent {
   public selectPresetPoster(logo: PresetLogo): void {
     this.customPoster = logo.src
     this.isPosterHidden = false
+  }
+
+  public openLegacyLogoPicker(target: LegacyLogoPickerTarget): void {
+    this.legacyLogoPickerTarget = target
+    this.isLegacyLogoPickerOpen = true
+  }
+
+  public selectLegacyLogo(logo: PresetLogo): void {
+    if (this.legacyLogoPickerTarget === 'carousel') {
+      this.selectPresetCarouselLogo(logo)
+    } else {
+      this.selectPresetPoster(logo)
+    }
+    this.isLegacyLogoPickerOpen = false
   }
 
   public updateBackground(event: Event): void {

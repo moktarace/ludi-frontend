@@ -12,6 +12,44 @@ $UPLOAD_DIR = $GESTION_DATES_UPLOAD_DIR ?? (__DIR__ . "/uploads");
 $UPLOAD_URL = rtrim($GESTION_DATES_UPLOAD_URL ?? "assets/programmation/uploads", "/");
 $KIT_LOGO_DIR = __DIR__ . "/../logo/kit";
 $KIT_LOGO_URL = "assets/logo/kit";
+$LEGACY_LOGO_DIR = $KIT_LOGO_DIR . "/legacy";
+$LEGACY_LOGO_URL = $KIT_LOGO_URL . "/legacy";
+$LEGACY_LOGO_LABELS = [
+    "a-la-maniere-ludienne.png" => "À la manière ludienne",
+    "avez-vous-deja-vu-un-spectacle-dimpro.png" => "Avez-vous déjà vu un spectacle d'impro",
+    "championnat-etudiant-dimpro.png" => "Championnat étudiant d'impro",
+    "comment-faire-peter-une-histoire-dans-la-minute.png" => "Comment faire péter une histoire dans la minute",
+    "el-dia-del-muerto.png" => "El Día del Muerto",
+    "face-a-face.png" => "Face à Face",
+    "festival-de-la-ludi.png" => "Festival de la LUDI",
+    "festival-de-si-si-ludi.png" => "Festival de si si LUDI",
+    "impro-et-faits-divers.png" => "Impro & Faits Divers",
+    "impro-football-club.png" => "Impro Football Club",
+    "improv-on-the-corner.png" => "Improv on the Corner",
+    "letrange-noel-de-la-ludi.png" => "L'étrange Noël de la LUDI",
+    "limpro-fait-sa-rentree.png" => "L'impro fait sa rentrée",
+    "la-crim-ne-paie-pas.png" => "La crim ne paie pas",
+    "la-ludi-face-a-la-guilde-de-limprobable.png" => "La LUDI face à la Guilde de l'Improbable",
+    "le-cercle-des-menteurs-fieffes.png" => "Le Cercle des menteurs fieffés",
+    "le-dernier-festival-de-la-ludi-pour-linstant.png" => "Le dernier festival de la LUDI (pour l'instant)",
+    "le-dernier-festival-de-la-ludi.png" => "Le dernier festival de la LUDI",
+    "le-voyage-exquis.png" => "Le Voyage exquis",
+    "les-inedits-de-la-ludi.png" => "Les Inédits de la LUDI",
+    "les-ludiens-du-pere-noel.png" => "Les Ludiens du Père Noël",
+    "les-pirates-du-midi.png" => "Les Pirates du Midi",
+    "love-and-improv.png" => "Love & Improv",
+    "maman-jai-rate-limpro.png" => "Maman, j'ai raté l'impro",
+    "match-des-pioupioux.png" => "Match des Pioupioux",
+    "match-dimpro.png" => "Match d'impro",
+    "menu-maxi-best-of.png" => "Menu Maxi Best Of",
+    "milla-palace-et-vincent-las-vegas.png" => "Milla Palace & Vincent Las Vegas",
+    "objectif-liqa.png" => "Objectif LIQA",
+    "objectif-ludi.png" => "Objectif LUDI",
+    "old-school-vs-new-school.png" => "Old School vs New School",
+    "question-pour-impro.png" => "Question pour Impro",
+    "toulouse-suisse.png" => "Toulouse + Suisse",
+    "voyage-au-centre-de-limpro.png" => "Voyage au centre de l'impro",
+];
 
 session_name("ludi_gestion_dates_admin");
 session_start([
@@ -210,6 +248,7 @@ function media_library(): array
 {
     return [
         "kitLogos" => list_media_files($GLOBALS["KIT_LOGO_DIR"], $GLOBALS["KIT_LOGO_URL"], "logo"),
+        "legacyLogos" => list_media_files($GLOBALS["LEGACY_LOGO_DIR"], $GLOBALS["LEGACY_LOGO_URL"], "legacy"),
         "uploads" => list_media_files($GLOBALS["UPLOAD_DIR"], $GLOBALS["UPLOAD_URL"], "upload"),
     ];
 }
@@ -227,7 +266,7 @@ function list_media_files(string $directory, string $base_url, string $kind): ar
         }
 
         $items[] = [
-            "label" => media_label($file),
+            "label" => $kind === "legacy" ? ($GLOBALS["LEGACY_LOGO_LABELS"][$file] ?? media_label($file)) : media_label($file),
             "url" => $base_url . "/" . rawurlencode($file),
             "kind" => $kind,
         ];

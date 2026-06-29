@@ -99,6 +99,13 @@
               <span>{{ logo.label }}</span>
             </button>
           </div>
+          <button
+            type="button"
+            class="legacy-logo-open-button"
+            (click)="openLegacyLogoPicker('poster')"
+          >
+            Anciens spectacles
+          </button>
           <input
             id="visual-poster-upload"
             type="file"
@@ -288,6 +295,26 @@
         </div>
       </div>
     </div>
+
+    <div class="legacy-logo-modal" *ngIf="isLegacyLogoPickerOpen">
+      <div class="legacy-logo-backdrop" (click)="isLegacyLogoPickerOpen = false"></div>
+      <section class="legacy-logo-dialog">
+        <header>
+          <h2>Anciens spectacles</h2>
+          <button type="button" (click)="isLegacyLogoPickerOpen = false">Fermer</button>
+        </header>
+        <div class="legacy-logo-grid">
+          <button
+            type="button"
+            *ngFor="let logo of legacyLogos"
+            (click)="selectLegacyLogo(logo)"
+          >
+            <img [src]="logo.src" [alt]="logo.label" />
+            <span>{{ logo.label }}</span>
+          </button>
+        </div>
+      </section>
+    </div>
   </div>
 
   <div class="container carousel-tools-inner" *ngIf="isUnlocked">
@@ -329,6 +356,13 @@
               <span>{{ logo.label }}</span>
             </button>
           </div>
+          <button
+            type="button"
+            class="legacy-logo-open-button"
+            (click)="openLegacyLogoPicker('carousel')"
+          >
+            Anciens spectacles
+          </button>
           <input
             id="carousel-logo-upload"
             type="file"

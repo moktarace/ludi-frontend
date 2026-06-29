@@ -18,11 +18,12 @@ interface AdminSession {
 interface MediaItem {
   label: string
   url: string
-  kind: 'logo' | 'upload'
+  kind: 'logo' | 'legacy' | 'upload'
 }
 
 interface MediaLibrary {
   kitLogos: MediaItem[]
+  legacyLogos: MediaItem[]
   uploads: MediaItem[]
 }
 
@@ -39,6 +40,43 @@ export class ProgrammationAdminComponent implements OnInit {
     minute: '2-digit',
   })
 
+  private readonly fallbackLegacyLogos: MediaItem[] = [
+    { label: 'À la manière ludienne', url: 'assets/logo/kit/legacy/a-la-maniere-ludienne.png', kind: 'legacy' },
+    { label: "Avez-vous déjà vu un spectacle d'impro", url: 'assets/logo/kit/legacy/avez-vous-deja-vu-un-spectacle-dimpro.png', kind: 'legacy' },
+    { label: "Championnat étudiant d'impro", url: 'assets/logo/kit/legacy/championnat-etudiant-dimpro.png', kind: 'legacy' },
+    { label: 'Comment faire péter une histoire dans la minute', url: 'assets/logo/kit/legacy/comment-faire-peter-une-histoire-dans-la-minute.png', kind: 'legacy' },
+    { label: 'El Día del Muerto', url: 'assets/logo/kit/legacy/el-dia-del-muerto.png', kind: 'legacy' },
+    { label: 'Face à Face', url: 'assets/logo/kit/legacy/face-a-face.png', kind: 'legacy' },
+    { label: 'Festival de la LUDI', url: 'assets/logo/kit/legacy/festival-de-la-ludi.png', kind: 'legacy' },
+    { label: 'Festival de si si LUDI', url: 'assets/logo/kit/legacy/festival-de-si-si-ludi.png', kind: 'legacy' },
+    { label: 'Impro & Faits Divers', url: 'assets/logo/kit/legacy/impro-et-faits-divers.png', kind: 'legacy' },
+    { label: 'Impro Football Club', url: 'assets/logo/kit/legacy/impro-football-club.png', kind: 'legacy' },
+    { label: 'Improv on the Corner', url: 'assets/logo/kit/legacy/improv-on-the-corner.png', kind: 'legacy' },
+    { label: "L'étrange Noël de la LUDI", url: 'assets/logo/kit/legacy/letrange-noel-de-la-ludi.png', kind: 'legacy' },
+    { label: "L'impro fait sa rentrée", url: 'assets/logo/kit/legacy/limpro-fait-sa-rentree.png', kind: 'legacy' },
+    { label: 'La crim ne paie pas', url: 'assets/logo/kit/legacy/la-crim-ne-paie-pas.png', kind: 'legacy' },
+    { label: "La LUDI face à la Guilde de l'Improbable", url: 'assets/logo/kit/legacy/la-ludi-face-a-la-guilde-de-limprobable.png', kind: 'legacy' },
+    { label: 'Le Cercle des menteurs fieffés', url: 'assets/logo/kit/legacy/le-cercle-des-menteurs-fieffes.png', kind: 'legacy' },
+    { label: 'Le dernier festival de la LUDI', url: 'assets/logo/kit/legacy/le-dernier-festival-de-la-ludi.png', kind: 'legacy' },
+    { label: "Le dernier festival de la LUDI (pour l'instant)", url: 'assets/logo/kit/legacy/le-dernier-festival-de-la-ludi-pour-linstant.png', kind: 'legacy' },
+    { label: 'Le Voyage exquis', url: 'assets/logo/kit/legacy/le-voyage-exquis.png', kind: 'legacy' },
+    { label: 'Les Inédits de la LUDI', url: 'assets/logo/kit/legacy/les-inedits-de-la-ludi.png', kind: 'legacy' },
+    { label: 'Les Ludiens du Père Noël', url: 'assets/logo/kit/legacy/les-ludiens-du-pere-noel.png', kind: 'legacy' },
+    { label: 'Les Pirates du Midi', url: 'assets/logo/kit/legacy/les-pirates-du-midi.png', kind: 'legacy' },
+    { label: 'Love & Improv', url: 'assets/logo/kit/legacy/love-and-improv.png', kind: 'legacy' },
+    { label: "Maman, j'ai raté l'impro", url: 'assets/logo/kit/legacy/maman-jai-rate-limpro.png', kind: 'legacy' },
+    { label: "Match d'impro", url: 'assets/logo/kit/legacy/match-dimpro.png', kind: 'legacy' },
+    { label: 'Match des Pioupioux', url: 'assets/logo/kit/legacy/match-des-pioupioux.png', kind: 'legacy' },
+    { label: 'Menu Maxi Best Of', url: 'assets/logo/kit/legacy/menu-maxi-best-of.png', kind: 'legacy' },
+    { label: 'Milla Palace & Vincent Las Vegas', url: 'assets/logo/kit/legacy/milla-palace-et-vincent-las-vegas.png', kind: 'legacy' },
+    { label: 'Objectif LIQA', url: 'assets/logo/kit/legacy/objectif-liqa.png', kind: 'legacy' },
+    { label: 'Objectif LUDI', url: 'assets/logo/kit/legacy/objectif-ludi.png', kind: 'legacy' },
+    { label: 'Old School vs New School', url: 'assets/logo/kit/legacy/old-school-vs-new-school.png', kind: 'legacy' },
+    { label: 'Question pour Impro', url: 'assets/logo/kit/legacy/question-pour-impro.png', kind: 'legacy' },
+    { label: 'Toulouse + Suisse', url: 'assets/logo/kit/legacy/toulouse-suisse.png', kind: 'legacy' },
+    { label: "Voyage au centre de l'impro", url: 'assets/logo/kit/legacy/voyage-au-centre-de-limpro.png', kind: 'legacy' },
+  ]
+
   private readonly endpoint = environment.url
 
   public shows: Show[] = []
@@ -51,7 +89,9 @@ export class ProgrammationAdminComponent implements OnInit {
   public highlightFilter: HighlightFilter = 'all'
   public sortMode: SortMode = 'date-desc'
   public bulkLocation = ''
-  public mediaLibrary: MediaLibrary = { kitLogos: [], uploads: [] }
+  public mediaLibrary: MediaLibrary = { kitLogos: [], legacyLogos: [], uploads: [] }
+  public isLegacyLogoPickerOpen = false
+  public legacyLogoTarget?: Show
   public uploadingMediaKey = ''
   public isAuthenticated = false
   public isLoading = true
@@ -135,6 +175,10 @@ export class ProgrammationAdminComponent implements OnInit {
       || this.sortMode !== 'date-desc'
   }
 
+  public get legacyLogoItems(): MediaItem[] {
+    return this.mediaLibrary.legacyLogos.length ? this.mediaLibrary.legacyLogos : this.fallbackLegacyLogos
+  }
+
   public login(): void {
     this.error = ''
     this.http.post<AdminSession>(
@@ -165,7 +209,7 @@ export class ProgrammationAdminComponent implements OnInit {
         this.csrfToken = ''
         this.shows = []
         this.selectedShowIds.clear()
-        this.mediaLibrary = { kitLogos: [], uploads: [] }
+        this.mediaLibrary = { kitLogos: [], legacyLogos: [], uploads: [] }
       },
     })
   }
@@ -297,6 +341,26 @@ export class ProgrammationAdminComponent implements OnInit {
   public selectShowMedia(show: Show, field: MediaField, url: string): void {
     show[field] = url
     this.markUnsaved()
+  }
+
+  public openLegacyLogoPicker(show: Show): void {
+    this.legacyLogoTarget = show
+    this.isLegacyLogoPickerOpen = true
+  }
+
+  public selectLegacyLogo(media: MediaItem): void {
+    if (!this.legacyLogoTarget) {
+      return
+    }
+
+    this.selectShowMedia(this.legacyLogoTarget, 'logoLink', media.url)
+    this.isLegacyLogoPickerOpen = false
+    this.legacyLogoTarget = undefined
+  }
+
+  public closeLegacyLogoPicker(): void {
+    this.isLegacyLogoPickerOpen = false
+    this.legacyLogoTarget = undefined
   }
 
   public async uploadShowMedia(event: Event, show: Show, field: MediaField): Promise<void> {
@@ -448,7 +512,11 @@ export class ProgrammationAdminComponent implements OnInit {
       { headers: this.authHeaders, withCredentials: true }
     ).subscribe({
       next: (mediaLibrary) => {
-        this.mediaLibrary = mediaLibrary
+        this.mediaLibrary = {
+          kitLogos: mediaLibrary.kitLogos || [],
+          legacyLogos: mediaLibrary.legacyLogos || [],
+          uploads: mediaLibrary.uploads || [],
+        }
       },
     })
   }

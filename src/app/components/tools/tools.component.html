@@ -46,7 +46,7 @@
             *ngFor="let mode of availableModes"
             type="button"
             [class.active]="selectedMode === mode.value"
-            (click)="selectedMode = mode.value"
+            (click)="selectMode(mode.value)"
           >
             {{ mode.label }}
           </button>
@@ -257,7 +257,7 @@
           <div class="visual-show-details" *ngIf="selectedMode === 'show' && selectedShow as show">
             <p>{{ formattedDate(show) }}</p>
             <p>{{ show.location }}</p>
-            <span>{{ priceLabel(show) }}</span>
+            <span [class.visual-free-price]="!show.price">{{ priceLabel(show) }}</span>
           </div>
 
           <div class="visual-agenda" *ngIf="selectedMode !== 'show'">

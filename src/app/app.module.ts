@@ -20,6 +20,7 @@ import { ProgrammationAdminComponent } from './components/programmation-admin/pr
 import { PlanningComponent } from './components/planning/planning.component';
 import { PrivateToolsHomeComponent } from './components/private-tools-home/private-tools-home.component';
 import { LegalNoticeComponent } from './components/legal-notice/legal-notice.component';
+import { GalaxyComponent } from './components/galaxy/galaxy.component';
 
 @NgModule({
   declarations: [
@@ -39,6 +40,7 @@ import { LegalNoticeComponent } from './components/legal-notice/legal-notice.com
     PlanningComponent,
     PrivateToolsHomeComponent,
     LegalNoticeComponent,
+    GalaxyComponent,
     ShowReservationButtonsComponent
   ],
   imports: [BrowserModule, HttpClientModule, FormsModule, AppRoutingModule],

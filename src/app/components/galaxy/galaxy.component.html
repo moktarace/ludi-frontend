@@ -1,0 +1,76 @@
+<section class="container-fluid section-band galaxy-section text-white">
+  <div class="container galaxy-inner">
+    <div class="galaxy-copy">
+      <p class="galaxy-kicker">Galaxie LUDI</p>
+      <h1 class="text-uppercase">De la LUDI sont nées d'autres scènes</h1>
+      <p class="lead">
+        Depuis 1997, des joueur·euse·s passé·e·s par la LUDI ont créé ou nourri
+        d'autres ligues d'impro à Toulouse et ailleurs. Cette fresque met en
+        avant les scènes qui continuent de faire circuler cette énergie.
+      </p>
+    </div>
+
+    <div class="galaxy-tree-card">
+      <div class="galaxy-tree-glow" aria-hidden="true"></div>
+      <div class="galaxy-map-word" aria-hidden="true">GALAXIE</div>
+      <svg
+        class="galaxy-tree"
+        viewBox="0 0 900 640"
+        role="img"
+        aria-label="Fresque des ligues issues de la LUDI"
+      >
+        <defs>
+          <radialGradient id="galaxy-line-glow" cx="50%" cy="50%" r="52%">
+            <stop offset="0" stop-color="#fff8ed" stop-opacity="0.82" />
+            <stop offset="0.48" stop-color="#f4be4c" stop-opacity="0.58" />
+            <stop offset="1" stop-color="#f4be4c" stop-opacity="0" />
+          </radialGradient>
+        </defs>
+
+        <circle class="galaxy-chart-ring galaxy-chart-ring-large" cx="450" cy="320" r="238" />
+        <circle class="galaxy-chart-ring galaxy-chart-ring-mid" cx="450" cy="320" r="155" />
+        <circle class="galaxy-chart-ring galaxy-chart-ring-core" cx="450" cy="320" r="68" />
+        <path class="galaxy-chart-axis" d="M450 72 L450 568 M150 320 L750 320 M238 108 L662 532 M662 108 L238 532" />
+        <path class="galaxy-orbit galaxy-orbit-outer" d="M96 316 C178 106 350 40 528 70 C708 102 820 234 790 374 C760 516 596 590 402 564 C214 540 58 456 96 316Z" />
+        <path class="galaxy-orbit galaxy-orbit-mid" d="M160 392 C214 210 360 130 510 150 C660 170 752 272 718 398 C682 528 536 574 376 530 C236 492 128 502 160 392Z" />
+        <path class="galaxy-orbit galaxy-orbit-inner" d="M290 280 C330 206 414 184 500 208 C578 230 626 286 606 360 C584 438 498 468 414 440 C326 412 250 358 290 280Z" />
+        <path class="galaxy-star-link" d="M148 140 L252 96 L392 112 L598 96 L756 150 M92 360 L206 328 L322 346 M584 340 L724 374 L812 308 M176 530 L318 558 L448 518 L620 560 L762 512" />
+        <path class="galaxy-star-link galaxy-star-link-soft" d="M252 96 L206 328 L318 558 M598 96 L584 340 L620 560 M392 112 L450 320 L448 518 M148 140 L92 360 L176 530 M756 150 L812 308 L762 512" />
+        <path class="galaxy-map-tick" d="M126 246 L160 252 M184 178 L214 198 M298 72 L306 108 M718 224 L752 204 M782 444 L744 438 M518 592 L512 548 M282 494 L248 518 M648 126 L676 156" />
+        <path
+          class="galaxy-glyph"
+          d="M438 164 L462 164 L462 286 L520 286 L520 310 L462 310 L462 476 L438 476 L438 310 L380 310 L380 286 L438 286Z"
+        />
+        <path
+          class="galaxy-scratch"
+          d="M116 86 L356 52 M132 548 L342 584 M568 58 L802 92 M564 594 L820 532 M204 248 L342 214 M548 432 L704 462"
+        />
+      </svg>
+
+      <div class="galaxy-source">
+        <img src="assets/logo/logo.png" alt="LUDI Toulouse" />
+      </div>
+
+      <a
+        class="galaxy-fruit"
+        *ngFor="let league of leagues"
+        [ngClass]="league.position"
+        [attr.href]="league.href || null"
+        [attr.target]="league.href ? '_blank' : null"
+        [attr.rel]="league.href ? 'noopener noreferrer' : null"
+        [attr.tabindex]="league.href ? null : '0'"
+        [attr.aria-label]="league.label"
+      >
+        <span class="galaxy-fruit-inner">
+          <span class="galaxy-fruit-face galaxy-fruit-front">
+            <img *ngIf="league.logo" [src]="league.logo" [alt]="league.label" />
+            <span *ngIf="!league.logo">{{ league.initials }}</span>
+          </span>
+          <span class="galaxy-fruit-face galaxy-fruit-back">
+            {{ league.label }}
+          </span>
+        </span>
+      </a>
+    </div>
+  </div>
+</section>

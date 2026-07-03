@@ -5,7 +5,7 @@
   "scripts": {
     "ng": "ng",
     "start": "node scripts/dev.js",
-    "build": "ng build",
+    "build": "ng build && node scripts/prerender-seo.js",
     "watch": "ng build --watch --configuration development",
     "deploy:ftp": "node scripts/deploy-ftp.js",
     "build:ftp": "npm run build && npm run deploy:ftp"

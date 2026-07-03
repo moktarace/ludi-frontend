@@ -12,6 +12,10 @@
 
     <div class="galaxy-tree-card">
       <div class="galaxy-tree-glow" aria-hidden="true"></div>
+      <div class="galaxy-star-field" aria-hidden="true">
+        <span class="galaxy-star" *ngFor="let star of stars" [ngStyle]="star.style"></span>
+        <span class="galaxy-twinkle" *ngFor="let twinkle of twinkles" [ngStyle]="twinkle.style"></span>
+      </div>
       <div class="galaxy-map-word" aria-hidden="true">GALAXIE</div>
       <svg
         class="galaxy-tree"
@@ -54,7 +58,7 @@
       <a
         class="galaxy-fruit"
         *ngFor="let league of leagues"
-        [ngClass]="league.position"
+        [ngClass]="[league.position, league.isSecret ? 'galaxy-fruit-secret' : '']"
         [attr.href]="league.href || null"
         [attr.target]="league.href ? '_blank' : null"
         [attr.rel]="league.href ? 'noopener noreferrer' : null"
@@ -64,7 +68,8 @@
         <span class="galaxy-fruit-inner">
           <span class="galaxy-fruit-face galaxy-fruit-front">
             <img *ngIf="league.logo" [src]="league.logo" [alt]="league.label" />
-            <span *ngIf="!league.logo">{{ league.initials }}</span>
+            <span *ngIf="!league.logo && !league.isSecret">{{ league.initials }}</span>
+            <span *ngIf="league.isSecret" class="galaxy-secret-star" aria-hidden="true"></span>
           </span>
           <span class="galaxy-fruit-face galaxy-fruit-back">
             {{ league.label }}

@@ -604,6 +604,14 @@ div.bg-dark.bg-black {
   text-transform: uppercase;
 }
 
+app-galaxy {
+  --galaxy-gyro-x: 0rem;
+  --galaxy-gyro-y: 0rem;
+  --galaxy-tilt-x: 0deg;
+  --galaxy-tilt-y: 0deg;
+  display: block;
+}
+
 .galaxy-tree-card {
   position: relative;
   min-height: clamp(34rem, 72vw, 47rem);
@@ -619,6 +627,11 @@ div.bg-dark.bg-black {
   box-shadow: 0 1.8rem 3.5rem rgb(0 0 0 / 28%);
   isolation: isolate;
   overflow: hidden;
+  transform:
+    perspective(70rem)
+    rotateX(var(--galaxy-tilt-x))
+    rotateY(var(--galaxy-tilt-y));
+  transition: transform 0.22s ease-out;
 }
 
 .galaxy-tree-card::before,
@@ -649,7 +662,10 @@ div.bg-dark.bg-black {
   line-height: 0.8;
   letter-spacing: 0;
   text-transform: uppercase;
-  transform: translateX(-50%) scaleX(1.15);
+  transform:
+    translateX(calc(-50% + var(--galaxy-gyro-x)))
+    translateY(calc(var(--galaxy-gyro-y) * 0.45))
+    scaleX(1.15);
   white-space: nowrap;
 }
 
@@ -660,14 +676,65 @@ div.bg-dark.bg-black {
     radial-gradient(circle at 50% 45%, rgb(255 248 237 / 16%) 0%, rgb(255 248 237 / 0%) 22rem),
     radial-gradient(circle at 48% 48%, rgb(115 207 183 / 18%) 0%, rgb(115 207 183 / 0%) 28rem);
   filter: blur(0.2rem);
+  transform: translate(calc(var(--galaxy-gyro-x) * -0.8), calc(var(--galaxy-gyro-y) * -0.8));
+  transition: transform 0.22s ease-out;
+}
+
+.galaxy-star-field {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  transform: translate(calc(var(--galaxy-gyro-x) * 0.55), calc(var(--galaxy-gyro-y) * 0.55));
+  transition: transform 0.22s ease-out;
+}
+
+.galaxy-star {
+  position: absolute;
+  width: var(--galaxy-star-size, 0.2rem);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: rgb(255 248 237 / 100%);
+  box-shadow:
+    0 0 0.3rem rgb(255 248 237 / 52%),
+    0 0 0.75rem rgb(244 190 76 / 18%);
+  opacity: var(--galaxy-star-opacity, 0.18);
+  animation: galaxy-star-drift var(--galaxy-star-drift-duration, 8s) ease-in-out infinite;
+}
+
+.galaxy-twinkle {
+  position: absolute;
+  width: var(--galaxy-twinkle-size, 0.75rem);
+  aspect-ratio: 1;
+  opacity: 0;
+  transform: rotate(var(--galaxy-twinkle-rotate, 0deg)) scale(0.2);
+  animation: galaxy-star-twinkle var(--galaxy-twinkle-duration, 1s) ease-out forwards;
+}
+
+.galaxy-twinkle::before,
+.galaxy-twinkle::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(90deg, transparent 44%, rgb(255 248 237 / 88%) 48% 52%, transparent 56%),
+    linear-gradient(0deg, transparent 44%, rgb(255 248 237 / 76%) 48% 52%, transparent 56%);
+  filter: drop-shadow(0 0 0.55rem rgb(255 248 237 / 72%)) drop-shadow(0 0 0.95rem rgb(244 190 76 / 42%));
+}
+
+.galaxy-twinkle::after {
+  transform: rotate(45deg) scale(0.72);
 }
 
 .galaxy-tree {
   position: absolute;
   inset: 6% 4% 5%;
+  z-index: 1;
   width: 92%;
   height: 89%;
   overflow: visible;
+  transform: translate(calc(var(--galaxy-gyro-x) * 0.25), calc(var(--galaxy-gyro-y) * 0.25));
+  transition: transform 0.22s ease-out;
 }
 
 .galaxy-chart-ring {
@@ -751,6 +818,7 @@ div.bg-dark.bg-black {
   position: absolute;
   left: 50%;
   top: 50%;
+  z-index: 3;
   display: grid;
   gap: 0.35rem;
   justify-items: center;
@@ -779,11 +847,27 @@ div.bg-dark.bg-black {
 
 .galaxy-fruit {
   position: absolute;
+  z-index: 3;
   width: clamp(4rem, 9.3vw, 5.35rem);
   aspect-ratio: 1;
   color: var(--ludi-paper);
   perspective: 42rem;
   text-decoration: none;
+}
+
+.galaxy-fruit::before {
+  content: "";
+  position: absolute;
+  inset: -44%;
+  z-index: -1;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle, rgb(244 190 76 / 0%) 34%, rgb(244 190 76 / 5%) 45%, rgb(255 248 237 / 3%) 54%, rgb(244 190 76 / 0%) 66%),
+    radial-gradient(circle, rgb(115 207 183 / 4%) 0%, rgb(115 207 183 / 0%) 60%);
+  filter: blur(0.1rem);
+  opacity: 0.24;
+  transform: rotate(-18deg) scaleX(1.18);
+  animation: galaxy-aura-breathe 5.8s ease-in-out infinite;
 }
 
 .galaxy-fruit:focus-visible {
@@ -793,6 +877,7 @@ div.bg-dark.bg-black {
 
 .galaxy-fruit-inner {
   position: relative;
+  z-index: 1;
   display: block;
   width: 100%;
   height: 100%;
@@ -808,8 +893,10 @@ div.bg-dark.bg-black {
 .galaxy-fruit-face {
   position: absolute;
   inset: 0;
-  display: grid;
-  place-items: center;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   clip-path: polygon(25% 5%, 75% 5%, 100% 50%, 75% 95%, 25% 95%, 0 50%);
   background: #fff;
   box-shadow:
@@ -844,6 +931,58 @@ div.bg-dark.bg-black {
   text-align: center;
   text-transform: uppercase;
   transform: rotateY(180deg);
+  overflow-wrap: anywhere;
+  text-wrap: balance;
+  white-space: normal;
+}
+
+.galaxy-fruit-secret {
+  width: clamp(1rem, 2.2vw, 1.35rem);
+  cursor: pointer;
+  opacity: 0.54;
+
+  .galaxy-fruit-inner,
+  &:hover .galaxy-fruit-inner,
+  &:focus-visible .galaxy-fruit-inner {
+    transform: none;
+  }
+
+  .galaxy-fruit-face {
+    clip-path: none;
+    border-radius: 50%;
+    background: transparent;
+    box-shadow: none;
+  }
+
+  .galaxy-fruit-back {
+    display: none;
+  }
+}
+
+.galaxy-fruit-secret::before {
+  opacity: 0;
+}
+
+.galaxy-fruit-secret:hover,
+.galaxy-fruit-secret:focus-visible {
+  opacity: 1;
+
+  .galaxy-fruit-face {
+    box-shadow:
+      0 0 0.65rem rgb(255 248 237 / 80%),
+      0 0 1.3rem rgb(244 190 76 / 58%),
+      0 0 2rem rgb(244 190 76 / 26%);
+  }
+}
+
+.galaxy-secret-star {
+  display: block;
+  width: 0.42rem;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: rgb(255 248 237 / 92%);
+  color: var(--ludi-gold);
+  box-shadow: none;
 }
 
 .galaxy-fruit-1 {
@@ -917,8 +1056,53 @@ div.bg-dark.bg-black {
 }
 
 .galaxy-fruit-15 {
-  right: 43%;
-  top: 27%;
+  left: 6%;
+  bottom: 6%;
+}
+
+@keyframes galaxy-star-twinkle {
+  0% {
+    opacity: 0;
+    transform: rotate(var(--galaxy-twinkle-rotate, 0deg)) scale(0.18);
+  }
+
+  38% {
+    opacity: 0.95;
+    transform: rotate(var(--galaxy-twinkle-rotate, 0deg)) scale(1);
+  }
+
+  100% {
+    opacity: 0;
+    transform: rotate(var(--galaxy-twinkle-rotate, 0deg)) scale(0.35);
+  }
+}
+
+@keyframes galaxy-star-drift {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) scale(0.84);
+  }
+
+  45% {
+    transform: translate3d(var(--galaxy-star-drift-x, 0.08rem), var(--galaxy-star-drift-y, -0.14rem), 0) scale(var(--galaxy-star-scale, 1.7));
+  }
+
+  72% {
+    transform: translate3d(calc(var(--galaxy-star-drift-x, 0.08rem) * -0.45), calc(var(--galaxy-star-drift-y, -0.14rem) * 0.35), 0) scale(1.05);
+  }
+}
+
+@keyframes galaxy-aura-breathe {
+  0%,
+  100% {
+    opacity: 0.08;
+    transform: rotate(-18deg) scaleX(1.12) scaleY(0.92);
+  }
+
+  50% {
+    opacity: 0.2;
+    transform: rotate(-18deg) scaleX(1.24) scaleY(1.02);
+  }
 }
 
 .join-us-inner {
@@ -4380,7 +4564,7 @@ button:disabled {
   }
 
   .galaxy-tree-card {
-    min-height: 35rem;
+    min-height: 42rem;
     margin-inline: -0.35rem;
   }
 
@@ -4401,12 +4585,16 @@ button:disabled {
   }
 
   .galaxy-fruit {
-    width: clamp(3.55rem, 15.5vw, 4.5rem);
+    width: clamp(3.25rem, 14.2vw, 4rem);
   }
 
   .galaxy-fruit-back {
-    padding: 0.55rem;
-    font-size: 0.66rem;
+    padding: 0.5rem;
+    font-size: 0.6rem;
+  }
+
+  .galaxy-fruit-secret {
+    width: 1rem;
   }
 
   .galaxy-fruit-1 {
@@ -4415,23 +4603,23 @@ button:disabled {
   }
 
   .galaxy-fruit-2 {
-    left: 24%;
+    left: 17%;
     top: 9%;
   }
 
   .galaxy-fruit-3 {
-    left: 47%;
-    top: 10%;
+    left: 42%;
+    top: 8%;
   }
 
   .galaxy-fruit-4 {
-    right: 10%;
-    top: 15%;
+    right: 17%;
+    top: 9%;
   }
 
   .galaxy-fruit-5 {
-    right: 2%;
-    top: 33%;
+    right: 3%;
+    top: 30%;
   }
 
   .galaxy-fruit-6 {
@@ -4440,38 +4628,40 @@ button:disabled {
   }
 
   .galaxy-fruit-7 {
-    left: 20%;
-    top: 28%;
+    left: 4%;
+    top: 30%;
   }
 
   .galaxy-fruit-8 {
-    right: 20%;
-    top: 29%;
+    right: 12%;
+    top: 49%;
   }
 
   .galaxy-fruit-9 {
-    left: 2%;
-    top: 52%;
+    left: 36%;
+    top: 26%;
   }
 
   .galaxy-fruit-10 {
-    right: 2%;
-    top: 53%;
+    left: 5%;
+    top: auto;
+    bottom: 25%;
   }
 
   .galaxy-fruit-11 {
-    left: 17%;
+    left: 38%;
     bottom: 13%;
   }
 
   .galaxy-fruit-12 {
-    left: 39%;
-    bottom: 8%;
+    left: auto;
+    right: 5%;
+    bottom: 25%;
   }
 
   .galaxy-fruit-13 {
-    right: 17%;
-    bottom: 13%;
+    right: 38%;
+    bottom: 3%;
   }
 
   .galaxy-fruit-14 {
@@ -4480,8 +4670,9 @@ button:disabled {
   }
 
   .galaxy-fruit-15 {
-    right: 6%;
-    bottom: 27%;
+    left: 6%;
+    right: auto;
+    bottom: 5%;
   }
 
   .join-us-inner {
@@ -4605,6 +4796,20 @@ button:disabled {
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .galaxy-tree-card,
+  .galaxy-tree,
+  .galaxy-tree-glow,
+  .galaxy-map-word,
+  .galaxy-star-field {
+    transform: none;
+    transition: none;
+  }
+
+  .galaxy-star,
+  .galaxy-fruit::before {
+    animation: none;
+  }
+
   .galaxy-fruit-inner {
     transition: none;
   }

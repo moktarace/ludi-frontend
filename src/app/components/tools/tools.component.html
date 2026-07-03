@@ -166,6 +166,30 @@
           </div>
         </div>
 
+        <div class="visual-control-group" *ngIf="selectedMode === 'show'">
+          <label for="visual-tagline">Tagline</label>
+          <input
+            id="visual-tagline"
+            type="text"
+            class="form-control"
+            [(ngModel)]="visualTagline"
+            maxlength="70"
+            placeholder="Ex : Une finale qui sent le panache"
+          />
+          <select
+            class="form-select"
+            [(ngModel)]="visualTaglinePlacement"
+            aria-label="Position de la tagline"
+          >
+            <option value="top-left">Haut gauche</option>
+            <option value="top-right">Haut droite</option>
+            <option value="center-left">Centre gauche</option>
+            <option value="center-right">Centre droit</option>
+            <option value="bottom-left">Bas gauche</option>
+            <option value="bottom-right">Bas droit</option>
+          </select>
+        </div>
+
         <div class="visual-control-group">
           <label for="visual-background-upload">Fond personnalisé</label>
           <input
@@ -237,6 +261,7 @@
         [style.background-image]="visualBackgroundImage"
         [style.--visual-accent]="visualAccent"
         [style.--visual-accent-rgb]="visualAccentRgb"
+        [style.--visual-tagline-accent]="visualTaglineAccent"
       >
         <div class="visual-background-mark">LUDI</div>
         <div class="visual-brand">
@@ -252,6 +277,10 @@
 
         <div class="visual-poster" [ngClass]="printLogoClass" *ngIf="showPoster">
           <img [src]="visualPoster" [alt]="selectedShow?.name || 'Spectacle LUDI'" />
+        </div>
+
+        <div [ngClass]="visualTaglineClass" *ngIf="showVisualTagline">
+          {{ visualTaglineText }}
         </div>
 
         <div class="visual-content">

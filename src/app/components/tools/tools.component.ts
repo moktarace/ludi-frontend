@@ -6,6 +6,7 @@ type VisualFormat = 'post' | 'story' | 'reel' | 'poster'
 type VisualMode = 'show' | 'week' | 'month'
 type CarouselPlacement = 'top' | 'center' | 'bottom'
 type CarouselLogoSize = 's' | 'm' | 'l' | 'xl'
+type VisualTaglinePlacement = 'top-left' | 'top-right' | 'center-left' | 'center-right' | 'bottom-left' | 'bottom-right'
 type LegacyLogoPickerTarget = 'poster' | 'carousel'
 type Html2Canvas = typeof import('html2canvas').default
 
@@ -25,6 +26,7 @@ interface VisualTone {
   value: string
   accent: string
   accentRgb: string
+  taglineAccent: string
   customBackgroundRgb: string
 }
 
@@ -145,6 +147,7 @@ export class ToolsComponent {
       value: 'ludi-red',
       accent: '#df2f42',
       accentRgb: '223 47 66',
+      taglineAccent: '#ff6f9f',
       customBackgroundRgb: '223 47 66',
     },
     {
@@ -152,6 +155,7 @@ export class ToolsComponent {
       value: 'plum',
       accent: '#7a315f',
       accentRgb: '122 49 95',
+      taglineAccent: '#ff73d4',
       customBackgroundRgb: '122 49 95',
     },
     {
@@ -159,6 +163,7 @@ export class ToolsComponent {
       value: 'stage-green',
       accent: '#5cb52e',
       accentRgb: '92 181 46',
+      taglineAccent: '#b9ff45',
       customBackgroundRgb: '92 181 46',
     },
     {
@@ -166,6 +171,7 @@ export class ToolsComponent {
       value: 'poster-orange',
       accent: '#d96b35',
       accentRgb: '217 107 53',
+      taglineAccent: '#ffbd3d',
       customBackgroundRgb: '217 107 53',
     },
     {
@@ -173,6 +179,7 @@ export class ToolsComponent {
       value: 'night-turquoise',
       accent: '#00a99a',
       accentRgb: '0 169 154',
+      taglineAccent: '#4dffe7',
       customBackgroundRgb: '0 169 154',
     },
     {
@@ -180,6 +187,7 @@ export class ToolsComponent {
       value: 'spotlight-yellow',
       accent: '#f0b92e',
       accentRgb: '240 185 46',
+      taglineAccent: '#fff04d',
       customBackgroundRgb: '240 185 46',
     },
     {
@@ -187,6 +195,7 @@ export class ToolsComponent {
       value: 'toulouse',
       accent: '#e04f7a',
       accentRgb: '224 79 122',
+      taglineAccent: '#ff5fa8',
       customBackgroundRgb: '224 79 122',
     },
   ]
@@ -334,6 +343,8 @@ export class ToolsComponent {
   public isPosterHidden = false
   public printLogoPlacement: CarouselPlacement = 'center'
   public printLogoSize: CarouselLogoSize = 'm'
+  public visualTagline = ''
+  public visualTaglinePlacement: VisualTaglinePlacement = 'bottom-right'
   public accessCode = ''
   public accessError = ''
   public isUnlocked = isPrivateAccessUnlocked()
@@ -473,6 +484,19 @@ export class ToolsComponent {
     return `visual-print-logo visual-print-logo-${this.printLogoPlacement} visual-print-logo-${this.printLogoSize}`
   }
 
+  public get visualTaglineText(): string {
+    return this.visualTagline.trim()
+  }
+
+  public get showVisualTagline(): boolean {
+    return this.isShowVisual && Boolean(this.visualTaglineText)
+  }
+
+  public get visualTaglineClass(): string {
+    const logoPlacement = this.usesPrintShowLayout ? this.printLogoPlacement : 'center'
+    return `visual-tagline visual-tagline-${this.visualTaglinePlacement} visual-tagline-logo-${logoPlacement}`
+  }
+
   public get hasCustomOptions(): boolean {
     return this.isPostFormat || this.isLargeShowFormat || ((this.selectedFormat === 'story' || this.isReelFormat) && this.selectedMode === 'show')
   }
@@ -503,6 +527,10 @@ export class ToolsComponent {
 
   public get visualAccentRgb(): string {
     return this.selectedTone.accentRgb
+  }
+
+  public get visualTaglineAccent(): string {
+    return this.selectedTone.taglineAccent
   }
 
   public get qrLink(): string {
@@ -1105,16 +1133,29 @@ export class ToolsComponent {
       })
     }
 
-    const canvas = await html2canvas(this.visualCanvas.nativeElement, {
-      allowTaint: false,
-      backgroundColor: null,
-      scale: this.exportScale,
-      useCORS: true,
-    })
+    const preview = this.visualCanvas.nativeElement
+    preview.classList.add('visual-export-frame')
 
-    return new File([await this.canvasToBlob(canvas)], this.exportFileName, {
-      type: 'image/png',
-    })
+    try {
+      await this.wait(40)
+      const rect = preview.getBoundingClientRect()
+      const canvas = await html2canvas(preview, {
+        allowTaint: false,
+        backgroundColor: null,
+        height: Math.ceil(rect.height),
+        scale: this.exportScale,
+        useCORS: true,
+        width: Math.ceil(rect.width),
+        windowHeight: Math.ceil(rect.height),
+        windowWidth: Math.ceil(rect.width),
+      })
+
+      return new File([await this.canvasToBlob(canvas)], this.exportFileName, {
+        type: 'image/png',
+      })
+    } finally {
+      preview.classList.remove('visual-export-frame')
+    }
   }
 
   private async createCarouselFiles(): Promise<File[]> {
@@ -1230,12 +1271,17 @@ export class ToolsComponent {
     const preview = this.visualCanvas.nativeElement
     preview.classList.add('visual-export-frame')
     await this.wait(80)
+    const previewRect = preview.getBoundingClientRect()
 
     const snapshot = await html2canvas(preview, {
       allowTaint: false,
       backgroundColor: null,
+      height: Math.ceil(previewRect.height),
       scale: this.exportScale,
       useCORS: true,
+      width: Math.ceil(previewRect.width),
+      windowHeight: Math.ceil(previewRect.height),
+      windowWidth: Math.ceil(previewRect.width),
     })
     preview.classList.remove('visual-export-frame')
 

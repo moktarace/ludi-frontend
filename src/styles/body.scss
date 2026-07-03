@@ -4553,29 +4553,47 @@ button:disabled {
   }
 
   .galaxy-tree-card {
-    min-height: 42rem;
+    min-height: 46rem;
     margin-inline: -0.35rem;
   }
 
   .galaxy-tree {
-    inset: 8% -18% 4%;
-    width: 136%;
-    height: 92%;
+    inset: 7% -34% 4%;
+    width: 168%;
+    height: 91%;
+    opacity: 0.78;
+    transform: scaleX(0.96);
+  }
+
+  .galaxy-tree-glow,
+  .galaxy-star-field {
+    transform: none;
   }
 
   .galaxy-map-word {
     left: 48%;
-    top: 1.65rem;
-    font-size: 3.85rem;
+    top: 1.35rem;
+    font-size: 3.25rem;
   }
 
   .galaxy-source {
     top: 50%;
     bottom: auto;
+
+    img {
+      width: 6.2rem;
+      padding: 0.52rem;
+      border-width: 0.28rem;
+      box-shadow:
+        0 0 0 0.3rem rgb(7 27 32 / 96%),
+        0 0 0 0.58rem rgb(244 190 76 / 46%),
+        0 0 2rem rgb(244 190 76 / 44%),
+        0 0.85rem 1.45rem rgb(0 0 0 / 34%);
+    }
   }
 
   .galaxy-fruit {
-    width: clamp(3.25rem, 14.2vw, 4rem);
+    width: clamp(3.1rem, 14vw, 3.85rem);
   }
 
   .galaxy-fruit-back {
@@ -4593,23 +4611,23 @@ button:disabled {
   }
 
   .galaxy-fruit-2 {
-    left: 12%;
-    top: 18%;
+    left: 11%;
+    top: 16%;
   }
 
   .galaxy-fruit-3 {
-    left: 39%;
-    top: 14%;
+    left: 43%;
+    top: 13%;
   }
 
   .galaxy-fruit-4 {
-    right: 12%;
-    top: 20%;
+    right: 11%;
+    top: 17%;
   }
 
   .galaxy-fruit-5 {
-    right: 3%;
-    top: 30%;
+    right: 10%;
+    top: 36%;
   }
 
   .galaxy-fruit-6 {
@@ -4618,40 +4636,41 @@ button:disabled {
   }
 
   .galaxy-fruit-7 {
-    left: 4%;
-    top: 30%;
+    left: 10%;
+    top: 35%;
   }
 
   .galaxy-fruit-8 {
-    right: 12%;
-    top: 49%;
+    right: 8%;
+    top: 62%;
   }
 
   .galaxy-fruit-9 {
-    left: 36%;
-    top: 26%;
+    left: 37%;
+    top: 27%;
   }
 
   .galaxy-fruit-10 {
-    left: 5%;
+    left: 7%;
     top: auto;
-    bottom: 25%;
+    bottom: 18%;
   }
 
   .galaxy-fruit-11 {
-    left: 38%;
-    bottom: 13%;
+    left: 39%;
+    bottom: 6%;
   }
 
   .galaxy-fruit-12 {
     left: auto;
-    right: 5%;
-    bottom: 25%;
+    right: 7%;
+    bottom: 18%;
   }
 
   .galaxy-fruit-13 {
-    right: 38%;
-    bottom: 3%;
+    right: 34%;
+    top: 29%;
+    bottom: auto;
   }
 
   .galaxy-fruit-14 {
@@ -4662,7 +4681,7 @@ button:disabled {
   .galaxy-fruit-15 {
     left: 6%;
     right: auto;
-    bottom: 5%;
+    bottom: 4%;
   }
 
   .join-us-inner {

@@ -55,6 +55,7 @@ export class AppComponent implements OnInit {
         this.highlightedShow =
           shows.filter((s) => s.isHighlighted)[0] || shows[0];
         shows.filter((s) => s.id !== this.highlightedShow?.id);
+        this.scrollToCurrentAnchor();
       })
     );
   }
@@ -67,5 +68,27 @@ export class AppComponent implements OnInit {
     this.isPlanningPage = hash === AppComponent.PLANNING_HASH;
     this.isPrivateToolsHomePage = hash === AppComponent.PRIVATE_TOOLS_HOME_HASH;
     this.isLegalNoticePage = hash === AppComponent.LEGAL_NOTICE_HASH;
+    this.scrollToCurrentAnchor();
+  }
+
+  private scrollToCurrentAnchor(): void {
+    const id = window.location.hash.replace(/^#/, "");
+
+    if (!id) {
+      return;
+    }
+
+    if (this.isToolsPage || this.isProgrammationAdminPage || this.isPlanningPage || this.isPrivateToolsHomePage || this.isLegalNoticePage) {
+      window.setTimeout(() => window.scrollTo({ top: 0 }));
+      return;
+    }
+
+    const scrollToAnchor = () => {
+      document.getElementById(decodeURIComponent(id))?.scrollIntoView({ block: "start" });
+    };
+
+    [0, 150, 450, 900].forEach((delay) => {
+      window.setTimeout(scrollToAnchor, delay);
+    });
   }
 }

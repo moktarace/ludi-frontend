@@ -560,18 +560,6 @@ div.bg-dark.bg-black {
   color: var(--ludi-paper);
 }
 
-.galaxy-section::before {
-  content: "GALAXIE";
-  position: absolute;
-  left: -0.08em;
-  top: 0.18em;
-  color: rgb(255 248 237 / 5%);
-  font-family: "The Bold Font", system-ui, sans-serif;
-  font-size: clamp(6rem, 18vw, 16rem);
-  line-height: 0.8;
-  transform: rotate(-2deg);
-}
-
 .galaxy-inner {
   position: relative;
   z-index: 1;
@@ -653,19 +641,20 @@ app-galaxy {
 
 .galaxy-map-word {
   position: absolute;
-  left: 50%;
-  top: 1.5rem;
+  left: 47%;
+  top: 0.9rem;
   z-index: 0;
-  color: rgb(255 248 237 / 9%);
+  color: rgb(255 248 237 / 8%);
   font-family: "The Bold Font", system-ui, sans-serif;
-  font-size: clamp(4.5rem, 16vw, 12rem);
+  font-size: clamp(3.8rem, 12vw, 9rem);
   line-height: 0.8;
   letter-spacing: 0;
   text-transform: uppercase;
   transform:
     translateX(calc(-50% + var(--galaxy-gyro-x)))
     translateY(calc(var(--galaxy-gyro-y) * 0.45))
-    scaleX(1.15);
+    rotate(-4deg)
+    scaleX(1.08);
   white-space: nowrap;
 }
 
@@ -4575,8 +4564,9 @@ button:disabled {
   }
 
   .galaxy-map-word {
-    top: 2.25rem;
-    font-size: 4.6rem;
+    left: 48%;
+    top: 1.65rem;
+    font-size: 3.85rem;
   }
 
   .galaxy-source {
@@ -4603,18 +4593,18 @@ button:disabled {
   }
 
   .galaxy-fruit-2 {
-    left: 17%;
-    top: 9%;
+    left: 12%;
+    top: 18%;
   }
 
   .galaxy-fruit-3 {
-    left: 42%;
-    top: 8%;
+    left: 39%;
+    top: 14%;
   }
 
   .galaxy-fruit-4 {
-    right: 17%;
-    top: 9%;
+    right: 12%;
+    top: 20%;
   }
 
   .galaxy-fruit-5 {

@@ -84,10 +84,15 @@ export class ProgrammationAdminComponent implements OnInit {
   public password = ''
   public csrfToken = ''
   public search = ''
+  public pendingSearch = ''
   public dateFilter: DateFilter = 'future'
+  public pendingDateFilter: DateFilter = 'future'
   public publishFilter: PublishFilter = 'all'
+  public pendingPublishFilter: PublishFilter = 'all'
   public highlightFilter: HighlightFilter = 'all'
-  public sortMode: SortMode = 'date-desc'
+  public pendingHighlightFilter: HighlightFilter = 'all'
+  public sortMode: SortMode = 'updated'
+  public pendingSortMode: SortMode = 'updated'
   public bulkLocation = ''
   public mediaLibrary: MediaLibrary = { kitLogos: [], legacyLogos: [], uploads: [] }
   public isLegacyLogoPickerOpen = false
@@ -172,7 +177,15 @@ export class ProgrammationAdminComponent implements OnInit {
       || this.dateFilter !== 'future'
       || this.publishFilter !== 'all'
       || this.highlightFilter !== 'all'
-      || this.sortMode !== 'date-desc'
+      || this.sortMode !== 'updated'
+  }
+
+  public get hasPendingFilters(): boolean {
+    return this.pendingSearch !== this.search
+      || this.pendingDateFilter !== this.dateFilter
+      || this.pendingPublishFilter !== this.publishFilter
+      || this.pendingHighlightFilter !== this.highlightFilter
+      || this.pendingSortMode !== this.sortMode
   }
 
   public get legacyLogoItems(): MediaItem[] {
@@ -307,10 +320,25 @@ export class ProgrammationAdminComponent implements OnInit {
 
   public resetFilters(): void {
     this.search = ''
+    this.pendingSearch = ''
     this.dateFilter = 'future'
+    this.pendingDateFilter = 'future'
     this.publishFilter = 'all'
+    this.pendingPublishFilter = 'all'
     this.highlightFilter = 'all'
-    this.sortMode = 'date-desc'
+    this.pendingHighlightFilter = 'all'
+    this.sortMode = 'updated'
+    this.pendingSortMode = 'updated'
+    this.clearSelection()
+  }
+
+  public applyFilters(): void {
+    this.search = this.pendingSearch
+    this.dateFilter = this.pendingDateFilter
+    this.publishFilter = this.pendingPublishFilter
+    this.highlightFilter = this.pendingHighlightFilter
+    this.sortMode = this.pendingSortMode
+    this.clearSelection()
   }
 
   public save(): void {

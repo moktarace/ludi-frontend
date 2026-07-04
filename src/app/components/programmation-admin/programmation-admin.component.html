@@ -79,21 +79,22 @@
           <span>Recherche</span>
           <input
             type="search"
-            [(ngModel)]="search"
+            [(ngModel)]="pendingSearch"
             [ngModelOptions]="{standalone: true}"
             placeholder="Nom, lieu, texte..."
           />
         </label>
 
-        <details class="programmation-drawer" [open]="hasActiveFilters">
+        <details class="programmation-drawer" [open]="hasActiveFilters || hasPendingFilters">
           <summary>
             Filtres et tri
             <span *ngIf="hasActiveFilters">actif</span>
+            <span *ngIf="hasPendingFilters">à appliquer</span>
           </summary>
           <div class="programmation-filter-grid">
             <label>
               Dates
-              <select class="form-select" [(ngModel)]="dateFilter" [ngModelOptions]="{standalone: true}">
+              <select class="form-select" [(ngModel)]="pendingDateFilter" [ngModelOptions]="{standalone: true}">
                 <option value="all">Toutes</option>
                 <option value="future">À venir</option>
                 <option value="past">Passées</option>
@@ -101,7 +102,7 @@
             </label>
             <label>
               Publication
-              <select class="form-select" [(ngModel)]="publishFilter" [ngModelOptions]="{standalone: true}">
+              <select class="form-select" [(ngModel)]="pendingPublishFilter" [ngModelOptions]="{standalone: true}">
                 <option value="all">Toutes</option>
                 <option value="published">Publiées</option>
                 <option value="draft">Brouillons</option>
@@ -109,22 +110,25 @@
             </label>
             <label>
               Mise en avant
-              <select class="form-select" [(ngModel)]="highlightFilter" [ngModelOptions]="{standalone: true}">
+              <select class="form-select" [(ngModel)]="pendingHighlightFilter" [ngModelOptions]="{standalone: true}">
                 <option value="all">Toutes</option>
                 <option value="highlighted">À l'affiche</option>
               </select>
             </label>
             <label>
               Trier
-              <select class="form-select" [(ngModel)]="sortMode" [ngModelOptions]="{standalone: true}">
+              <select class="form-select" [(ngModel)]="pendingSortMode" [ngModelOptions]="{standalone: true}">
+                <option value="updated">Ordre actuel</option>
                 <option value="date-desc">Plus récentes</option>
                 <option value="date-asc">Plus anciennes</option>
                 <option value="name-asc">Nom A-Z</option>
-                <option value="updated">Ordre actuel</option>
               </select>
             </label>
           </div>
-          <button type="button" class="programmation-ghost-button" [disabled]="!hasActiveFilters" (click)="resetFilters()">Réinitialiser</button>
+          <div class="programmation-filter-actions">
+            <button type="button" class="programmation-primary-button" [disabled]="!hasPendingFilters" (click)="applyFilters()">Appliquer le filtre</button>
+            <button type="button" class="programmation-ghost-button" [disabled]="!hasActiveFilters && !hasPendingFilters" (click)="resetFilters()">Réinitialiser</button>
+          </div>
         </details>
       </section>
 

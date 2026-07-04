@@ -9,6 +9,7 @@ type CarouselLogoSize = 's' | 'm' | 'l' | 'xl'
 type VisualTaglinePlacement = 'top-left' | 'top-right' | 'center-left' | 'center-right' | 'bottom-left' | 'bottom-right'
 type LegacyLogoPickerTarget = 'poster' | 'carousel'
 type Html2Canvas = typeof import('html2canvas').default
+type ChampionshipSlideId = 'match' | 'standings' | 'dates'
 
 interface CarouselPhoto {
   id: string
@@ -44,6 +45,44 @@ interface PedagogyTemplate {
   slides: PedagogySlide[]
 }
 
+interface ChampionshipTeam {
+  id: string
+  name: string
+  label: string
+  color: string
+  textColor: string
+  points: number
+  faults: number
+  faultsList: string
+}
+
+interface ChampionshipMatch {
+  id: string
+  label: string
+  teamAId: string
+  teamBId: string
+  scoreA: number
+  scoreB: number
+}
+
+interface ChampionshipStanding extends ChampionshipTeam {
+  wins: number
+  losses: number
+  draws: number
+  scored: number
+  conceded: number
+  difference: number
+  rank: number
+}
+
+interface PersistedChampionshipState {
+  title?: string
+  edition?: string
+  selectedMatchId?: string
+  teams?: ChampionshipTeam[]
+  matches?: ChampionshipMatch[]
+}
+
 @Component({
   selector: 'app-tools',
   templateUrl: './tools.component.html',
@@ -53,6 +92,7 @@ export class ToolsComponent {
   private static REEL_FRAME_RATE = 12
   private static CAROUSEL_MAX_PHOTOS = 19
   private static PEDAGOGY_MAX_CONTENT_SLIDES = 18
+  private static CHAMPIONSHIP_STORAGE_KEY = 'ludi-tools-championnat-improvisem'
 
   private static DATE_FORMATTER = new Intl.DateTimeFormat('fr-FR', {
     day: 'numeric',
@@ -81,6 +121,9 @@ export class ToolsComponent {
 
   @ViewChildren('pedagogySlide')
   public pedagogySlidesRef?: QueryList<ElementRef<HTMLElement>>
+
+  @ViewChildren('championshipSlide')
+  public championshipSlidesRef?: QueryList<ElementRef<HTMLElement>>
 
   public readonly formats: { label: string; value: VisualFormat }[] = [
     { label: 'Post', value: 'post' },
@@ -365,6 +408,67 @@ export class ToolsComponent {
   public pedagogySlides: PedagogySlide[] = this.clonePedagogySlides(this.pedagogyTemplates[0])
   public pedagogyPreviewIndex = 0
   public isPedagogyExporting = false
+  public championshipTitle = 'Championnat Improvisem'
+  public championshipEdition = 'Bouclier Improvisem'
+  public championshipTeams: ChampionshipTeam[] = [
+    {
+      id: 'yellow',
+      name: 'Equipe Jaune',
+      label: 'Jaune',
+      color: '#ffd326',
+      textColor: '#17121f',
+      points: 3,
+      faults: 2,
+      faultsList: 'Cabotinage solaire; Accessoire imaginaire non homologue',
+    },
+    {
+      id: 'black',
+      name: 'Equipe Noire',
+      label: 'Noir',
+      color: '#18181d',
+      textColor: '#fff8ed',
+      points: 2,
+      faults: 4,
+      faultsList: "Refus d'obstacle; Regard arbitral beaucoup trop intense",
+    },
+    {
+      id: 'red',
+      name: 'Equipe Rouge',
+      label: 'Rouge',
+      color: '#df2f42',
+      textColor: '#fff8ed',
+      points: 4,
+      faults: 1,
+      faultsList: 'Jeu dangereusement charismatique',
+    },
+    {
+      id: 'white',
+      name: 'Equipe Blanche',
+      label: 'Blanc',
+      color: '#fff8ed',
+      textColor: '#17121f',
+      points: 1,
+      faults: 3,
+      faultsList: 'Mime de porte discutable; Propulsion narrative non declaree',
+    },
+  ]
+  public championshipMatches: ChampionshipMatch[] = [
+    { id: 'match-1', label: 'Match 1', teamAId: '', teamBId: '', scoreA: 0, scoreB: 0 },
+    { id: 'match-2', label: 'Match 2', teamAId: '', teamBId: '', scoreA: 0, scoreB: 0 },
+    { id: 'match-3', label: 'Match 3', teamAId: '', teamBId: '', scoreA: 0, scoreB: 0 },
+    { id: 'match-4', label: 'Match 4', teamAId: '', teamBId: '', scoreA: 0, scoreB: 0 },
+    { id: 'match-5', label: 'Match 5', teamAId: '', teamBId: '', scoreA: 0, scoreB: 0 },
+    { id: 'match-6', label: 'Match 6', teamAId: '', teamBId: '', scoreA: 0, scoreB: 0 },
+    { id: 'small-final', label: 'Petite finale', teamAId: '', teamBId: '', scoreA: 0, scoreB: 0 },
+    { id: 'big-final', label: 'Grande finale', teamAId: '', teamBId: '', scoreA: 0, scoreB: 0 },
+  ]
+  public selectedChampionshipMatchId = this.championshipMatches[0].id
+  public championshipPreviewIndex = 0
+  public isChampionshipExporting = false
+
+  constructor() {
+    this.restoreChampionshipState()
+  }
 
   public get sortedShows(): Show[] {
     return [...(this.shows || [])].sort((a, b) => (a.date || 0) - (b.date || 0))
@@ -684,6 +788,146 @@ export class ToolsComponent {
     return this.isSharing ? 'Préparation...' : 'Partager le carrousel'
   }
 
+  public get championshipExportLabel(): string {
+    return this.isChampionshipExporting ? 'Gravure en PNG...' : 'Télécharger les 2 slides'
+  }
+
+  public get championshipShareLabel(): string {
+    return this.isSharing ? 'Préparation...' : 'Partager les slides'
+  }
+
+  public get championshipStandings(): ChampionshipStanding[] {
+    const standingByTeam = new Map<string, ChampionshipStanding>()
+
+    for (const team of this.championshipTeams) {
+      standingByTeam.set(team.id, {
+        ...team,
+        wins: 0,
+        losses: 0,
+        draws: 0,
+        scored: 0,
+        conceded: 0,
+        difference: 0,
+        rank: 0,
+      })
+    }
+
+    for (const match of this.completedPlayedChampionshipMatches) {
+      const teamA = standingByTeam.get(match.teamAId)
+      const teamB = standingByTeam.get(match.teamBId)
+      if (!teamA || !teamB) {
+        continue
+      }
+
+      teamA.scored += this.safeScore(match.scoreA)
+      teamA.conceded += this.safeScore(match.scoreB)
+      teamB.scored += this.safeScore(match.scoreB)
+      teamB.conceded += this.safeScore(match.scoreA)
+
+      if (this.safeScore(match.scoreA) > this.safeScore(match.scoreB)) {
+        teamA.wins += 1
+        teamB.losses += 1
+      } else if (this.safeScore(match.scoreA) < this.safeScore(match.scoreB)) {
+        teamB.wins += 1
+        teamA.losses += 1
+      } else {
+        teamA.draws += 1
+        teamB.draws += 1
+      }
+    }
+
+    return Array.from(standingByTeam.values())
+      .map((team) => ({ ...team, difference: team.scored - team.conceded }))
+      .sort((a, b) => (
+        b.points - a.points ||
+        b.wins - a.wins ||
+        b.difference - a.difference ||
+        b.scored - a.scored ||
+        a.faults - b.faults ||
+        a.name.localeCompare(b.name)
+      ))
+      .map((team, index) => ({ ...team, rank: index + 1 }))
+  }
+
+  public get selectedChampionshipMatch(): ChampionshipMatch {
+    return (
+      this.championshipMatches.find((match) => match.id === this.selectedChampionshipMatchId) ||
+      this.championshipMatches[0]
+    )
+  }
+
+  public get selectedChampionshipMatchIndex(): number {
+    return Math.max(
+      this.championshipMatches.findIndex((match) => match.id === this.selectedChampionshipMatch.id),
+      0
+    )
+  }
+
+  public get playedChampionshipMatches(): ChampionshipMatch[] {
+    return this.championshipMatches.slice(0, this.selectedChampionshipMatchIndex + 1)
+  }
+
+  public get completedPlayedChampionshipMatches(): ChampionshipMatch[] {
+    return this.playedChampionshipMatches.filter((match) => this.isCompleteChampionshipMatch(match))
+  }
+
+  public get upcomingChampionshipMatches(): ChampionshipMatch[] {
+    return this.championshipMatches.slice(this.selectedChampionshipMatchIndex + 1)
+  }
+
+  public get selectedMatchTeamA(): ChampionshipTeam {
+    return this.teamById(this.selectedChampionshipMatch.teamAId)
+  }
+
+  public get selectedMatchTeamB(): ChampionshipTeam {
+    return this.teamById(this.selectedChampionshipMatch.teamBId)
+  }
+
+  public get selectedMatchWinner(): ChampionshipStanding | undefined {
+    return this.getMatchWinner(this.selectedChampionshipMatch)
+  }
+
+  public get selectedMatchLoser(): ChampionshipStanding | undefined {
+    return this.getMatchLoser(this.selectedChampionshipMatch)
+  }
+
+  public get championshipWinner(): ChampionshipStanding {
+    return this.selectedMatchWinner || this.championshipStandings[0]
+  }
+
+  public get championshipRunnerUp(): ChampionshipStanding | undefined {
+    const finalLoser = this.getMatchLoser(this.bigFinalMatch)
+    return finalLoser || this.championshipStandings[1]
+  }
+
+  public get smallFinalMatch(): ChampionshipMatch {
+    return this.championshipMatches.find((match) => match.id === 'small-final') || this.championshipMatches[6]
+  }
+
+  public get bigFinalMatch(): ChampionshipMatch {
+    return this.championshipMatches.find((match) => match.id === 'big-final') || this.championshipMatches[7]
+  }
+
+  public get canGoToPreviousChampionshipSlide(): boolean {
+    return this.championshipPreviewIndex > 0
+  }
+
+  public get canGoToNextChampionshipSlide(): boolean {
+    return this.championshipPreviewIndex < 2
+  }
+
+  public get isChampionshipRecapPreview(): boolean {
+    return this.championshipPreviewIndex === 0
+  }
+
+  public get isChampionshipStandingsPreview(): boolean {
+    return this.championshipPreviewIndex === 1
+  }
+
+  public get isChampionshipDatesPreview(): boolean {
+    return this.championshipPreviewIndex === 2
+  }
+
   private get periodBaseDate(): Date {
     const now = Date.now()
     const future = this.sortedShows.find((show) => show.date && show.date * 1000 >= now)
@@ -951,6 +1195,127 @@ export class ToolsComponent {
     })
   }
 
+  public teamById(teamId: string): ChampionshipTeam {
+    return this.championshipTeams.find((team) => team.id === teamId) || {
+      id: '',
+      name: 'Equipe à choisir',
+      label: 'A choisir',
+      color: '#fff8ed',
+      textColor: '#17121f',
+      points: 0,
+      faults: 0,
+      faultsList: '',
+    }
+  }
+
+  public standingById(teamId: string): ChampionshipStanding {
+    return this.championshipStandings.find((team) => team.id === teamId) || this.championshipStandings[0]
+  }
+
+  public faultItems(team: ChampionshipTeam): string[] {
+    return team.faultsList
+      .split(/[;\n]/)
+      .map((fault) => fault.trim())
+      .filter(Boolean)
+  }
+
+  public matchWinnerLabel(match: ChampionshipMatch): string {
+    if (!this.isCompleteChampionshipMatch(match)) {
+      return 'Duel pas encore revele'
+    }
+
+    const winner = this.getMatchWinner(match)
+    if (!winner) {
+      return 'Egalite dramatique'
+    }
+
+    return `${winner.label} rafle le rideau`
+  }
+
+  public selectChampionshipPreview(index: number): void {
+    this.championshipPreviewIndex = Math.max(0, Math.min(index, 2))
+  }
+
+  public previousChampionshipSlide(): void {
+    if (this.canGoToPreviousChampionshipSlide) {
+      this.championshipPreviewIndex -= 1
+    }
+  }
+
+  public nextChampionshipSlide(): void {
+    if (this.canGoToNextChampionshipSlide) {
+      this.championshipPreviewIndex += 1
+    }
+  }
+
+  public syncChampionshipFinalsFromStandings(): void {
+    const standings = this.championshipStandings
+    if (standings.length < 4) {
+      return
+    }
+
+    this.championshipMatches = this.championshipMatches.map((match) => {
+      if (match.id === 'small-final') {
+        return { ...match, teamAId: standings[2].id, teamBId: standings[3].id }
+      }
+
+      if (match.id === 'big-final') {
+        return { ...match, teamAId: standings[0].id, teamBId: standings[1].id }
+      }
+
+      return match
+    })
+    this.persistChampionshipState()
+  }
+
+  public addChampionshipMatch(): void {
+    const index = this.championshipMatches.length + 1
+    const id = `match-${Date.now()}`
+    this.championshipMatches = [
+      ...this.championshipMatches,
+      {
+        id,
+        label: `Match ${index}`,
+        teamAId: '',
+        teamBId: '',
+        scoreA: 0,
+        scoreB: 0,
+      },
+    ]
+    this.selectedChampionshipMatchId = id
+    this.persistChampionshipState()
+  }
+
+  public removeChampionshipMatch(match: ChampionshipMatch): void {
+    if (this.championshipMatches.length <= 1) {
+      return
+    }
+
+    const removedIndex = this.championshipMatches.findIndex((item) => item.id === match.id)
+    this.championshipMatches = this.championshipMatches.filter((item) => item.id !== match.id)
+
+    if (this.selectedChampionshipMatchId === match.id) {
+      const nextIndex = Math.min(Math.max(removedIndex, 0), this.championshipMatches.length - 1)
+      this.selectedChampionshipMatchId = this.championshipMatches[nextIndex].id
+    }
+    this.persistChampionshipState()
+  }
+
+  public persistChampionshipState(): void {
+    try {
+      const state: PersistedChampionshipState = {
+        title: this.championshipTitle,
+        edition: this.championshipEdition,
+        selectedMatchId: this.selectedChampionshipMatchId,
+        teams: this.championshipTeams,
+        matches: this.championshipMatches,
+      }
+      localStorage.setItem(ToolsComponent.CHAMPIONSHIP_STORAGE_KEY, JSON.stringify(state))
+    } catch (error) {
+      // Local storage can be unavailable in private browsing or prerender-like contexts.
+    }
+  }
+
   public unlockTools(): void {
     if (this.accessCode.trim() === PRIVATE_ACCESS_CODE) {
       this.isUnlocked = true
@@ -977,6 +1342,64 @@ export class ToolsComponent {
     }
     reader.readAsDataURL(file)
     input.value = ''
+  }
+
+  private restoreChampionshipState(): void {
+    try {
+      const rawState = localStorage.getItem(ToolsComponent.CHAMPIONSHIP_STORAGE_KEY)
+      if (!rawState) {
+        return
+      }
+
+      const state = JSON.parse(rawState) as PersistedChampionshipState
+
+      if (typeof state.title === 'string') {
+        this.championshipTitle = state.title
+      }
+
+      if (typeof state.edition === 'string') {
+        this.championshipEdition = state.edition
+      }
+
+      if (Array.isArray(state.teams)) {
+        const savedTeams = new Map(state.teams.map((team) => [team.id, team]))
+        this.championshipTeams = this.championshipTeams.map((team) => ({
+          ...team,
+          ...savedTeams.get(team.id),
+          id: team.id,
+          color: team.color,
+          textColor: team.textColor,
+        }))
+      }
+
+      if (Array.isArray(state.matches) && state.matches.length) {
+        this.championshipMatches = state.matches
+          .filter((match) => match && typeof match.id === 'string')
+          .map((match, index) => ({
+            id: match.id || `match-${index + 1}`,
+            label: String(match.label || `Match ${index + 1}`),
+            teamAId: String(match.teamAId || ''),
+            teamBId: String(match.teamBId || ''),
+            scoreA: this.safeScore(match.scoreA),
+            scoreB: this.safeScore(match.scoreB),
+          }))
+      }
+
+      if (
+        typeof state.selectedMatchId === 'string' &&
+        this.championshipMatches.some((match) => match.id === state.selectedMatchId)
+      ) {
+        this.selectedChampionshipMatchId = state.selectedMatchId
+      } else {
+        this.selectedChampionshipMatchId = this.championshipMatches[0]?.id || ''
+      }
+    } catch (error) {
+      try {
+        localStorage.removeItem(ToolsComponent.CHAMPIONSHIP_STORAGE_KEY)
+      } catch (storageError) {
+        // Nothing to clean up when local storage itself is unavailable.
+      }
+    }
   }
 
   private async addCarouselFiles(files?: FileList | null): Promise<void> {
@@ -1119,6 +1542,39 @@ export class ToolsComponent {
     }
   }
 
+  public async exportChampionshipSlides(): Promise<void> {
+    if (!this.championshipSlidesRef?.length || this.isChampionshipExporting) {
+      return
+    }
+
+    this.isChampionshipExporting = true
+
+    try {
+      const files = await this.createChampionshipFiles()
+      for (const file of files) {
+        this.downloadBlob(file, file.name)
+        await this.wait(140)
+      }
+    } finally {
+      this.isChampionshipExporting = false
+    }
+  }
+
+  public async shareChampionshipSlides(): Promise<void> {
+    if (this.isSharing || !this.championshipSlidesRef?.length) {
+      return
+    }
+
+    this.isSharing = true
+
+    try {
+      const files = await this.createChampionshipFiles()
+      await this.shareFiles(files, 'Resultats Championnat Improvisem')
+    } finally {
+      this.isSharing = false
+    }
+  }
+
   private async createVisualFile(): Promise<File> {
     if (!this.visualCanvas) {
       throw new Error('Aucun visuel à exporter')
@@ -1204,6 +1660,33 @@ export class ToolsComponent {
         useCORS: true,
       })
       const fileName = `${baseFileName}-${String(index + 1).padStart(2, '0')}.png`
+      files.push(new File([await this.canvasToBlob(canvas)], fileName, { type: 'image/png' }))
+    }
+
+    return files
+  }
+
+  private async createChampionshipFiles(): Promise<File[]> {
+    if (!this.championshipSlidesRef?.length) {
+      return []
+    }
+
+    const html2canvasModule = await import('html2canvas')
+    const html2canvas = html2canvasModule.default
+    const slides = this.championshipSlidesRef.toArray().slice(0, 3)
+    const files: File[] = []
+    const baseFileName = this.fileNameBase(`championnat-improvisem-${this.slugify(this.championshipTitle)}`)
+
+    for (let index = 0; index < slides.length; index += 1) {
+      const slide = slides[index].nativeElement
+      const canvas = await html2canvas(slide, {
+        allowTaint: false,
+        backgroundColor: null,
+        scale: 1080 / slide.clientWidth,
+        useCORS: true,
+      })
+      const slideName: ChampionshipSlideId = index === 0 ? 'match' : index === 1 ? 'standings' : 'dates'
+      const fileName = `${baseFileName}-${slideName}.png`
       files.push(new File([await this.canvasToBlob(canvas)], fileName, { type: 'image/png' }))
     }
 
@@ -1376,6 +1859,48 @@ export class ToolsComponent {
     }
 
     return parts.filter(Boolean).join('-')
+  }
+
+  private getMatchWinner(match: ChampionshipMatch): ChampionshipStanding | undefined {
+    if (!this.isCompleteChampionshipMatch(match)) {
+      return undefined
+    }
+
+    if (this.safeScore(match.scoreA) === this.safeScore(match.scoreB)) {
+      return undefined
+    }
+
+    return this.safeScore(match.scoreA) > this.safeScore(match.scoreB)
+      ? this.standingById(match.teamAId)
+      : this.standingById(match.teamBId)
+  }
+
+  private getMatchLoser(match: ChampionshipMatch): ChampionshipStanding | undefined {
+    if (!this.isCompleteChampionshipMatch(match)) {
+      return undefined
+    }
+
+    if (this.safeScore(match.scoreA) === this.safeScore(match.scoreB)) {
+      return undefined
+    }
+
+    return this.safeScore(match.scoreA) < this.safeScore(match.scoreB)
+      ? this.standingById(match.teamAId)
+      : this.standingById(match.teamBId)
+  }
+
+  private safeScore(score: number): number {
+    return Number.isFinite(Number(score)) ? Number(score) : 0
+  }
+
+  private isCompleteChampionshipMatch(match: ChampionshipMatch): boolean {
+    return Boolean(
+      match.teamAId &&
+      match.teamBId &&
+      match.teamAId !== match.teamBId &&
+      this.championshipTeams.some((team) => team.id === match.teamAId) &&
+      this.championshipTeams.some((team) => team.id === match.teamBId)
+    )
   }
 
   private fileDate(date: Date): string {

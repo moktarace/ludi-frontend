@@ -974,4 +974,438 @@
       </div>
     </div>
   </div>
+
+  <div class="container carousel-tools-inner championship-tools-inner" *ngIf="isUnlocked">
+    <div class="carousel-tools-panel championship-tools-panel">
+      <h2>Championnat Improvisem</h2>
+      <p>
+        Génère un carrousel après chaque match: score du duel, état du championnat
+        à date, puis rappel des prochaines dates.
+      </p>
+
+      <div class="visual-control-group">
+        <label for="championship-title">Nom du championnat</label>
+        <input
+          id="championship-title"
+          type="text"
+          class="form-control"
+          [ngModel]="championshipTitle"
+          (ngModelChange)="championshipTitle = $event; persistChampionshipState()"
+        />
+      </div>
+
+      <div class="visual-control-group">
+        <label for="championship-current-match">Match publié</label>
+        <select
+          id="championship-current-match"
+          class="form-select"
+          [ngModel]="selectedChampionshipMatchId"
+          (ngModelChange)="selectedChampionshipMatchId = $event; persistChampionshipState()"
+        >
+          <option *ngFor="let match of championshipMatches" [value]="match.id">
+            {{ match.label }} - {{ teamById(match.teamAId).label }} vs {{ teamById(match.teamBId).label }}
+          </option>
+        </select>
+      </div>
+
+      <details class="visual-custom-panel" open>
+        <summary>Points et fautes à date</summary>
+
+        <div class="championship-editor-grid">
+          <div
+            class="championship-editor-team"
+            *ngFor="let team of championshipTeams"
+            [style.--team-color]="team.color"
+          >
+            <div class="championship-editor-team-heading">
+              <span></span>
+              <input
+                type="text"
+                class="form-control"
+                [ngModel]="team.name"
+                (ngModelChange)="team.name = $event; persistChampionshipState()"
+              />
+            </div>
+            <div class="championship-editor-numbers">
+              <label>
+                Points
+                <input
+                  type="number"
+                  class="form-control"
+                  [ngModel]="team.points"
+                  (ngModelChange)="team.points = $event; persistChampionshipState()"
+                />
+              </label>
+              <label>
+                Fautes
+                <input
+                  type="number"
+                  class="form-control"
+                  [ngModel]="team.faults"
+                  (ngModelChange)="team.faults = $event; persistChampionshipState()"
+                />
+              </label>
+            </div>
+            <textarea
+              class="form-control"
+              rows="2"
+              [ngModel]="team.faultsList"
+              (ngModelChange)="team.faultsList = $event; persistChampionshipState()"
+              placeholder="Fautes du match ou cumul, séparées par ;"
+            ></textarea>
+          </div>
+        </div>
+      </details>
+
+      <details class="visual-custom-panel" open>
+        <summary>Calendrier du tournoi</summary>
+
+        <div class="championship-match-editor">
+          <div
+            class="championship-match-editor-row"
+            *ngFor="let match of championshipMatches"
+            [class.active]="match.id === selectedChampionshipMatchId"
+          >
+            <input
+              type="text"
+              class="form-control championship-match-label-input"
+              [ngModel]="match.label"
+              (ngModelChange)="match.label = $event; persistChampionshipState()"
+            />
+            <select
+              class="form-select"
+              [ngModel]="match.teamAId"
+              (ngModelChange)="match.teamAId = $event; persistChampionshipState()"
+            >
+              <option value="">À choisir</option>
+              <option *ngFor="let team of championshipTeams" [value]="team.id">
+                {{ team.label }}
+              </option>
+            </select>
+            <input
+              type="number"
+              class="form-control"
+              [ngModel]="match.scoreA"
+              (ngModelChange)="match.scoreA = $event; persistChampionshipState()"
+            />
+            <span>vs</span>
+            <input
+              type="number"
+              class="form-control"
+              [ngModel]="match.scoreB"
+              (ngModelChange)="match.scoreB = $event; persistChampionshipState()"
+            />
+            <select
+              class="form-select"
+              [ngModel]="match.teamBId"
+              (ngModelChange)="match.teamBId = $event; persistChampionshipState()"
+            >
+              <option value="">À choisir</option>
+              <option *ngFor="let team of championshipTeams" [value]="team.id">
+                {{ team.label }}
+              </option>
+            </select>
+            <button
+              type="button"
+              class="championship-match-remove-button"
+              [disabled]="championshipMatches.length <= 1"
+              (click)="removeChampionshipMatch(match)"
+            >
+              Suppr.
+            </button>
+          </div>
+        </div>
+
+        <div class="visual-inline-actions">
+          <button type="button" (click)="addChampionshipMatch()">
+            Ajouter un match
+          </button>
+          <button type="button" (click)="syncChampionshipFinalsFromStandings()">
+            Remplir les finales depuis le classement actuel
+          </button>
+        </div>
+      </details>
+
+      <button
+        type="button"
+        class="btn btn-danger visual-export-button"
+        [disabled]="isChampionshipExporting"
+        (click)="exportChampionshipSlides()"
+      >
+        {{ championshipExportLabel }}
+      </button>
+      <button
+        type="button"
+        class="btn btn-light visual-share-button"
+        [disabled]="isSharing"
+        (click)="shareChampionshipSlides()"
+      >
+        {{ championshipShareLabel }}
+      </button>
+      <p class="visual-export-note">
+        3 slides générées, exportées en PNG 1080x1350.
+      </p>
+    </div>
+
+    <div class="carousel-export-slides">
+      <ng-container *ngTemplateOutlet="championshipMatchSlide; context: { export: true }"></ng-container>
+      <ng-container *ngTemplateOutlet="championshipStandingsSlide; context: { export: true }"></ng-container>
+      <div #championshipSlide class="carousel-slide carousel-dates-slide">
+        <div class="carousel-dates-header">
+          <img src="assets/logo/logo.png" alt="LUDI Toulouse" />
+          <span>Prochaines dates</span>
+        </div>
+        <div class="carousel-dates-list" *ngIf="carouselAgendaShows.length">
+          <div class="carousel-date-item" *ngFor="let show of carouselAgendaShows">
+            <span>{{ formattedDate(show) }}</span>
+            <strong>{{ show.name }}</strong>
+            <small>{{ show.location }}</small>
+            <em>{{ priceLabel(show) }}</em>
+          </div>
+        </div>
+        <p class="visual-empty" *ngIf="!carouselAgendaShows.length">
+          Aucune prochaine date à afficher
+        </p>
+        <div class="visual-footer">
+          <span>@luditoulouse</span>
+          <span>luditoulouse.org</span>
+        </div>
+      </div>
+    </div>
+
+    <ng-template #championshipMatchSlide>
+      <div
+        #championshipSlide
+        class="carousel-slide championship-slide championship-match-result-slide"
+      >
+        <div class="championship-slash championship-slash-one"></div>
+        <div class="championship-slash championship-slash-two"></div>
+        <header class="championship-slide-header">
+          <img src="assets/logo/kit/improvisem.png" alt="Improvisem" />
+          <div>
+            <span>{{ selectedChampionshipMatch.label }}</span>
+            <strong>{{ selectedMatchTeamA.label }} vs {{ selectedMatchTeamB.label }}</strong>
+          </div>
+        </header>
+
+        <section class="championship-duel-score">
+          <article
+            [class.winner]="selectedChampionshipMatch.scoreA > selectedChampionshipMatch.scoreB"
+            [style.--team-color]="selectedMatchTeamA.color"
+            [style.--team-text]="selectedMatchTeamA.textColor"
+          >
+            <span>{{ selectedMatchTeamA.label }}</span>
+            <strong>{{ selectedChampionshipMatch.scoreA }}</strong>
+            <em>{{ selectedMatchTeamA.faults }} fautes</em>
+          </article>
+          <div>VS</div>
+          <article
+            [class.winner]="selectedChampionshipMatch.scoreB > selectedChampionshipMatch.scoreA"
+            [style.--team-color]="selectedMatchTeamB.color"
+            [style.--team-text]="selectedMatchTeamB.textColor"
+          >
+            <span>{{ selectedMatchTeamB.label }}</span>
+            <strong>{{ selectedChampionshipMatch.scoreB }}</strong>
+            <em>{{ selectedMatchTeamB.faults }} fautes</em>
+          </article>
+        </section>
+
+        <section
+          class="championship-winner-panel"
+          [style.--team-color]="championshipWinner.color"
+          [style.--team-text]="championshipWinner.textColor"
+        >
+          <span>{{ selectedMatchWinner ? 'Victoire du soir' : 'Suspense illegal' }}</span>
+          <strong>{{ selectedMatchWinner?.name || 'Egalite' }}</strong>
+          <em>{{ matchWinnerLabel(selectedChampionshipMatch) }}</em>
+        </section>
+
+        <section class="championship-fault-board championship-match-fault-board">
+          <h3>Fautes du duel</h3>
+          <div>
+            <strong>{{ selectedMatchTeamA.label }}</strong>
+            <span *ngFor="let fault of faultItems(selectedMatchTeamA)">{{ fault }}</span>
+            <span *ngIf="!faultItems(selectedMatchTeamA).length">Aucune. Franchement louche.</span>
+          </div>
+          <div>
+            <strong>{{ selectedMatchTeamB.label }}</strong>
+            <span *ngFor="let fault of faultItems(selectedMatchTeamB)">{{ fault }}</span>
+            <span *ngIf="!faultItems(selectedMatchTeamB).length">Aucune. Le dossier reste ouvert.</span>
+          </div>
+        </section>
+
+        <footer class="championship-slide-footer">
+          <span>@luditoulouse</span>
+          <span>luditoulouse.org</span>
+        </footer>
+      </div>
+    </ng-template>
+
+    <ng-template #championshipStandingsSlide>
+      <div
+        #championshipSlide
+        class="carousel-slide championship-slide championship-bracket-slide"
+      >
+        <div class="championship-slash championship-slash-one"></div>
+        <div class="championship-slash championship-slash-two"></div>
+        <header class="championship-slide-header">
+          <img src="assets/logo/logo.png" alt="LUDI Toulouse" />
+          <div>
+            <span>Etat du championnat</span>
+            <strong>Apres {{ selectedChampionshipMatch.label }}</strong>
+          </div>
+        </header>
+
+        <section class="championship-progress-layout">
+          <div class="championship-played-list">
+            <article
+              class="championship-match-card"
+              *ngFor="let match of playedChampionshipMatches"
+              [class.active]="match.id === selectedChampionshipMatchId"
+            >
+              <span>{{ match.label }}</span>
+              <div
+                class="championship-match-team"
+                [class.winner]="match.scoreA > match.scoreB"
+                [style.--team-color]="teamById(match.teamAId).color"
+                [style.--team-text]="teamById(match.teamAId).textColor"
+              >
+                <strong>{{ teamById(match.teamAId).label }}</strong>
+                <em>{{ match.scoreA }}</em>
+              </div>
+              <div
+                class="championship-match-team"
+                [class.winner]="match.scoreB > match.scoreA"
+                [style.--team-color]="teamById(match.teamBId).color"
+                [style.--team-text]="teamById(match.teamBId).textColor"
+              >
+                <strong>{{ teamById(match.teamBId).label }}</strong>
+                <em>{{ match.scoreB }}</em>
+              </div>
+              <small>{{ matchWinnerLabel(match) }}</small>
+            </article>
+          </div>
+
+          <div class="championship-ranking-list">
+            <article
+              *ngFor="let team of championshipStandings"
+              [style.--team-color]="team.color"
+              [style.--team-text]="team.textColor"
+            >
+              <span>#{{ team.rank }}</span>
+              <strong>{{ team.label }}</strong>
+              <em>{{ team.points }} pts</em>
+              <small>{{ team.wins }}V {{ team.losses }}D {{ team.draws }}N</small>
+            </article>
+          </div>
+        </section>
+
+        <section class="championship-next-match" *ngIf="upcomingChampionshipMatches[0] as nextMatch">
+          <span>Prochain duel</span>
+          <strong>{{ teamById(nextMatch.teamAId).label }} vs {{ teamById(nextMatch.teamBId).label }}</strong>
+          <em>Les pronostics sont deja juridiquement discutables.</em>
+        </section>
+
+        <footer class="championship-slide-footer">
+          <span>@luditoulouse</span>
+          <span>luditoulouse.org</span>
+        </footer>
+      </div>
+    </ng-template>
+
+    <div class="carousel-preview-shell">
+      <div class="instagram-post-preview">
+        <div class="instagram-post-header">
+          <div class="instagram-avatar">
+            <img src="assets/logo/kit/improvisem.png" alt="Improvisem" />
+          </div>
+          <div>
+            <strong>luditoulouse</strong>
+            <span>{{ championshipTitle }}</span>
+          </div>
+        </div>
+
+        <div class="instagram-media-frame">
+          <ng-container *ngIf="isChampionshipRecapPreview">
+            <ng-container *ngTemplateOutlet="championshipMatchSlide"></ng-container>
+          </ng-container>
+          <ng-container *ngIf="isChampionshipStandingsPreview">
+            <ng-container *ngTemplateOutlet="championshipStandingsSlide"></ng-container>
+          </ng-container>
+          <div class="carousel-slide carousel-dates-slide" *ngIf="isChampionshipDatesPreview">
+            <div class="carousel-dates-header">
+              <img src="assets/logo/logo.png" alt="LUDI Toulouse" />
+              <span>Prochaines dates</span>
+            </div>
+            <div class="carousel-dates-list" *ngIf="carouselAgendaShows.length">
+              <div class="carousel-date-item" *ngFor="let show of carouselAgendaShows">
+                <span>{{ formattedDate(show) }}</span>
+                <strong>{{ show.name }}</strong>
+                <small>{{ show.location }}</small>
+                <em>{{ priceLabel(show) }}</em>
+              </div>
+            </div>
+            <p class="visual-empty" *ngIf="!carouselAgendaShows.length">
+              Aucune prochaine date à afficher
+            </p>
+            <div class="visual-footer">
+              <span>@luditoulouse</span>
+              <span>luditoulouse.org</span>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            class="instagram-arrow instagram-arrow-prev"
+            [disabled]="!canGoToPreviousChampionshipSlide"
+            (click)="previousChampionshipSlide()"
+          >
+            ‹
+          </button>
+          <button
+            type="button"
+            class="instagram-arrow instagram-arrow-next"
+            [disabled]="!canGoToNextChampionshipSlide"
+            (click)="nextChampionshipSlide()"
+          >
+            ›
+          </button>
+
+          <span class="instagram-counter">
+            {{ championshipPreviewIndex + 1 }}/3
+          </span>
+        </div>
+
+        <div class="instagram-actions">
+          <span>Like</span>
+          <span>Comment</span>
+          <span>Share</span>
+          <span>Save</span>
+        </div>
+
+        <div class="instagram-dots">
+          <button
+            type="button"
+            [class.active]="championshipPreviewIndex === 0"
+            (click)="selectChampionshipPreview(0)"
+          ></button>
+          <button
+            type="button"
+            [class.active]="championshipPreviewIndex === 1"
+            (click)="selectChampionshipPreview(1)"
+          ></button>
+          <button
+            type="button"
+            [class.active]="championshipPreviewIndex === 2"
+            (click)="selectChampionshipPreview(2)"
+          ></button>
+        </div>
+
+        <div class="instagram-caption">
+          <strong>luditoulouse</strong>
+          <span>{{ selectedMatchWinner?.name || 'Match nul' }} sort du match avec le style. Le championnat continue.</span>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>

@@ -12,6 +12,7 @@ type Html2Canvas = typeof import('html2canvas').default
 type ChampionshipSlideId = 'match' | 'standings' | 'dates'
 type SocialReelMediaKind = 'image' | 'video'
 type SocialReelMediaOrientation = 'portrait' | 'landscape'
+type SocialReelSlideKind = 'content' | 'insert' | 'punchline' | 'dates'
 
 interface SocialReelTextPart {
   text: string
@@ -35,6 +36,7 @@ interface SocialReelMedia {
 
 interface SocialReelSlide {
   id: string
+  kind: SocialReelSlideKind
   text: string
   parts: SocialReelTextPart[]
   media?: SocialReelMedia
@@ -133,6 +135,8 @@ export class ToolsComponent {
   private static SOCIAL_REEL_WIDTH = 1080
   private static SOCIAL_REEL_HEIGHT = 1920
   private static SOCIAL_REEL_FRAME_RATE = 24
+  private static SOCIAL_REEL_INSERT_SECONDS = 2.2
+  private static SOCIAL_REEL_PUNCHLINE_SECONDS = 1.35
 
   private static DATE_FORMATTER = new Intl.DateTimeFormat('fr-FR', {
     day: 'numeric',
@@ -510,7 +514,9 @@ export class ToolsComponent {
   public isChampionshipExporting = false
   public socialReelText = [
     "Ils ont dit que c'etait juste une soiree d'impro.",
+    '[[Mauvaise nouvelle.]]',
     "Puis quelqu'un a annonce *un match a enjeu*.",
+    '!! LES POINTS SONT RÉELS.',
     "Depuis, le campus vit dans une ambiance de finale de Ligue des Champions sans VAR.",
   ].join('\n\n')
   public socialReelMedia: SocialReelMedia[] = []
@@ -861,21 +867,37 @@ export class ToolsComponent {
       .map((paragraph) => paragraph.trim())
       .filter(Boolean)
 
-    const contentSlides = (paragraphs.length ? paragraphs : ["Ajoute ton texte, une idee par paragraphe."])
-      .map((text, index) => ({
-        id: `reel-slide-${index}`,
-        text,
-        parts: this.parseSocialReelText(text),
-        media: this.socialReelMedia.length
-          ? this.socialReelMedia[index % this.socialReelMedia.length]
-          : undefined,
-        index,
-      }))
+    let mediaIndex = 0
+    const contentSlides: SocialReelSlide[] = (paragraphs.length ? paragraphs : ["Ajoute ton texte, une idee par paragraphe."])
+      .map((rawText, index) => {
+        const insertText = this.socialReelInsertText(rawText)
+        const punchlineText = this.socialReelPunchlineText(rawText)
+        const isInsert = Boolean(insertText)
+        const isPunchline = Boolean(punchlineText)
+        const text = insertText || punchlineText || rawText
+        const media = !isInsert && !isPunchline && this.socialReelMedia.length
+          ? this.socialReelMedia[mediaIndex % this.socialReelMedia.length]
+          : undefined
+
+        if (!isInsert && !isPunchline) {
+          mediaIndex += 1
+        }
+
+        return {
+          id: `reel-slide-${index}`,
+          kind: isInsert ? 'insert' : isPunchline ? 'punchline' : 'content',
+          text,
+          parts: this.parseSocialReelText(text),
+          media,
+          index,
+        }
+      })
 
     return [
       ...contentSlides,
       {
         id: 'reel-dates',
+        kind: 'dates',
         text: 'Prochaines dates',
         parts: [{ text: 'Prochaines dates', highlighted: false }],
         index: contentSlides.length,
@@ -884,7 +906,7 @@ export class ToolsComponent {
   }
 
   public get socialReelContentSlideCount(): number {
-    return Math.max(1, this.socialReelText.split(/\n\s*\n/g).map((item) => item.trim()).filter(Boolean).length)
+    return Math.max(1, this.socialReelSlides.filter((slide) => slide.kind !== 'dates').length)
   }
 
   public get socialReelSlideCount(): number {
@@ -897,6 +919,22 @@ export class ToolsComponent {
 
   public get isSocialReelDatesPreview(): boolean {
     return this.socialReelCurrentSlide?.id === 'reel-dates'
+  }
+
+  public get isSocialReelInsertPreview(): boolean {
+    return this.socialReelCurrentSlide?.kind === 'insert'
+  }
+
+  public get isSocialReelPunchlinePreview(): boolean {
+    return this.socialReelCurrentSlide?.kind === 'punchline'
+  }
+
+  public get isSocialReelTextCardPreview(): boolean {
+    return this.isSocialReelInsertPreview || this.isSocialReelPunchlinePreview
+  }
+
+  public get socialReelCurrentInsertWords(): string[] {
+    return this.socialReelInsertWords(this.socialReelCurrentSlide?.text || '')
   }
 
   public get canGoToPreviousSocialReelSlide(): boolean {
@@ -2042,14 +2080,13 @@ export class ToolsComponent {
     recorder.start()
 
     const frameDelay = 1000 / ToolsComponent.SOCIAL_REEL_FRAME_RATE
-    const framesPerSlide = Math.ceil(this.socialReelSecondsPerSlide * ToolsComponent.SOCIAL_REEL_FRAME_RATE)
-
     for (const slide of slides) {
       const media = slide.media?.ready ? slide.media : undefined
       if (media?.kind === 'video') {
         await this.resetSocialReelVideo(media)
       }
 
+      const framesPerSlide = Math.ceil(this.socialReelSlideSeconds(slide) * ToolsComponent.SOCIAL_REEL_FRAME_RATE)
       for (let frame = 0; frame < framesPerSlide; frame += 1) {
         const progress = frame / Math.max(framesPerSlide - 1, 1)
         this.drawSocialReelFrame(context, slide, progress, datesSnapshot)
@@ -2171,9 +2208,25 @@ export class ToolsComponent {
     const width = ToolsComponent.SOCIAL_REEL_WIDTH
     const height = ToolsComponent.SOCIAL_REEL_HEIGHT
     const isDates = slide.id === 'reel-dates'
+    const isInsert = slide.kind === 'insert'
+    const isPunchline = slide.kind === 'punchline'
 
     context.clearRect(0, 0, width, height)
     this.drawSocialReelBackground(context, slide, progress)
+
+    if (isPunchline) {
+      this.drawSocialReelBrand(context)
+      this.drawSocialReelPunchline(context, slide, progress)
+      this.drawSocialReelProgress(context, slide.index, progress)
+      return
+    }
+
+    if (isInsert) {
+      this.drawSocialReelBrand(context)
+      this.drawSocialReelInsert(context, slide, progress)
+      this.drawSocialReelProgress(context, slide.index, progress)
+      return
+    }
 
     context.fillStyle = isDates
       ? 'rgba(23, 18, 31, 0.74)'
@@ -2242,6 +2295,34 @@ export class ToolsComponent {
     const width = ToolsComponent.SOCIAL_REEL_WIDTH
     const height = ToolsComponent.SOCIAL_REEL_HEIGHT
     const element = slide.media?.ready ? slide.media.element : undefined
+
+    if (slide.kind === 'punchline') {
+      context.fillStyle = progress < 0.12 ? '#fff8ed' : '#df2f42'
+      context.fillRect(0, 0, width, height)
+
+      context.fillStyle = progress < 0.12 ? '#df2f42' : '#050505'
+      context.beginPath()
+      context.moveTo(0, height * (0.2 + progress * 0.12))
+      context.lineTo(width, height * 0.02)
+      context.lineTo(width, height)
+      context.lineTo(0, height * (0.82 - progress * 0.08))
+      context.closePath()
+      context.fill()
+      return
+    }
+
+    if (slide.kind === 'insert') {
+      context.fillStyle = '#050505'
+      context.fillRect(0, 0, width, height)
+
+      const glow = context.createRadialGradient(width / 2, height / 2, 0, width / 2, height / 2, width * 0.72)
+      glow.addColorStop(0, 'rgba(255, 248, 237, 0.08)')
+      glow.addColorStop(0.42, 'rgba(223, 47, 66, 0.035)')
+      glow.addColorStop(1, 'rgba(0, 0, 0, 0)')
+      context.fillStyle = glow
+      context.fillRect(0, 0, width, height)
+      return
+    }
 
     if (
       element instanceof HTMLImageElement ||
@@ -2365,6 +2446,101 @@ export class ToolsComponent {
         context.fillText(run.text, run.x, y)
       }
     })
+
+    context.restore()
+  }
+
+  private drawSocialReelInsert(
+    context: CanvasRenderingContext2D,
+    slide: SocialReelSlide,
+    progress: number
+  ): void {
+    const width = ToolsComponent.SOCIAL_REEL_WIDTH
+    const height = ToolsComponent.SOCIAL_REEL_HEIGHT
+    const textProgress = Math.min(1, Math.max(0, (progress - 0.08) / 0.72))
+    const scale = 0.98 + Math.min(1, progress / 0.5) * 0.02
+    const words = this.socialReelInsertWords(slide.text)
+    const lines = this.socialReelInsertWordLines(context, words, 850, 112)
+    const visibleWords = Math.min(words.length, Math.ceil(words.length * textProgress))
+    const lineHeight = 126
+    const totalHeight = lines.length * lineHeight
+    const startY = height / 2 - totalHeight / 2 + 88
+    let wordIndex = 0
+
+    context.save()
+    context.translate(width / 2, height / 2)
+    context.scale(scale, scale)
+    context.translate(-width / 2, -height / 2)
+    context.textBaseline = 'alphabetic'
+    context.font = '700 112px Georgia, "Times New Roman", serif'
+    context.textAlign = 'left'
+
+    lines.forEach((line, lineIndex) => {
+      const y = startY + lineIndex * lineHeight
+      const lineWidth = this.socialReelInsertLineWidth(context, line)
+      let x = width / 2 - lineWidth / 2
+
+      line.forEach((word) => {
+        const isVisible = wordIndex < visibleWords
+        const wordWidth = context.measureText(word).width
+        if (isVisible) {
+          const wordProgress = Math.min(1, Math.max(0, (textProgress * words.length - wordIndex) / 0.85))
+          context.save()
+          context.globalAlpha = wordProgress
+          context.translate(x + wordWidth / 2, y)
+          context.scale(0.98 + wordProgress * 0.02, 0.98 + wordProgress * 0.02)
+          context.fillStyle = '#fff8ed'
+          context.fillText(word, -wordWidth / 2, 0)
+          context.restore()
+        }
+        x += wordWidth + context.measureText(' ').width
+        wordIndex += 1
+      })
+    })
+
+    context.restore()
+  }
+
+  private drawSocialReelPunchline(
+    context: CanvasRenderingContext2D,
+    slide: SocialReelSlide,
+    progress: number
+  ): void {
+    const width = ToolsComponent.SOCIAL_REEL_WIDTH
+    const height = ToolsComponent.SOCIAL_REEL_HEIGHT
+    const flashProgress = progress < 0.12 ? 1 - progress / 0.12 : 0
+    const textProgress = Math.min(1, Math.max(0, (progress - 0.04) / 0.16))
+    const shake = progress < 0.2 ? Math.sin(progress * 210) * 8 : 0
+    const fontSize = this.socialReelPunchlineFontSize(context, slide.text)
+    const lines = this.socialReelTextLines(
+      context,
+      [{ text: slide.text, highlighted: false }],
+      940,
+      fontSize
+    )
+    const lineHeight = fontSize * 0.88
+    const totalHeight = lines.length * lineHeight
+    const startY = height / 2 - totalHeight / 2 + fontSize * 0.74
+
+    context.save()
+    context.translate(width / 2 + shake, height / 2)
+    context.scale(0.92 + textProgress * 0.1, 0.92 + textProgress * 0.1)
+    context.translate(-width / 2, -height / 2)
+    context.textBaseline = 'alphabetic'
+    context.font = `900 ${fontSize}px "The Bold Font", Arial, sans-serif`
+    context.textAlign = 'center'
+    context.fillStyle = '#fff8ed'
+
+    lines.forEach((line, lineIndex) => {
+      const text = line.map((part) => part.text).join('')
+      context.fillText(text, width / 2, startY + lineIndex * lineHeight)
+    })
+
+    if (flashProgress > 0) {
+      context.globalAlpha = flashProgress * 0.72
+      context.fillStyle = '#fff8ed'
+      context.fillRect(0, 0, width, height)
+    }
 
     context.restore()
   }
@@ -2682,7 +2858,86 @@ export class ToolsComponent {
   }
 
   private cleanSocialReelMarkup(text: string): string {
-    return text.replace(/\*([^*]+)\*/g, '$1').trim()
+    return this.socialReelInsertText(text)?.replace(/\*([^*]+)\*/g, '$1').trim()
+      || this.socialReelPunchlineText(text)?.replace(/\*([^*]+)\*/g, '$1').trim()
+      || text.replace(/\*([^*]+)\*/g, '$1').trim()
+  }
+
+  private socialReelInsertText(text: string): string | undefined {
+    const match = text.trim().match(/^\[\[\s*(.+?)\s*\]\]$/s)
+    return match?.[1]?.trim() || undefined
+  }
+
+  private socialReelPunchlineText(text: string): string | undefined {
+    const match = text.trim().match(/^!!\s*(.+)$/s)
+    return match?.[1]?.trim() || undefined
+  }
+
+  private socialReelSlideSeconds(slide: SocialReelSlide): number {
+    if (slide.kind === 'punchline') {
+      return ToolsComponent.SOCIAL_REEL_PUNCHLINE_SECONDS
+    }
+
+    return slide.kind === 'insert'
+      ? ToolsComponent.SOCIAL_REEL_INSERT_SECONDS
+      : this.socialReelSecondsPerSlide
+  }
+
+  private socialReelInsertWords(text: string): string[] {
+    return text.trim().split(/\s+/).filter(Boolean)
+  }
+
+  private socialReelInsertWordLines(
+    context: CanvasRenderingContext2D,
+    words: string[],
+    maxWidth: number,
+    fontSize: number
+  ): string[][] {
+    context.font = `700 ${fontSize}px Georgia, "Times New Roman", serif`
+    const lines: string[][] = []
+    let line: string[] = []
+
+    for (const word of words) {
+      const candidate = [...line, word]
+      if (line.length && this.socialReelInsertLineWidth(context, candidate) > maxWidth) {
+        lines.push(line)
+        line = [word]
+      } else {
+        line = candidate
+      }
+    }
+
+    if (line.length) {
+      lines.push(line)
+    }
+
+    return lines.slice(0, 6)
+  }
+
+  private socialReelInsertLineWidth(context: CanvasRenderingContext2D, line: string[]): number {
+    if (!line.length) {
+      return 0
+    }
+
+    const spaceWidth = context.measureText(' ').width
+    return line.reduce((total, word) => total + context.measureText(word).width, 0)
+      + spaceWidth * (line.length - 1)
+  }
+
+  private socialReelPunchlineFontSize(context: CanvasRenderingContext2D, text: string): number {
+    for (const size of [190, 176, 160, 144, 128, 112]) {
+      const lines = this.socialReelTextLines(
+        context,
+        [{ text, highlighted: false }],
+        940,
+        size
+      )
+      if (lines.length <= 5) {
+        return size
+      }
+    }
+
+    return 104
   }
 
   private socialReelTextLines(

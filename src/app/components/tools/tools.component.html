@@ -1106,7 +1106,11 @@
           </div>
         </div>
 
-        <div class="social-reel-phone-preview">
+        <div
+          class="social-reel-phone-preview"
+          [class.social-reel-insert-preview]="isSocialReelInsertPreview"
+          [class.social-reel-punchline-preview]="isSocialReelPunchlinePreview"
+        >
           <ng-container *ngIf="!isSocialReelDatesPreview">
             <video
               *ngIf="socialReelCurrentSlide.media?.kind === 'video' && !socialReelCurrentSlide.media?.previewFailed"
@@ -1132,16 +1136,31 @@
               [alt]="socialReelCurrentSlide.media?.name"
               (error)="markSocialReelMediaError(socialReelCurrentSlide.media)"
             />
-            <div class="social-reel-empty-background" *ngIf="!socialReelCurrentSlide.media"></div>
+            <div class="social-reel-empty-background" *ngIf="!socialReelCurrentSlide.media && !isSocialReelTextCardPreview"></div>
+            <div class="social-reel-insert-background" *ngIf="isSocialReelInsertPreview"></div>
+            <div class="social-reel-punchline-background" *ngIf="isSocialReelPunchlinePreview"></div>
             <div class="social-reel-gradient"></div>
             <div class="social-reel-brand">
               <img src="assets/logo/logo.png" alt="LUDI Toulouse" />
             </div>
-            <div class="social-reel-preview-text">
-              <span
-                *ngFor="let part of socialReelCurrentSlide.parts"
-                [class.highlighted]="part.highlighted"
-              >{{ part.text }}</span>
+            <div
+              class="social-reel-preview-text"
+              [class.social-reel-preview-insert-text]="isSocialReelInsertPreview"
+              [class.social-reel-preview-punchline-text]="isSocialReelPunchlinePreview"
+            >
+              <ng-container *ngIf="isSocialReelInsertPreview; else socialReelClassicText">
+                <span
+                  class="social-reel-insert-word"
+                  *ngFor="let word of socialReelCurrentInsertWords; let index = index"
+                  [style.animation-delay.ms]="index * 115"
+                >{{ word }}</span>
+              </ng-container>
+              <ng-template #socialReelClassicText>
+                <span
+                  *ngFor="let part of socialReelCurrentSlide.parts"
+                  [class.highlighted]="part.highlighted"
+                >{{ part.text }}</span>
+              </ng-template>
             </div>
           </ng-container>
 

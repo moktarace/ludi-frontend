@@ -975,6 +975,243 @@
     </div>
   </div>
 
+  <div class="container carousel-tools-inner social-reel-tools-inner" *ngIf="isUnlocked">
+    <div class="carousel-tools-panel social-reel-tools-panel">
+      <h2>Générateur Reel / Short</h2>
+      <p>
+        Charge des images, GIF ou vidéos, écris ton texte en paragraphes, puis
+        génère un reel vertical muet avec zoom progressif, boucle vidéo et rappel
+        des prochaines dates.
+      </p>
+
+      <div class="visual-control-group">
+        <label for="social-reel-media">Images / vidéos</label>
+        <input
+          id="social-reel-media"
+          type="file"
+          class="form-control"
+          accept="image/*,video/*,.gif,.mp4,.mov,.m4v,.webm"
+          multiple
+          (change)="updateSocialReelMedia($event)"
+        />
+        <p class="visual-export-note">
+          Les médias sont associés aux slides dans l'ordre, puis réutilisés en boucle si besoin.
+        </p>
+      </div>
+
+      <div class="social-reel-media-list" *ngIf="socialReelMedia.length">
+        <article *ngFor="let media of socialReelMedia">
+          <video
+            *ngIf="media.kind === 'video'"
+            [src]="media.src"
+            muted
+            loop
+            playsinline
+          ></video>
+          <img
+            *ngIf="media.kind === 'image'"
+            [src]="media.src"
+            [alt]="media.name"
+            (error)="markSocialReelMediaError(media)"
+          />
+          <span>{{ media.name }}</span>
+          <button type="button" (click)="removeSocialReelMedia(media)">Retirer</button>
+        </article>
+        <button type="button" class="social-reel-clear-button" (click)="clearSocialReelMedia()">
+          Tout retirer
+        </button>
+      </div>
+
+      <div class="visual-control-group">
+        <label for="social-reel-text">Texte du reel</label>
+        <textarea
+          id="social-reel-text"
+          class="form-control"
+          rows="9"
+          [ngModel]="socialReelText"
+          (ngModelChange)="updateSocialReelText($event)"
+          placeholder="Un paragraphe = une slide. Mets *ces mots* entre astérisques pour les souligner."
+        ></textarea>
+      </div>
+
+      <div class="social-reel-options">
+        <label>
+          Durée par slide
+          <input
+            type="number"
+            class="form-control"
+            min="2"
+            max="9"
+            [ngModel]="socialReelSecondsPerSlide"
+            (ngModelChange)="updateSocialReelSeconds($event)"
+          />
+        </label>
+      </div>
+
+      <button
+        type="button"
+        class="btn btn-danger visual-export-button"
+        [disabled]="isSocialReelExporting"
+        (click)="exportSocialReel()"
+      >
+        {{ socialReelExportLabel }}
+      </button>
+      <button
+        type="button"
+        class="btn btn-light visual-share-button"
+        [disabled]="isSharing || isSocialReelExporting"
+        (click)="shareSocialReel()"
+      >
+        {{ socialReelShareLabel }}
+      </button>
+      <p class="visual-export-note">
+        Export vidéo vertical WebM, sans son. Conversion MP4 possible plus tard côté serveur.
+      </p>
+      <p class="visual-lock-error" *ngIf="socialReelError">{{ socialReelError }}</p>
+    </div>
+
+    <div class="carousel-export-slides">
+      <div #socialReelDatesSlide class="carousel-slide carousel-dates-slide">
+        <div class="carousel-dates-header">
+          <img src="assets/logo/logo.png" alt="LUDI Toulouse" />
+          <span>Prochaines dates</span>
+        </div>
+        <div class="carousel-dates-list" *ngIf="carouselAgendaShows.length">
+          <div class="carousel-date-item" *ngFor="let show of carouselAgendaShows">
+            <span>{{ formattedDate(show) }}</span>
+            <strong>{{ show.name }}</strong>
+            <small>{{ show.location }}</small>
+            <em>{{ priceLabel(show) }}</em>
+          </div>
+        </div>
+        <p class="visual-empty" *ngIf="!carouselAgendaShows.length">
+          Aucune prochaine date à afficher
+        </p>
+        <div class="visual-footer">
+          <span>@luditoulouse</span>
+          <span>luditoulouse.org</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="carousel-preview-shell social-reel-preview-shell">
+      <div class="instagram-post-preview">
+        <div class="instagram-post-header">
+          <div class="instagram-avatar">
+            <img src="assets/logo/logo.png" alt="LUDI Toulouse" />
+          </div>
+          <div>
+            <strong>luditoulouse</strong>
+            <span>Reel muet</span>
+          </div>
+        </div>
+
+        <div class="social-reel-phone-preview">
+          <ng-container *ngIf="!isSocialReelDatesPreview">
+            <video
+              *ngIf="socialReelCurrentSlide.media?.kind === 'video' && !socialReelCurrentSlide.media?.previewFailed"
+              [src]="socialReelCurrentSlide.media?.src"
+              muted
+              autoplay
+              loop
+              playsinline
+              preload="auto"
+              (loadeddata)="playSocialReelPreviewVideo($event)"
+              (canplay)="playSocialReelPreviewVideo($event)"
+              (error)="markSocialReelMediaError(socialReelCurrentSlide.media)"
+            ></video>
+            <img
+              *ngIf="socialReelCurrentSlide.media?.kind === 'video' && socialReelCurrentSlide.media?.previewFailed && socialReelCurrentSlide.media?.previewSrc"
+              [src]="socialReelCurrentSlide.media?.previewSrc"
+              [alt]="socialReelCurrentSlide.media?.name"
+            />
+            <img
+              *ngIf="socialReelCurrentSlide.media?.kind === 'image'"
+              [ngClass]="socialReelMediaClass(socialReelCurrentSlide.media)"
+              [src]="socialReelCurrentSlide.media?.src"
+              [alt]="socialReelCurrentSlide.media?.name"
+              (error)="markSocialReelMediaError(socialReelCurrentSlide.media)"
+            />
+            <div class="social-reel-empty-background" *ngIf="!socialReelCurrentSlide.media"></div>
+            <div class="social-reel-gradient"></div>
+            <div class="social-reel-brand">
+              <img src="assets/logo/logo.png" alt="LUDI Toulouse" />
+            </div>
+            <div class="social-reel-preview-text">
+              <span
+                *ngFor="let part of socialReelCurrentSlide.parts"
+                [class.highlighted]="part.highlighted"
+              >{{ part.text }}</span>
+            </div>
+          </ng-container>
+
+          <div class="carousel-slide carousel-dates-slide social-reel-dates-preview" *ngIf="isSocialReelDatesPreview">
+            <div class="carousel-dates-header">
+              <img src="assets/logo/logo.png" alt="LUDI Toulouse" />
+              <span>Prochaines dates</span>
+            </div>
+            <div class="carousel-dates-list" *ngIf="carouselAgendaShows.length">
+              <div class="carousel-date-item" *ngFor="let show of carouselAgendaShows">
+                <span>{{ formattedDate(show) }}</span>
+                <strong>{{ show.name }}</strong>
+                <small>{{ show.location }}</small>
+                <em>{{ priceLabel(show) }}</em>
+              </div>
+            </div>
+            <p class="visual-empty" *ngIf="!carouselAgendaShows.length">
+              Aucune prochaine date à afficher
+            </p>
+            <div class="visual-footer">
+              <span>@luditoulouse</span>
+              <span>luditoulouse.org</span>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            class="instagram-arrow instagram-arrow-prev"
+            [disabled]="!canGoToPreviousSocialReelSlide"
+            (click)="previousSocialReelSlide()"
+          >
+            ‹
+          </button>
+          <button
+            type="button"
+            class="instagram-arrow instagram-arrow-next"
+            [disabled]="!canGoToNextSocialReelSlide"
+            (click)="nextSocialReelSlide()"
+          >
+            ›
+          </button>
+          <span class="instagram-counter">
+            {{ socialReelPreviewIndex + 1 }}/{{ socialReelSlideCount }}
+          </span>
+        </div>
+
+        <div class="instagram-actions">
+          <span>Like</span>
+          <span>Comment</span>
+          <span>Share</span>
+          <span>Save</span>
+        </div>
+
+        <div class="instagram-dots">
+          <button
+            type="button"
+            *ngFor="let slide of socialReelSlides; let index = index"
+            [class.active]="socialReelPreviewIndex === index"
+            (click)="selectSocialReelPreview(index)"
+          ></button>
+        </div>
+
+        <div class="instagram-caption">
+          <strong>luditoulouse</strong>
+          <span>{{ socialReelCaption }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <div class="container carousel-tools-inner championship-tools-inner" *ngIf="isUnlocked">
     <div class="carousel-tools-panel championship-tools-panel">
       <h2>Championnat Improvisem</h2>
@@ -1408,4 +1645,5 @@
       </div>
     </div>
   </div>
+
 </div>

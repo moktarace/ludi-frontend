@@ -10,6 +10,42 @@ type VisualTaglinePlacement = 'top-left' | 'top-right' | 'center-left' | 'center
 type LegacyLogoPickerTarget = 'poster' | 'carousel'
 type Html2Canvas = typeof import('html2canvas').default
 type ChampionshipSlideId = 'match' | 'standings' | 'dates'
+type SocialReelMediaKind = 'image' | 'video'
+type SocialReelMediaOrientation = 'portrait' | 'landscape'
+
+interface SocialReelTextPart {
+  text: string
+  highlighted: boolean
+}
+
+interface SocialReelMedia {
+  id: string
+  name: string
+  kind: SocialReelMediaKind
+  src: string
+  objectUrl?: string
+  file: File
+  previewSrc?: string
+  previewFailed?: boolean
+  orientation?: SocialReelMediaOrientation
+  element?: HTMLImageElement | HTMLVideoElement
+  ready?: boolean
+  error?: string
+}
+
+interface SocialReelSlide {
+  id: string
+  text: string
+  parts: SocialReelTextPart[]
+  media?: SocialReelMedia
+  index: number
+}
+
+interface PersistedSocialReelState {
+  text?: string
+  duration?: number
+  includeDates?: boolean
+}
 
 interface CarouselPhoto {
   id: string
@@ -93,6 +129,10 @@ export class ToolsComponent {
   private static CAROUSEL_MAX_PHOTOS = 19
   private static PEDAGOGY_MAX_CONTENT_SLIDES = 18
   private static CHAMPIONSHIP_STORAGE_KEY = 'ludi-tools-championnat-improvisem'
+  private static SOCIAL_REEL_STORAGE_KEY = 'ludi-tools-reel-slideshow'
+  private static SOCIAL_REEL_WIDTH = 1080
+  private static SOCIAL_REEL_HEIGHT = 1920
+  private static SOCIAL_REEL_FRAME_RATE = 24
 
   private static DATE_FORMATTER = new Intl.DateTimeFormat('fr-FR', {
     day: 'numeric',
@@ -124,6 +164,11 @@ export class ToolsComponent {
 
   @ViewChildren('championshipSlide')
   public championshipSlidesRef?: QueryList<ElementRef<HTMLElement>>
+
+  @ViewChild('socialReelDatesSlide')
+  public socialReelDatesSlideRef?: ElementRef<HTMLElement>
+
+  private socialReelLogoImage?: HTMLImageElement
 
   public readonly formats: { label: string; value: VisualFormat }[] = [
     { label: 'Post', value: 'post' },
@@ -465,9 +510,21 @@ export class ToolsComponent {
   public selectedChampionshipMatchId = this.championshipMatches[0].id
   public championshipPreviewIndex = 0
   public isChampionshipExporting = false
+  public socialReelText = [
+    "Ils ont dit que c'etait juste une soiree d'impro.",
+    "Puis quelqu'un a annonce *un match a enjeu*.",
+    "Depuis, le campus vit dans une ambiance de finale de Ligue des Champions sans VAR.",
+  ].join('\n\n')
+  public socialReelMedia: SocialReelMedia[] = []
+  public socialReelPreviewIndex = 0
+  public socialReelSecondsPerSlide = 4
+  public socialReelIncludeDates = true
+  public isSocialReelExporting = false
+  public socialReelError = ''
 
   constructor() {
     this.restoreChampionshipState()
+    this.restoreSocialReelState()
   }
 
   public get sortedShows(): Show[] {
@@ -708,6 +765,10 @@ export class ToolsComponent {
       .slice(0, 4)
   }
 
+  public get socialReelAgendaShows(): Show[] {
+    return this.carouselAgendaShows.slice(0, 3)
+  }
+
   public get carouselLogo(): string {
     if (this.customCarouselLogo) {
       return this.customCarouselLogo
@@ -789,11 +850,76 @@ export class ToolsComponent {
   }
 
   public get championshipExportLabel(): string {
-    return this.isChampionshipExporting ? 'Gravure en PNG...' : 'Télécharger les 2 slides'
+    return this.isChampionshipExporting ? 'Gravure en PNG...' : 'Télécharger les slides'
   }
 
   public get championshipShareLabel(): string {
     return this.isSharing ? 'Préparation...' : 'Partager les slides'
+  }
+
+  public get socialReelSlides(): SocialReelSlide[] {
+    const paragraphs = this.socialReelText
+      .split(/\n\s*\n/g)
+      .map((paragraph) => paragraph.trim())
+      .filter(Boolean)
+
+    const contentSlides = (paragraphs.length ? paragraphs : ["Ajoute ton texte, une idee par paragraphe."])
+      .map((text, index) => ({
+        id: `reel-slide-${index}`,
+        text,
+        parts: this.parseSocialReelText(text),
+        media: this.socialReelMedia.length
+          ? this.socialReelMedia[index % this.socialReelMedia.length]
+          : undefined,
+        index,
+      }))
+
+    return [
+      ...contentSlides,
+      {
+        id: 'reel-dates',
+        text: 'Prochaines dates',
+        parts: [{ text: 'Prochaines dates', highlighted: false }],
+        index: contentSlides.length,
+      },
+    ]
+  }
+
+  public get socialReelContentSlideCount(): number {
+    return Math.max(1, this.socialReelText.split(/\n\s*\n/g).map((item) => item.trim()).filter(Boolean).length)
+  }
+
+  public get socialReelSlideCount(): number {
+    return this.socialReelSlides.length
+  }
+
+  public get socialReelCurrentSlide(): SocialReelSlide {
+    return this.socialReelSlides[Math.min(this.socialReelPreviewIndex, this.socialReelSlideCount - 1)] || this.socialReelSlides[0]
+  }
+
+  public get isSocialReelDatesPreview(): boolean {
+    return this.socialReelCurrentSlide?.id === 'reel-dates'
+  }
+
+  public get canGoToPreviousSocialReelSlide(): boolean {
+    return this.socialReelPreviewIndex > 0
+  }
+
+  public get canGoToNextSocialReelSlide(): boolean {
+    return this.socialReelPreviewIndex < this.socialReelSlideCount - 1
+  }
+
+  public get socialReelExportLabel(): string {
+    return this.isSocialReelExporting ? 'Generation du reel...' : 'Télécharger le reel muet'
+  }
+
+  public get socialReelShareLabel(): string {
+    return this.isSharing ? 'Préparation...' : 'Partager le reel'
+  }
+
+  public get socialReelCaption(): string {
+    const firstSlide = this.socialReelSlides.find((slide) => slide.id !== 'reel-dates')
+    return `${this.cleanSocialReelMarkup(firstSlide?.text || 'Reel LUDI')}\n\n@luditoulouse`
   }
 
   public get championshipStandings(): ChampionshipStanding[] {
@@ -1195,6 +1321,121 @@ export class ToolsComponent {
     })
   }
 
+  public updateSocialReelText(value: string): void {
+    this.socialReelText = value
+    this.socialReelPreviewIndex = Math.min(this.socialReelPreviewIndex, this.socialReelSlideCount - 1)
+    this.persistSocialReelState()
+  }
+
+  public updateSocialReelSeconds(value: number): void {
+    this.socialReelSecondsPerSlide = Math.max(2, Math.min(Number(value) || 4, 9))
+    this.persistSocialReelState()
+  }
+
+  public updateSocialReelIncludeDates(value: boolean): void {
+    this.socialReelIncludeDates = true
+    this.socialReelPreviewIndex = Math.min(this.socialReelPreviewIndex, this.socialReelSlideCount - 1)
+    this.persistSocialReelState()
+  }
+
+  public async updateSocialReelMedia(event: Event): Promise<void> {
+    const input = event.target as HTMLInputElement
+    const files = Array.from(input.files || [])
+    this.socialReelError = ''
+
+    const acceptedFiles = files.filter((file) => this.isSupportedSocialReelFile(file))
+    const rejectedCount = files.length - acceptedFiles.length
+    if (rejectedCount) {
+      this.socialReelError = `${rejectedCount} fichier(s) ignores: utilise JPG, PNG, GIF, WebP, MP4, MOV/M4V ou WebM.`
+    }
+
+    try {
+      const media = await Promise.all(acceptedFiles.map((file) => this.createSocialReelMedia(file)))
+      this.socialReelMedia = [...this.socialReelMedia, ...media].slice(0, 20)
+    } catch (error) {
+      this.socialReelError = error instanceof Error ? error.message : 'Impossible de charger un media.'
+    } finally {
+      input.value = ''
+    }
+  }
+
+  public removeSocialReelMedia(media: SocialReelMedia): void {
+    if (media.objectUrl) {
+      URL.revokeObjectURL(media.objectUrl)
+    }
+    this.socialReelMedia = this.socialReelMedia.filter((item) => item.id !== media.id)
+  }
+
+  public clearSocialReelMedia(): void {
+    for (const media of this.socialReelMedia) {
+      if (media.objectUrl) {
+        URL.revokeObjectURL(media.objectUrl)
+      }
+    }
+    this.socialReelMedia = []
+  }
+
+  public socialReelMediaClass(media?: SocialReelMedia): string {
+    if (!media || media.kind !== 'image') {
+      return ''
+    }
+
+    return media.orientation === 'landscape'
+      ? 'social-reel-media-landscape'
+      : 'social-reel-media-portrait'
+  }
+
+  public markSocialReelMediaError(media?: SocialReelMedia): void {
+    if (!media) {
+      return
+    }
+
+    if (media.kind === 'video' && media.previewSrc) {
+      media.previewFailed = true
+      return
+    }
+
+    media.error = `${media.name} ne peut pas etre lu par le navigateur.`
+    this.socialReelError = media.error
+  }
+
+  public playSocialReelPreviewVideo(event: Event): void {
+    const video = event.target as HTMLVideoElement
+    video.muted = true
+    video.loop = true
+    video.playsInline = true
+    const playPromise = video.play()
+    if (playPromise) {
+      playPromise.catch(() => {
+        // The export still works; some browsers require a user gesture for preview playback.
+      })
+    }
+  }
+
+  public socialReelMediaLabel(media?: SocialReelMedia): string {
+    if (!media) {
+      return 'Fond LUDI par defaut'
+    }
+
+    return media.kind === 'video' ? `Video: ${media.name}` : `Image: ${media.name}`
+  }
+
+  public selectSocialReelPreview(index: number): void {
+    this.socialReelPreviewIndex = Math.max(0, Math.min(index, this.socialReelSlideCount - 1))
+  }
+
+  public previousSocialReelSlide(): void {
+    if (this.canGoToPreviousSocialReelSlide) {
+      this.socialReelPreviewIndex -= 1
+    }
+  }
+
+  public nextSocialReelSlide(): void {
+    if (this.canGoToNextSocialReelSlide) {
+      this.socialReelPreviewIndex += 1
+    }
+  }
+
   public teamById(teamId: string): ChampionshipTeam {
     return this.championshipTeams.find((team) => team.id === teamId) || {
       id: '',
@@ -1209,7 +1450,21 @@ export class ToolsComponent {
   }
 
   public standingById(teamId: string): ChampionshipStanding {
-    return this.championshipStandings.find((team) => team.id === teamId) || this.championshipStandings[0]
+    const standing = this.championshipStandings.find((team) => team.id === teamId)
+    if (standing) {
+      return standing
+    }
+
+    return {
+      ...this.teamById(teamId),
+      wins: 0,
+      losses: 0,
+      draws: 0,
+      scored: 0,
+      conceded: 0,
+      difference: 0,
+      rank: 0,
+    }
   }
 
   public faultItems(team: ChampionshipTeam): string[] {
@@ -1393,6 +1648,7 @@ export class ToolsComponent {
       } else {
         this.selectedChampionshipMatchId = this.championshipMatches[0]?.id || ''
       }
+
     } catch (error) {
       try {
         localStorage.removeItem(ToolsComponent.CHAMPIONSHIP_STORAGE_KEY)
@@ -1575,6 +1831,44 @@ export class ToolsComponent {
     }
   }
 
+  public async exportSocialReel(): Promise<void> {
+    if (this.isSocialReelExporting) {
+      return
+    }
+
+    this.isSocialReelExporting = true
+    this.socialReelError = ''
+
+    try {
+      const file = await this.createSocialReelFile()
+      this.downloadBlob(file, file.name)
+    } catch (error) {
+      this.socialReelError = error instanceof Error ? error.message : 'Export impossible'
+      throw error
+    } finally {
+      this.isSocialReelExporting = false
+    }
+  }
+
+  public async shareSocialReel(): Promise<void> {
+    if (this.isSharing || this.isSocialReelExporting) {
+      return
+    }
+
+    this.isSharing = true
+    this.socialReelError = ''
+
+    try {
+      const file = await this.createSocialReelFile()
+      await this.shareFiles([file], 'Reel LUDI')
+    } catch (error) {
+      this.socialReelError = error instanceof Error ? error.message : 'Partage impossible'
+      throw error
+    } finally {
+      this.isSharing = false
+    }
+  }
+
   private async createVisualFile(): Promise<File> {
     if (!this.visualCanvas) {
       throw new Error('Aucun visuel à exporter')
@@ -1691,6 +1985,466 @@ export class ToolsComponent {
     }
 
     return files
+  }
+
+  private async createSocialReelFile(): Promise<File> {
+    const blob = await this.createSocialReelBlob()
+    const fileName = `${this.fileNameBase('reel-ludi-slideshow')}.webm`
+    return new File([blob], fileName, { type: blob.type || 'video/webm' })
+  }
+
+  private async createSocialReelBlob(): Promise<Blob> {
+    const slides = this.socialReelSlides
+    if (!slides.length) {
+      throw new Error('Ajoute au moins un paragraphe.')
+    }
+
+    await this.prepareSocialReelMedia(slides)
+    const fontReady = (document as Document & { fonts?: { ready: Promise<unknown> } }).fonts?.ready
+    const html2canvasModule = await import('html2canvas')
+    const html2canvas = html2canvasModule.default
+    await Promise.all([
+      this.loadSocialReelAsset('assets/logo/logo.png').then((image) => {
+        this.socialReelLogoImage = image
+      }),
+      fontReady || Promise.resolve(),
+    ])
+    const datesSnapshot = await this.createSocialReelDatesSnapshot(html2canvas)
+
+    const width = ToolsComponent.SOCIAL_REEL_WIDTH
+    const height = ToolsComponent.SOCIAL_REEL_HEIGHT
+    const canvas = document.createElement('canvas')
+    canvas.width = width
+    canvas.height = height
+
+    const context = canvas.getContext('2d')
+    if (!context) {
+      throw new Error('Impossible de preparer le canvas video.')
+    }
+
+    const stream = canvas.captureStream(ToolsComponent.SOCIAL_REEL_FRAME_RATE)
+    const mimeType = this.socialReelMimeType()
+    const recorder = new MediaRecorder(stream, { mimeType })
+    const chunks: BlobPart[] = []
+
+    recorder.ondataavailable = (event) => {
+      if (event.data.size) {
+        chunks.push(event.data)
+      }
+    }
+
+    const stopped = new Promise<void>((resolve) => {
+      recorder.onstop = () => resolve()
+    })
+
+    recorder.start()
+
+    const frameDelay = 1000 / ToolsComponent.SOCIAL_REEL_FRAME_RATE
+    const framesPerSlide = Math.ceil(this.socialReelSecondsPerSlide * ToolsComponent.SOCIAL_REEL_FRAME_RATE)
+
+    for (const slide of slides) {
+      const media = slide.media?.ready ? slide.media : undefined
+      if (media?.kind === 'video') {
+        await this.resetSocialReelVideo(media)
+      }
+
+      for (let frame = 0; frame < framesPerSlide; frame += 1) {
+        const progress = frame / Math.max(framesPerSlide - 1, 1)
+        this.drawSocialReelFrame(context, slide, progress, datesSnapshot)
+        await this.wait(frameDelay)
+      }
+    }
+
+    recorder.stop()
+    await stopped
+
+    for (const media of this.socialReelMedia) {
+      if (media.kind === 'video' && media.element instanceof HTMLVideoElement) {
+        media.element.pause()
+      }
+    }
+
+    return new Blob(chunks, { type: mimeType })
+  }
+
+  private async prepareSocialReelMedia(slides: SocialReelSlide[]): Promise<void> {
+    const media = Array.from(new Set(slides.map((slide) => slide.media).filter(Boolean))) as SocialReelMedia[]
+    await Promise.all(media.map((item) => this.loadSocialReelMedia(item)))
+  }
+
+  private loadSocialReelMedia(media: SocialReelMedia): Promise<void> {
+    if (media.ready) {
+      return Promise.resolve()
+    }
+
+    return new Promise((resolve) => {
+      if (media.kind === 'image') {
+        const image = new Image()
+        image.onload = () => {
+          media.element = image
+          media.orientation = image.naturalWidth > image.naturalHeight ? 'landscape' : 'portrait'
+          media.ready = true
+          resolve()
+        }
+        image.onerror = () => {
+          media.error = 'Image illisible'
+          resolve()
+        }
+        image.src = media.src
+        return
+      }
+
+      const video = document.createElement('video')
+      video.muted = true
+      video.loop = true
+      video.playsInline = true
+      video.preload = 'auto'
+      video.onloadeddata = () => {
+        media.element = video
+        media.previewSrc = this.createSocialReelVideoPreview(video)
+        media.ready = true
+        resolve()
+      }
+      video.onerror = () => {
+        media.error = 'Video illisible'
+        resolve()
+      }
+      video.src = media.src
+      video.load()
+    })
+  }
+
+  private loadSocialReelAsset(src: string): Promise<HTMLImageElement> {
+    return new Promise((resolve, reject) => {
+      const image = new Image()
+      image.onload = () => resolve(image)
+      image.onerror = () => reject(new Error(`Asset reel introuvable: ${src}`))
+      image.src = src
+    })
+  }
+
+  private createSocialReelVideoPreview(video: HTMLVideoElement): string | undefined {
+    if (!video.videoWidth || !video.videoHeight) {
+      return undefined
+    }
+
+    try {
+      const canvas = document.createElement('canvas')
+      canvas.width = video.videoWidth
+      canvas.height = video.videoHeight
+      const context = canvas.getContext('2d')
+      if (!context) {
+        return undefined
+      }
+
+      context.drawImage(video, 0, 0, canvas.width, canvas.height)
+      return canvas.toDataURL('image/jpeg', 0.82)
+    } catch {
+      return undefined
+    }
+  }
+
+  private async resetSocialReelVideo(media: SocialReelMedia): Promise<void> {
+    if (!(media.element instanceof HTMLVideoElement)) {
+      return
+    }
+
+    const video = media.element
+    video.muted = true
+    video.loop = true
+    video.currentTime = 0
+    try {
+      await video.play()
+    } catch {
+      // Muted videos generally autoplay; if the browser blocks it, the current frame is still drawn.
+    }
+  }
+
+  private drawSocialReelFrame(
+    context: CanvasRenderingContext2D,
+    slide: SocialReelSlide,
+    progress: number,
+    datesSnapshot?: HTMLCanvasElement
+  ): void {
+    const width = ToolsComponent.SOCIAL_REEL_WIDTH
+    const height = ToolsComponent.SOCIAL_REEL_HEIGHT
+    const isDates = slide.id === 'reel-dates'
+
+    context.clearRect(0, 0, width, height)
+    this.drawSocialReelBackground(context, slide, progress)
+
+    context.fillStyle = isDates
+      ? 'rgba(23, 18, 31, 0.74)'
+      : 'rgba(7, 7, 10, 0.38)'
+    context.fillRect(0, 0, width, height)
+
+    const gradient = context.createLinearGradient(0, 0, 0, height)
+    gradient.addColorStop(0, 'rgba(0, 0, 0, 0.72)')
+    gradient.addColorStop(0.36, 'rgba(0, 0, 0, 0.04)')
+    gradient.addColorStop(1, 'rgba(0, 0, 0, 0.84)')
+    context.fillStyle = gradient
+    context.fillRect(0, 0, width, height)
+
+    this.drawSocialReelBrand(context)
+
+    if (isDates) {
+      if (datesSnapshot) {
+        this.drawSocialReelDatesSnapshot(context, datesSnapshot)
+      } else {
+        this.drawSocialReelDates(context)
+      }
+    } else {
+      this.drawSocialReelText(context, slide, progress)
+      this.drawSocialReelProgress(context, slide.index, progress)
+    }
+  }
+
+  private async createSocialReelDatesSnapshot(html2canvas: Html2Canvas): Promise<HTMLCanvasElement | undefined> {
+    const slide = this.socialReelDatesSlideRef?.nativeElement
+    if (!slide) {
+      return undefined
+    }
+
+    await this.wait(40)
+    return html2canvas(slide, {
+      allowTaint: false,
+      backgroundColor: null,
+      scale: 1080 / slide.clientWidth,
+      useCORS: true,
+    })
+  }
+
+  private drawSocialReelDatesSnapshot(
+    context: CanvasRenderingContext2D,
+    snapshot: HTMLCanvasElement
+  ): void {
+    const width = ToolsComponent.SOCIAL_REEL_WIDTH
+    const height = ToolsComponent.SOCIAL_REEL_HEIGHT
+
+    context.fillStyle = '#17121f'
+    context.fillRect(0, 0, width, height)
+
+    const scale = Math.min(width / snapshot.width, height / snapshot.height)
+    const drawWidth = snapshot.width * scale
+    const drawHeight = snapshot.height * scale
+    const offsetX = (width - drawWidth) / 2
+    const offsetY = (height - drawHeight) / 2
+    context.drawImage(snapshot, offsetX, offsetY, drawWidth, drawHeight)
+  }
+
+  private drawSocialReelBackground(
+    context: CanvasRenderingContext2D,
+    slide: SocialReelSlide,
+    progress: number
+  ): void {
+    const width = ToolsComponent.SOCIAL_REEL_WIDTH
+    const height = ToolsComponent.SOCIAL_REEL_HEIGHT
+    const element = slide.media?.ready ? slide.media.element : undefined
+
+    if (
+      element instanceof HTMLImageElement ||
+      element instanceof HTMLVideoElement
+    ) {
+      const sourceWidth = element instanceof HTMLVideoElement ? element.videoWidth : element.naturalWidth
+      const sourceHeight = element instanceof HTMLVideoElement ? element.videoHeight : element.naturalHeight
+      if (sourceWidth && sourceHeight) {
+        const shouldTravel = element instanceof HTMLImageElement && sourceWidth / sourceHeight > width / height
+        if (shouldTravel) {
+          const scale = height / sourceHeight
+          const drawWidth = sourceWidth * scale
+          const travel = Math.max(drawWidth - width, 0)
+          const offsetX = -travel * progress
+          context.drawImage(element, offsetX, 0, drawWidth, height)
+          return
+        }
+
+        const scale = Math.max(width / sourceWidth, height / sourceHeight) * (1 + progress * 0.075)
+        const drawWidth = sourceWidth * scale
+        const drawHeight = sourceHeight * scale
+        const offsetX = (width - drawWidth) / 2
+        const offsetY = (height - drawHeight) / 2 - progress * 34
+        context.drawImage(element, offsetX, offsetY, drawWidth, drawHeight)
+        return
+      }
+    }
+
+    const gradient = context.createLinearGradient(0, 0, width, height)
+    gradient.addColorStop(0, '#17121f')
+    gradient.addColorStop(0.42, '#df2f42')
+    gradient.addColorStop(1, '#f0b92e')
+    context.fillStyle = gradient
+    context.fillRect(0, 0, width, height)
+
+    context.fillStyle = 'rgba(255, 248, 237, 0.08)'
+    context.font = '900 360px "The Bold Font", Arial, sans-serif'
+    context.textBaseline = 'alphabetic'
+    context.fillText('LUDI', -38 + progress * 18, 1160)
+
+    context.fillStyle = 'rgba(23, 18, 31, 0.22)'
+    context.beginPath()
+    context.moveTo(0, 0)
+    context.lineTo(width, height * 0.2)
+    context.lineTo(width, height)
+    context.lineTo(0, height * 0.78)
+    context.closePath()
+    context.fill()
+  }
+
+  private drawSocialReelBrand(context: CanvasRenderingContext2D): void {
+    const width = ToolsComponent.SOCIAL_REEL_WIDTH
+    const boxSize = 70
+    const x = width - boxSize - 54
+    const y = 54
+
+    context.save()
+    context.fillStyle = 'rgba(255, 248, 237, 0.94)'
+    context.beginPath()
+    this.drawCanvasRoundRect(context, x, y, boxSize, boxSize, 10)
+    context.fill()
+
+    if (this.socialReelLogoImage) {
+      context.drawImage(this.socialReelLogoImage, x + 13, y + 13, 44, 44)
+    }
+    context.restore()
+  }
+
+  private drawSocialReelText(
+    context: CanvasRenderingContext2D,
+    slide: SocialReelSlide,
+    progress: number
+  ): void {
+    const lines = this.socialReelTextLines(context, slide.parts, 910, 92)
+    const lineHeight = 92
+    const totalHeight = lines.length * lineHeight
+    const startY = Math.max(520, 1508 - totalHeight)
+    const textProgress = Math.min(1, Math.max(0, (progress - 0.08) / 0.68))
+
+    context.save()
+    context.textBaseline = 'alphabetic'
+    context.font = '900 92px "The Bold Font", Arial, sans-serif'
+
+    lines.forEach((line, lineIndex) => {
+      const y = startY + lineIndex * lineHeight
+      let x = 76
+      const runs: { text: string; highlighted: boolean; x: number; width: number }[] = []
+
+      for (const part of line) {
+        const width = context.measureText(part.text).width
+        const lastRun = runs[runs.length - 1]
+        if (lastRun && lastRun.highlighted === part.highlighted) {
+          lastRun.text += part.text
+          lastRun.width += width
+        } else {
+          runs.push({ text: part.text, highlighted: part.highlighted, x, width })
+        }
+
+        x += width
+      }
+
+      for (const run of runs) {
+        if (run.highlighted) {
+          const markerProgress = Math.min(1, Math.max(0, (textProgress - lineIndex * 0.055) / 0.45))
+          context.fillStyle = '#df2f42'
+          context.beginPath()
+          this.drawCanvasRoundRect(
+            context,
+            run.x - 10,
+            y - 70,
+            (run.width + 20) * markerProgress,
+            82,
+            8
+          )
+          context.fill()
+        }
+      }
+
+      for (const run of runs) {
+        context.fillStyle = '#fff8ed'
+        context.fillText(run.text, run.x, y)
+      }
+    })
+
+    context.restore()
+  }
+
+  private drawSocialReelProgress(context: CanvasRenderingContext2D, index: number, progress: number): void {
+    const slides = this.socialReelContentSlideCount
+    const gap = 12
+    const width = (972 - gap * Math.max(slides - 1, 0)) / slides
+    const y = 1788
+
+    for (let itemIndex = 0; itemIndex < slides; itemIndex += 1) {
+      const x = 54 + itemIndex * (width + gap)
+      context.fillStyle = 'rgba(255, 248, 237, 0.28)'
+      context.fillRect(x, y, width, 9)
+      if (itemIndex < index) {
+        context.fillStyle = '#fff8ed'
+        context.fillRect(x, y, width, 9)
+      }
+      if (itemIndex === index) {
+        context.fillStyle = '#ffde3f'
+        context.fillRect(x, y, width * progress, 9)
+      }
+    }
+  }
+
+  private drawSocialReelDates(context: CanvasRenderingContext2D): void {
+    context.save()
+    context.fillStyle = '#17121f'
+    context.fillRect(0, 0, ToolsComponent.SOCIAL_REEL_WIDTH, ToolsComponent.SOCIAL_REEL_HEIGHT)
+
+    const background = context.createLinearGradient(0, 0, ToolsComponent.SOCIAL_REEL_WIDTH, ToolsComponent.SOCIAL_REEL_HEIGHT)
+    background.addColorStop(0, 'rgba(23, 18, 31, 0.96)')
+    background.addColorStop(0.5, 'rgba(33, 21, 40, 0.96)')
+    background.addColorStop(1, 'rgba(223, 47, 66, 0.92)')
+    context.fillStyle = background
+    context.fillRect(0, 0, ToolsComponent.SOCIAL_REEL_WIDTH, ToolsComponent.SOCIAL_REEL_HEIGHT)
+
+    if (this.socialReelLogoImage) {
+      context.drawImage(this.socialReelLogoImage, 76, 76, 110, 110)
+    }
+
+    context.fillStyle = '#f0b92e'
+    context.font = '900 42px Arial, sans-serif'
+    context.textBaseline = 'top'
+    context.fillText('PROCHAINES DATES', 640, 112)
+
+    const shows = this.socialReelAgendaShows
+    if (!shows.length) {
+      context.fillStyle = '#fff8ed'
+      context.font = '800 58px Arial, sans-serif'
+      this.drawWrappedSocialReelLine(context, 'Toutes les dates arrivent bientot sur luditoulouse.org.', 76, 620, 880, 76)
+      return
+    }
+
+    let y = 500
+    for (const show of shows) {
+      context.fillStyle = '#ffde3f'
+      context.font = '900 34px Arial, sans-serif'
+      context.fillText(this.formattedDate(show).toUpperCase(), 76, y)
+
+      context.fillStyle = '#fff8ed'
+      context.font = '900 56px Arial, sans-serif'
+      this.drawWrappedSocialReelLine(context, (show.name || 'Spectacle LUDI').toUpperCase(), 76, y + 52, 920, 64, 2)
+
+      context.fillStyle = 'rgba(255, 248, 237, 0.76)'
+      context.font = '700 30px Arial, sans-serif'
+      context.fillText(show.location || 'Toulouse', 76, y + 206)
+
+      context.fillStyle = 'rgba(255, 248, 237, 0.88)'
+      context.font = '900 26px Arial, sans-serif'
+      context.fillText(this.priceLabel(show).toUpperCase(), 76, y + 246)
+
+      context.fillStyle = 'rgba(255, 248, 237, 0.24)'
+      context.fillRect(76, y + 314, 928, 2)
+      y += 360
+    }
+
+    context.fillStyle = '#fff8ed'
+    context.font = '900 34px Arial, sans-serif'
+    context.fillText('@luditoulouse', 76, 1774)
+    context.fillText('luditoulouse.org', 740, 1774)
+    context.restore()
   }
 
   private async shareFiles(files: File[], title: string): Promise<void> {
@@ -1901,6 +2655,223 @@ export class ToolsComponent {
       this.championshipTeams.some((team) => team.id === match.teamAId) &&
       this.championshipTeams.some((team) => team.id === match.teamBId)
     )
+  }
+
+  private parseSocialReelText(text: string): SocialReelTextPart[] {
+    const parts: SocialReelTextPart[] = []
+    const matcher = /\*([^*]+)\*/g
+    let cursor = 0
+    let match: RegExpExecArray | null
+
+    while ((match = matcher.exec(text)) !== null) {
+      if (match.index > cursor) {
+        parts.push({ text: text.slice(cursor, match.index), highlighted: false })
+      }
+
+      parts.push({ text: match[1], highlighted: true })
+      cursor = matcher.lastIndex
+    }
+
+    if (cursor < text.length) {
+      parts.push({ text: text.slice(cursor), highlighted: false })
+    }
+
+    return parts.length ? parts : [{ text, highlighted: false }]
+  }
+
+  private cleanSocialReelMarkup(text: string): string {
+    return text.replace(/\*([^*]+)\*/g, '$1').trim()
+  }
+
+  private socialReelTextLines(
+    context: CanvasRenderingContext2D,
+    parts: SocialReelTextPart[],
+    maxWidth: number,
+    fontSize: number
+  ): SocialReelTextPart[][] {
+    context.font = `900 ${fontSize}px "The Bold Font", Arial, sans-serif`
+    const tokens = parts.flatMap((part) => (
+      part.text.split(/(\s+)/).filter(Boolean).map((text) => ({
+        text: text.toUpperCase(),
+        highlighted: part.highlighted,
+      }))
+    ))
+    const lines: SocialReelTextPart[][] = []
+    let line: SocialReelTextPart[] = []
+    let lineWidth = 0
+
+    for (const token of tokens) {
+      const tokenWidth = context.measureText(token.text).width
+      if (line.length && lineWidth + tokenWidth > maxWidth) {
+        lines.push(line)
+        line = []
+        lineWidth = 0
+      }
+
+      line.push(token)
+      lineWidth += tokenWidth
+    }
+
+    if (line.length) {
+      lines.push(line)
+    }
+
+    return lines.slice(0, 8)
+  }
+
+  private drawWrappedSocialReelLine(
+    context: CanvasRenderingContext2D,
+    text: string,
+    x: number,
+    y: number,
+    maxWidth: number,
+    lineHeight: number,
+    maxLines: number = 4
+  ): void {
+    const words = text.split(/\s+/).filter(Boolean)
+    let line = ''
+    let lineIndex = 0
+
+    for (const word of words) {
+      const testLine = line ? `${line} ${word}` : word
+      if (context.measureText(testLine).width > maxWidth && line) {
+        context.fillText(line, x, y + lineIndex * lineHeight)
+        line = word
+        lineIndex += 1
+        if (lineIndex >= maxLines) {
+          return
+        }
+      } else {
+        line = testLine
+      }
+    }
+
+    if (line && lineIndex < maxLines) {
+      context.fillText(line, x, y + lineIndex * lineHeight)
+    }
+  }
+
+  private drawCanvasRoundRect(
+    context: CanvasRenderingContext2D,
+    x: number,
+    y: number,
+    width: number,
+    height: number,
+    radius: number
+  ): void {
+    const safeRadius = Math.min(radius, width / 2, height / 2)
+    context.moveTo(x + safeRadius, y)
+    context.lineTo(x + width - safeRadius, y)
+    context.quadraticCurveTo(x + width, y, x + width, y + safeRadius)
+    context.lineTo(x + width, y + height - safeRadius)
+    context.quadraticCurveTo(x + width, y + height, x + width - safeRadius, y + height)
+    context.lineTo(x + safeRadius, y + height)
+    context.quadraticCurveTo(x, y + height, x, y + height - safeRadius)
+    context.lineTo(x, y + safeRadius)
+    context.quadraticCurveTo(x, y, x + safeRadius, y)
+  }
+
+  private async createSocialReelMedia(file: File): Promise<SocialReelMedia> {
+    const kind = this.socialReelFileKind(file)
+    if (!kind) {
+      throw new Error(`Format non supporte: ${file.name}`)
+    }
+
+    const src = kind === 'image'
+      ? await this.readFileAsDataUrl(file)
+      : URL.createObjectURL(file)
+    const media: SocialReelMedia = {
+      id: `${Date.now()}-${Math.random().toString(36).slice(2)}`,
+      name: file.name,
+      kind,
+      src,
+      objectUrl: kind === 'video' ? src : undefined,
+      file,
+    }
+
+    if (kind === 'image') {
+      const image = new Image()
+      image.onload = () => {
+        media.orientation = image.naturalWidth > image.naturalHeight ? 'landscape' : 'portrait'
+      }
+      image.src = media.src
+    }
+
+    return media
+  }
+
+  private isSupportedSocialReelFile(file: File): boolean {
+    return Boolean(this.socialReelFileKind(file))
+  }
+
+  private socialReelFileKind(file: File): SocialReelMediaKind | undefined {
+    const name = file.name.toLowerCase()
+
+    if (
+      file.type.startsWith('image/') &&
+      !/\.(heic|heif|avif|tiff?)$/i.test(name)
+    ) {
+      return 'image'
+    }
+
+    if (/\.(gif|jpe?g|png|webp)$/i.test(name)) {
+      return 'image'
+    }
+
+    if (file.type.startsWith('video/')) {
+      return 'video'
+    }
+
+    if (/\.(mp4|mov|m4v|webm)$/i.test(name)) {
+      return 'video'
+    }
+
+    return undefined
+  }
+
+  private socialReelMimeType(): string {
+    if (MediaRecorder.isTypeSupported('video/webm;codecs=vp9')) {
+      return 'video/webm;codecs=vp9'
+    }
+
+    if (MediaRecorder.isTypeSupported('video/webm;codecs=vp8')) {
+      return 'video/webm;codecs=vp8'
+    }
+
+    return 'video/webm'
+  }
+
+  private persistSocialReelState(): void {
+    try {
+      const state: PersistedSocialReelState = {
+        text: this.socialReelText,
+        duration: this.socialReelSecondsPerSlide,
+        includeDates: this.socialReelIncludeDates,
+      }
+      window.localStorage.setItem(ToolsComponent.SOCIAL_REEL_STORAGE_KEY, JSON.stringify(state))
+    } catch {
+      // Local storage can be unavailable in private browsing; the generator still works.
+    }
+  }
+
+  private restoreSocialReelState(): void {
+    try {
+      const stored = window.localStorage.getItem(ToolsComponent.SOCIAL_REEL_STORAGE_KEY)
+      if (!stored) {
+        return
+      }
+
+      const state = JSON.parse(stored) as PersistedSocialReelState
+      if (typeof state.text === 'string') {
+        this.socialReelText = state.text
+      }
+      if (typeof state.duration === 'number') {
+        this.socialReelSecondsPerSlide = Math.max(2, Math.min(state.duration, 9))
+      }
+      this.socialReelIncludeDates = true
+    } catch {
+      // Ignore corrupted drafts.
+    }
   }
 
   private fileDate(date: Date): string {

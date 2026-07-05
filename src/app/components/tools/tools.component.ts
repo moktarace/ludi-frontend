@@ -172,8 +172,6 @@ export class ToolsComponent {
 
   public readonly formats: { label: string; value: VisualFormat }[] = [
     { label: 'Post', value: 'post' },
-    { label: 'Story', value: 'story' },
-    { label: 'Reel', value: 'reel' },
     { label: 'Affiche A2', value: 'poster' },
   ]
 
@@ -1102,6 +1100,10 @@ export class ToolsComponent {
   }
 
   public selectFormat(format: VisualFormat): void {
+    if (!this.formats.some((item) => item.value === format)) {
+      format = 'post'
+    }
+
     this.selectedFormat = format
 
     if (this.isA2Format) {

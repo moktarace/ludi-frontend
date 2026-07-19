@@ -8,7 +8,43 @@
   >
     {{ actionMessage }}
   </p>
-  <div class="container visual-tools-inner">
+  <label class="container mobile-tools-switcher" *ngIf="isUnlocked">
+    <span>Créer</span>
+    <select
+      class="form-select"
+      [ngModel]="mobileToolSection"
+      (ngModelChange)="selectMobileToolSection($event)"
+      aria-label="Choisir un outil du kit réseaux"
+    >
+      <option value="visual">Une annonce</option>
+      <option value="carousel">Un remerciement</option>
+      <option value="pedagogy">Un carrousel pédagogique</option>
+      <option value="reel">Un Reel / Short</option>
+      <option value="championship">Le championnat Improvisem</option>
+    </select>
+  </label>
+
+  <div class="legacy-logo-modal" *ngIf="isLegacyLogoPickerOpen">
+    <div class="legacy-logo-backdrop" (click)="isLegacyLogoPickerOpen = false"></div>
+    <section class="legacy-logo-dialog">
+      <header>
+        <h2>Anciens spectacles</h2>
+        <button type="button" (click)="isLegacyLogoPickerOpen = false">Fermer</button>
+      </header>
+      <div class="legacy-logo-grid">
+        <button
+          type="button"
+          *ngFor="let logo of legacyLogos"
+          (click)="selectLegacyLogo(logo)"
+        >
+          <img [src]="logo.src" [alt]="logo.label" />
+          <span>{{ logo.label }}</span>
+        </button>
+      </div>
+    </section>
+  </div>
+
+  <div class="container visual-tools-inner" [class.mobile-tool-section-hidden]="mobileToolSection !== 'visual'">
     <div class="visual-lock-panel" *ngIf="!isUnlocked">
       <h1 class="text-uppercase">Kit réseaux</h1>
       <p>Accès adhérent·e LUDI. Le même code déverrouille aussi les outils LUDI et le planning.</p>
@@ -334,28 +370,9 @@
       </div>
     </div>
 
-    <div class="legacy-logo-modal" *ngIf="isLegacyLogoPickerOpen">
-      <div class="legacy-logo-backdrop" (click)="isLegacyLogoPickerOpen = false"></div>
-      <section class="legacy-logo-dialog">
-        <header>
-          <h2>Anciens spectacles</h2>
-          <button type="button" (click)="isLegacyLogoPickerOpen = false">Fermer</button>
-        </header>
-        <div class="legacy-logo-grid">
-          <button
-            type="button"
-            *ngFor="let logo of legacyLogos"
-            (click)="selectLegacyLogo(logo)"
-          >
-            <img [src]="logo.src" [alt]="logo.label" />
-            <span>{{ logo.label }}</span>
-          </button>
-        </div>
-      </section>
-    </div>
   </div>
 
-  <div class="container carousel-tools-inner" *ngIf="isUnlocked">
+  <div class="container carousel-tools-inner" *ngIf="isUnlocked" [class.mobile-tool-section-hidden]="mobileToolSection !== 'carousel'">
     <div class="carousel-tools-panel">
       <h2>Carrousel après spectacle</h2>
       <p>
@@ -684,7 +701,7 @@
     </div>
   </div>
 
-  <div class="container carousel-tools-inner pedagogy-tools-inner" *ngIf="isUnlocked">
+  <div class="container carousel-tools-inner pedagogy-tools-inner" *ngIf="isUnlocked" [class.mobile-tool-section-hidden]="mobileToolSection !== 'pedagogy'">
     <div class="carousel-tools-panel">
       <h2>Carrousel pédagogique</h2>
       <p>
@@ -984,7 +1001,7 @@
     </div>
   </div>
 
-  <div class="container carousel-tools-inner social-reel-tools-inner" *ngIf="isUnlocked">
+  <div class="container carousel-tools-inner social-reel-tools-inner" *ngIf="isUnlocked" [class.mobile-tool-section-hidden]="mobileToolSection !== 'reel'">
     <div class="carousel-tools-panel social-reel-tools-panel">
       <h2>Générateur Reel / Short</h2>
       <p>
@@ -1240,7 +1257,7 @@
     </div>
   </div>
 
-  <div class="container carousel-tools-inner championship-tools-inner" *ngIf="isUnlocked">
+  <div class="container carousel-tools-inner championship-tools-inner" *ngIf="isUnlocked" [class.mobile-tool-section-hidden]="mobileToolSection !== 'championship'">
     <div class="carousel-tools-panel championship-tools-panel">
       <h2>Championnat Improvisem</h2>
       <p>

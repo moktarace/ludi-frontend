@@ -305,6 +305,68 @@ div.bg-dark.bg-black {
   background: var(--ludi-ink);
 }
 
+.compact-site-header {
+  display: flex;
+  min-height: 5rem;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.8rem max(1rem, calc((100vw - 1120px) / 2));
+  border-bottom: 1px solid rgb(255 248 237 / 12%);
+  background: var(--ludi-ink);
+}
+
+.compact-site-brand,
+.compact-site-back {
+  color: var(--ludi-paper);
+  text-decoration: none;
+}
+
+.compact-site-brand {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+
+  img {
+    width: 3rem;
+    height: 3rem;
+    object-fit: contain;
+  }
+
+  strong,
+  small {
+    display: block;
+  }
+
+  strong {
+    font-family: "The Bold Font", system-ui, sans-serif;
+    font-size: 1.05rem;
+    line-height: 1;
+    text-transform: uppercase;
+  }
+
+  small {
+    margin-top: 0.2rem;
+    color: rgb(255 248 237 / 62%);
+    font-size: 0.72rem;
+    font-weight: 750;
+  }
+}
+
+.compact-site-back {
+  display: inline-flex;
+  gap: 0.5rem;
+  align-items: center;
+  font-size: 0.78rem;
+  font-weight: 900;
+  text-transform: uppercase;
+
+  span {
+    color: var(--ludi-gold);
+    font-size: 1.15rem;
+  }
+}
+
 .header {
   min-height: min(760px, 86vh);
   width: 100%;
@@ -1332,6 +1394,10 @@ app-galaxy {
     url(/assets/background/bg02.jpg);
   background-position: center;
   background-size: cover;
+}
+
+.mobile-tools-switcher {
+  display: none;
 }
 
 .visual-tools-inner {
@@ -5639,6 +5705,70 @@ button:disabled {
 
   .mobile-only {
     display: block;
+  }
+
+  .compact-site-header {
+    min-height: 4.35rem;
+    padding: 0.65rem 1rem;
+  }
+
+  .compact-site-brand img {
+    width: 2.7rem;
+    height: 2.7rem;
+  }
+
+  .compact-site-brand small {
+    display: none;
+  }
+
+  .compact-site-back {
+    font-size: 0.68rem;
+  }
+
+  .mobile-tools-switcher {
+    position: sticky;
+    top: 0.5rem;
+    z-index: 20;
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 0.75rem;
+    align-items: center;
+    width: calc(100% - 2rem);
+    margin-bottom: 1.5rem;
+    padding: 0.55rem 0.65rem 0.55rem 0.85rem;
+    border: 1px solid rgb(255 248 237 / 16%);
+    border-radius: 0.85rem;
+    background: rgb(31 23 40 / 92%);
+    box-shadow: 0 0.7rem 1.5rem rgb(0 0 0 / 24%);
+    backdrop-filter: blur(12px);
+
+    span {
+      color: var(--ludi-gold);
+      font-size: 0.7rem;
+      font-weight: 950;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .form-select {
+      min-height: 2.45rem;
+      border: 0;
+      border-radius: 0.55rem;
+      background-color: rgb(255 248 237 / 10%);
+      color: var(--ludi-paper);
+      font-size: 0.88rem;
+      font-weight: 850;
+    }
+  }
+
+  .mobile-tool-section-hidden {
+    display: none !important;
+  }
+
+  .carousel-tools-inner:not(.mobile-tool-section-hidden) {
+    margin-top: 0;
+    padding-top: 0;
+    border-top: 0;
   }
 
   .section-block,

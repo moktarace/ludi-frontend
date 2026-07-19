@@ -1,3 +1,18 @@
+<header class="compact-site-header" *ngIf="compact; else publicHeader">
+  <a class="compact-site-brand" href="#" aria-label="Retour à l'accueil de la LUDI">
+    <img src="assets/logo/logo.png" alt="" />
+    <span>
+      <strong>LUDI Toulouse</strong>
+      <small>Outils de l'association</small>
+    </span>
+  </a>
+  <a class="compact-site-back" href="#">
+    Retour au site
+    <span aria-hidden="true">→</span>
+  </a>
+</header>
+
+<ng-template #publicHeader>
 <div class="site-hero">
   <div class="text-white text-center header">
     <video loop autoplay muted playsinline oncanplay="this.play()" onloadedmetadata="this.muted = true" class="video-header">
@@ -65,3 +80,4 @@
     </div>
   </div>
 </div>
+</ng-template>

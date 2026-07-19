@@ -1,5 +1,7 @@
 <div id="content" *ngIf="shows$ | async as shows">
-  <app-header></app-header>
+  <app-header
+    [compact]="isToolsPage || isProgrammationAdminPage || isPlanningPage || isPrivateToolsHomePage || isLegalNoticePage"
+  ></app-header>
   <ng-container *ngIf="!isToolsPage && !isProgrammationAdminPage && !isPlanningPage && !isPrivateToolsHomePage && !isLegalNoticePage; else privatePage">
     <div *ngIf="shows.length">
       <app-shows

@@ -8,6 +8,7 @@ type CarouselPlacement = 'top' | 'center' | 'bottom'
 type CarouselLogoSize = 's' | 'm' | 'l' | 'xl'
 type VisualTaglinePlacement = 'top-left' | 'top-right' | 'center-left' | 'center-right' | 'bottom-left' | 'bottom-right'
 type LegacyLogoPickerTarget = 'poster' | 'carousel'
+type MobileToolSection = 'visual' | 'carousel' | 'pedagogy' | 'reel' | 'championship'
 type Html2Canvas = typeof import('html2canvas').default
 type ChampionshipSlideId = 'match' | 'standings' | 'dates'
 type SocialReelMediaKind = 'image' | 'video'
@@ -567,6 +568,7 @@ export class ToolsComponent {
   public socialReelError = ''
   public actionMessage = ''
   public actionMessageType: 'success' | 'error' = 'success'
+  public mobileToolSection: MobileToolSection = 'visual'
   private draftSaveTimer?: number
   private actionMessageTimer?: number
 
@@ -582,6 +584,10 @@ export class ToolsComponent {
   public scheduleDraftSave(): void {
     window.clearTimeout(this.draftSaveTimer)
     this.draftSaveTimer = window.setTimeout(() => this.persistDraftState(), 120)
+  }
+
+  public selectMobileToolSection(section: MobileToolSection): void {
+    this.mobileToolSection = section
   }
 
   public get sortedShows(): Show[] {

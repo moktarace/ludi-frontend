@@ -25,7 +25,7 @@ export class ShowsListComponent {
         if (!show?.date) {
             return undefined;
         }
-        return ShowsListComponent.SHORT_DATE_FORMATTER.format(new Date(show.date * 1000));
+        return ShowsListComponent.SHORT_DATE_FORMATTER.format(new Date(show.date * 1000)).replace(/(\d{2}):(\d{2})/, '$1h $2');
     }
 
     public retrieveMainLink(show: Show): string {

@@ -36,7 +36,7 @@ export class HighlightedShowCardComponent {
     if (!this.show?.date) {
       return "Date à venir";
     }
-    return HighlightedShowCardComponent.DATE_FORMATTER.format(new Date(this.show.date * 1000));
+    return HighlightedShowCardComponent.DATE_FORMATTER.format(new Date(this.show.date * 1000)).replace(/(\d{2}):(\d{2})/, '$1h $2');
   }
 
   public get isKitLogo(): boolean {

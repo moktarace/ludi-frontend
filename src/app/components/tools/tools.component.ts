@@ -137,6 +137,28 @@ export class ToolsComponent {
   private static SOCIAL_REEL_FRAME_RATE = 24
   private static SOCIAL_REEL_INSERT_SECONDS = 2.2
   private static SOCIAL_REEL_PUNCHLINE_SECONDS = 1.35
+  private static SOCIAL_REEL_DEFAULT_TEXT = [
+    "Ils ont dit que c'etait juste une soiree d'impro.",
+    '[[Mauvaise nouvelle.]]',
+    "Puis quelqu'un a annonce *un match a enjeu*.",
+    "Depuis, le campus vit dans une ambiance de finale de Ligue des Champions sans VAR.",
+    '!! LES POINTS SONT RÉELS.',
+    "Prochaine étape : venir vérifier ça en salle.",
+  ].join('\n\n')
+  private static SOCIAL_REEL_LEGACY_DEFAULT_TEXTS = [
+    [
+      "Ils ont dit que c'etait juste une soiree d'impro.",
+      "Puis quelqu'un a annonce *un match a enjeu*.",
+      "Depuis, le campus vit dans une ambiance de finale de Ligue des Champions sans VAR.",
+    ].join('\n\n'),
+    [
+      "Ils ont dit que c'etait juste une soiree d'impro.",
+      '[[Mauvaise nouvelle.]]',
+      "Puis quelqu'un a annonce *un match a enjeu*.",
+      '!! LES POINTS SONT RÉELS.',
+      "Depuis, le campus vit dans une ambiance de finale de Ligue des Champions sans VAR.",
+    ].join('\n\n'),
+  ]
 
   private static DATE_FORMATTER = new Intl.DateTimeFormat('fr-FR', {
     day: 'numeric',
@@ -512,13 +534,7 @@ export class ToolsComponent {
   public selectedChampionshipMatchId = this.championshipMatches[0].id
   public championshipPreviewIndex = 0
   public isChampionshipExporting = false
-  public socialReelText = [
-    "Ils ont dit que c'etait juste une soiree d'impro.",
-    '[[Mauvaise nouvelle.]]',
-    "Puis quelqu'un a annonce *un match a enjeu*.",
-    '!! LES POINTS SONT RÉELS.',
-    "Depuis, le campus vit dans une ambiance de finale de Ligue des Champions sans VAR.",
-  ].join('\n\n')
+  public socialReelText = ToolsComponent.SOCIAL_REEL_DEFAULT_TEXT
   public socialReelMedia: SocialReelMedia[] = []
   public socialReelPreviewIndex = 0
   public socialReelSecondsPerSlide = 4
@@ -1124,12 +1140,12 @@ export class ToolsComponent {
       return 'Date à venir'
     }
 
-    return ToolsComponent.FULL_DATE_FORMATTER.format(new Date(show.date * 1000))
+    return ToolsComponent.FULL_DATE_FORMATTER.format(new Date(show.date * 1000)).replace(/(\d{2}):(\d{2})/, '$1h $2')
   }
 
   public priceLabel(show: Show): string {
     if (!show.price) {
-      return 'Gratuit pour tou·te·s'
+      return 'Entrée gratuite'
     }
 
     return show.reducedPrice
@@ -3120,7 +3136,9 @@ export class ToolsComponent {
 
       const state = JSON.parse(stored) as PersistedSocialReelState
       if (typeof state.text === 'string') {
-        this.socialReelText = state.text
+        this.socialReelText = ToolsComponent.SOCIAL_REEL_LEGACY_DEFAULT_TEXTS.includes(state.text)
+          ? ToolsComponent.SOCIAL_REEL_DEFAULT_TEXT
+          : state.text
       }
       if (typeof state.duration === 'number') {
         this.socialReelSecondsPerSlide = Math.max(2, Math.min(state.duration, 9))

@@ -461,7 +461,7 @@ export class ProgrammationAdminComponent implements OnInit {
       return 'Date à renseigner'
     }
 
-    return ProgrammationAdminComponent.ADMIN_DATE_FORMATTER.format(new Date(show.date * 1000))
+    return ProgrammationAdminComponent.ADMIN_DATE_FORMATTER.format(new Date(show.date * 1000)).replace(/(\d{2}):(\d{2})/, '$1h $2')
   }
 
   public isPastShow(show: Show): boolean {

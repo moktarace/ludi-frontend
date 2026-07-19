@@ -150,7 +150,7 @@ function ludi_price_label(array $show): string
     $reducedPrice = $show['reducedPrice'] ?? null;
 
     if ($price === 0 && $reducedPrice === 0) {
-        return 'Gratuit pour tou·te·s';
+        return 'Entrée gratuite';
     }
 
     if (is_numeric($price) && is_numeric($reducedPrice)) {
@@ -165,7 +165,7 @@ function ludi_fallback_html(array $shows): string
     $items = '';
     foreach (array_slice($shows, 0, 4) as $show) {
         $date = !empty($show['date'])
-            ? (new DateTimeImmutable('@' . (int) $show['date']))->setTimezone(new DateTimeZone('Europe/Paris'))->format('d/m/Y H:i')
+            ? (new DateTimeImmutable('@' . (int) $show['date']))->setTimezone(new DateTimeZone('Europe/Paris'))->format('d/m/Y H\\h i')
             : '';
         $items .= '<li><strong>' . htmlspecialchars((string) $show['name'], ENT_QUOTES, 'UTF-8') . '</strong>'
             . '<span>' . htmlspecialchars($date, ENT_QUOTES, 'UTF-8') . '</span>'

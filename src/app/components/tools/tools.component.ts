@@ -1,4 +1,4 @@
-import { Component, ElementRef, Input, QueryList, ViewChild, ViewChildren } from '@angular/core'
+import { Component, ElementRef, HostListener, Input, QueryList, ViewChild, ViewChildren } from '@angular/core'
 import { isPrivateAccessUnlocked, PRIVATE_ACCESS_CODE, unlockPrivateAccess } from 'src/app/config/private-access'
 import { Show } from 'src/app/model'
 
@@ -121,6 +121,29 @@ interface PersistedChampionshipState {
   matches?: ChampionshipMatch[]
 }
 
+interface PersistedToolsDraftState {
+  selectedFormat?: VisualFormat
+  selectedMode?: VisualMode
+  selectedShowId?: string
+  selectedToneValue?: string
+  customPoster?: string
+  customBackgroundTintEnabled?: boolean
+  customQrLink?: string
+  showQrCode?: boolean
+  isPosterHidden?: boolean
+  printLogoPlacement?: CarouselPlacement
+  printLogoSize?: CarouselLogoSize
+  visualTagline?: string
+  visualTaglinePlacement?: VisualTaglinePlacement
+  customCarouselLogo?: string
+  carouselLogoPlacement?: CarouselPlacement
+  carouselLogoSize?: CarouselLogoSize
+  carouselTextPlacement?: CarouselPlacement
+  carouselCoverText?: string
+  selectedPedagogyTemplateId?: string
+  pedagogySlides?: PedagogySlide[]
+}
+
 @Component({
   selector: 'app-tools',
   templateUrl: './tools.component.html',
@@ -132,6 +155,7 @@ export class ToolsComponent {
   private static PEDAGOGY_MAX_CONTENT_SLIDES = 18
   private static CHAMPIONSHIP_STORAGE_KEY = 'ludi-tools-championnat-improvisem'
   private static SOCIAL_REEL_STORAGE_KEY = 'ludi-tools-reel-slideshow'
+  private static DRAFT_STORAGE_KEY = 'ludi-tools-draft'
   private static SOCIAL_REEL_WIDTH = 1080
   private static SOCIAL_REEL_HEIGHT = 1920
   private static SOCIAL_REEL_FRAME_RATE = 24
@@ -541,10 +565,23 @@ export class ToolsComponent {
   public socialReelIncludeDates = true
   public isSocialReelExporting = false
   public socialReelError = ''
+  public actionMessage = ''
+  public actionMessageType: 'success' | 'error' = 'success'
+  private draftSaveTimer?: number
+  private actionMessageTimer?: number
 
   constructor() {
+    this.restoreDraftState()
     this.restoreChampionshipState()
     this.restoreSocialReelState()
+  }
+
+  @HostListener('input')
+  @HostListener('change')
+  @HostListener('click')
+  public scheduleDraftSave(): void {
+    window.clearTimeout(this.draftSaveTimer)
+    this.draftSaveTimer = window.setTimeout(() => this.persistDraftState(), 120)
   }
 
   public get sortedShows(): Show[] {
@@ -1655,6 +1692,101 @@ export class ToolsComponent {
     input.value = ''
   }
 
+  private persistDraftState(): void {
+    try {
+      const state: PersistedToolsDraftState = {
+        selectedFormat: this.selectedFormat,
+        selectedMode: this.selectedMode,
+        selectedShowId: this.selectedShowId,
+        selectedToneValue: this.selectedToneValue,
+        customPoster: this.persistableAsset(this.customPoster),
+        customBackgroundTintEnabled: this.customBackgroundTintEnabled,
+        customQrLink: this.customQrLink,
+        showQrCode: this.showQrCode,
+        isPosterHidden: this.isPosterHidden,
+        printLogoPlacement: this.printLogoPlacement,
+        printLogoSize: this.printLogoSize,
+        visualTagline: this.visualTagline,
+        visualTaglinePlacement: this.visualTaglinePlacement,
+        customCarouselLogo: this.persistableAsset(this.customCarouselLogo),
+        carouselLogoPlacement: this.carouselLogoPlacement,
+        carouselLogoSize: this.carouselLogoSize,
+        carouselTextPlacement: this.carouselTextPlacement,
+        carouselCoverText: this.carouselCoverText,
+        selectedPedagogyTemplateId: this.selectedPedagogyTemplateId,
+        pedagogySlides: this.pedagogySlides.map((slide) => ({
+          ...slide,
+          image: this.persistableAsset(slide.image),
+        })),
+      }
+      window.localStorage.setItem(ToolsComponent.DRAFT_STORAGE_KEY, JSON.stringify(state))
+    } catch {
+      // The tools remain usable when storage is unavailable or full.
+    }
+  }
+
+  private restoreDraftState(): void {
+    try {
+      const stored = window.localStorage.getItem(ToolsComponent.DRAFT_STORAGE_KEY)
+      if (!stored) {
+        return
+      }
+
+      const state = JSON.parse(stored) as PersistedToolsDraftState
+      const formats: VisualFormat[] = ['post', 'story', 'reel', 'poster']
+      const modes: VisualMode[] = ['show', 'week', 'month']
+      const placements: CarouselPlacement[] = ['top', 'center', 'bottom']
+      const logoSizes: CarouselLogoSize[] = ['s', 'm', 'l', 'xl']
+      const taglinePlacements: VisualTaglinePlacement[] = [
+        'top-left', 'top-right', 'center-left', 'center-right', 'bottom-left', 'bottom-right',
+      ]
+
+      if (state.selectedFormat && formats.includes(state.selectedFormat)) this.selectedFormat = state.selectedFormat
+      if (state.selectedMode && modes.includes(state.selectedMode)) this.selectedMode = state.selectedMode
+      if (typeof state.selectedShowId === 'string') this.selectedShowId = state.selectedShowId
+      if (state.selectedToneValue && this.visualTones.some((tone) => tone.value === state.selectedToneValue)) this.selectedToneValue = state.selectedToneValue
+      if (typeof state.customPoster === 'string') this.customPoster = state.customPoster
+      if (typeof state.customBackgroundTintEnabled === 'boolean') this.customBackgroundTintEnabled = state.customBackgroundTintEnabled
+      if (typeof state.customQrLink === 'string') this.customQrLink = state.customQrLink
+      if (typeof state.showQrCode === 'boolean') this.showQrCode = state.showQrCode
+      if (typeof state.isPosterHidden === 'boolean') this.isPosterHidden = state.isPosterHidden
+      if (state.printLogoPlacement && placements.includes(state.printLogoPlacement)) this.printLogoPlacement = state.printLogoPlacement
+      if (state.printLogoSize && logoSizes.includes(state.printLogoSize)) this.printLogoSize = state.printLogoSize
+      if (typeof state.visualTagline === 'string') this.visualTagline = state.visualTagline
+      if (state.visualTaglinePlacement && taglinePlacements.includes(state.visualTaglinePlacement)) this.visualTaglinePlacement = state.visualTaglinePlacement
+      if (typeof state.customCarouselLogo === 'string') this.customCarouselLogo = state.customCarouselLogo
+      if (state.carouselLogoPlacement && placements.includes(state.carouselLogoPlacement)) this.carouselLogoPlacement = state.carouselLogoPlacement
+      if (state.carouselLogoSize && logoSizes.includes(state.carouselLogoSize)) this.carouselLogoSize = state.carouselLogoSize
+      if (state.carouselTextPlacement && placements.includes(state.carouselTextPlacement)) this.carouselTextPlacement = state.carouselTextPlacement
+      if (typeof state.carouselCoverText === 'string') this.carouselCoverText = state.carouselCoverText
+      if (state.selectedPedagogyTemplateId && this.pedagogyTemplates.some((template) => template.id === state.selectedPedagogyTemplateId)) {
+        this.selectedPedagogyTemplateId = state.selectedPedagogyTemplateId
+      }
+      if (Array.isArray(state.pedagogySlides) && state.pedagogySlides.length) {
+        this.pedagogySlides = state.pedagogySlides.slice(0, ToolsComponent.PEDAGOGY_MAX_CONTENT_SLIDES)
+      }
+    } catch {
+      // Ignore corrupted or unavailable drafts.
+    }
+  }
+
+  private persistableAsset(asset?: string): string | undefined {
+    return asset && !asset.startsWith('data:') && !asset.startsWith('blob:') ? asset : undefined
+  }
+
+  private showActionMessage(message: string, type: 'success' | 'error' = 'success'): void {
+    window.clearTimeout(this.actionMessageTimer)
+    this.actionMessage = message
+    this.actionMessageType = type
+    this.actionMessageTimer = window.setTimeout(() => {
+      this.actionMessage = ''
+    }, 5000)
+  }
+
+  private errorMessage(error: unknown, fallback: string): string {
+    return error instanceof Error && error.name !== 'AbortError' ? error.message : fallback
+  }
+
   private restoreChampionshipState(): void {
     try {
       const rawState = localStorage.getItem(ToolsComponent.CHAMPIONSHIP_STORAGE_KEY)
@@ -1766,8 +1898,9 @@ export class ToolsComponent {
     try {
       const file = await this.createVisualFile()
       this.downloadBlob(file, file.name)
+      this.showActionMessage(`Visuel téléchargé : ${file.name}`)
     } catch (error) {
-      throw error
+      this.showActionMessage(this.errorMessage(error, 'Téléchargement du visuel impossible.'), 'error')
     } finally {
       this.isExporting = false
     }
@@ -1786,6 +1919,9 @@ export class ToolsComponent {
         this.downloadBlob(file, file.name)
         await this.wait(140)
       }
+      this.showActionMessage(`${files.length} image${files.length > 1 ? 's' : ''} téléchargée${files.length > 1 ? 's' : ''}.`)
+    } catch (error) {
+      this.showActionMessage(this.errorMessage(error, 'Téléchargement du carrousel impossible.'), 'error')
     } finally {
       this.isCarouselExporting = false
     }
@@ -1801,6 +1937,9 @@ export class ToolsComponent {
     try {
       const file = await this.createVisualFile()
       await this.shareFiles([file], 'Visuel LUDI')
+      this.showActionMessage('Visuel prêt à être partagé.')
+    } catch (error) {
+      this.showActionMessage(this.errorMessage(error, 'Partage du visuel annulé ou impossible.'), 'error')
     } finally {
       this.isSharing = false
     }
@@ -1816,6 +1955,9 @@ export class ToolsComponent {
     try {
       const files = await this.createCarouselFiles()
       await this.shareFiles(files, 'Carrousel LUDI')
+      this.showActionMessage(`${files.length} image${files.length > 1 ? 's' : ''} prête${files.length > 1 ? 's' : ''} à être partagée${files.length > 1 ? 's' : ''}.`)
+    } catch (error) {
+      this.showActionMessage(this.errorMessage(error, 'Partage du carrousel annulé ou impossible.'), 'error')
     } finally {
       this.isSharing = false
     }
@@ -1834,6 +1976,9 @@ export class ToolsComponent {
         this.downloadBlob(file, file.name)
         await this.wait(140)
       }
+      this.showActionMessage(`${files.length} slide${files.length > 1 ? 's' : ''} téléchargée${files.length > 1 ? 's' : ''}.`)
+    } catch (error) {
+      this.showActionMessage(this.errorMessage(error, 'Téléchargement du carrousel pédagogique impossible.'), 'error')
     } finally {
       this.isPedagogyExporting = false
     }
@@ -1849,6 +1994,9 @@ export class ToolsComponent {
     try {
       const files = await this.createPedagogyFiles()
       await this.shareFiles(files, 'Carrousel pédagogique LUDI')
+      this.showActionMessage(`${files.length} slide${files.length > 1 ? 's' : ''} prête${files.length > 1 ? 's' : ''} à être partagée${files.length > 1 ? 's' : ''}.`)
+    } catch (error) {
+      this.showActionMessage(this.errorMessage(error, 'Partage du carrousel pédagogique annulé ou impossible.'), 'error')
     } finally {
       this.isSharing = false
     }
@@ -1867,6 +2015,9 @@ export class ToolsComponent {
         this.downloadBlob(file, file.name)
         await this.wait(140)
       }
+      this.showActionMessage(`${files.length} slide${files.length > 1 ? 's' : ''} Improvisem téléchargée${files.length > 1 ? 's' : ''}.`)
+    } catch (error) {
+      this.showActionMessage(this.errorMessage(error, 'Téléchargement des slides Improvisem impossible.'), 'error')
     } finally {
       this.isChampionshipExporting = false
     }
@@ -1882,6 +2033,9 @@ export class ToolsComponent {
     try {
       const files = await this.createChampionshipFiles()
       await this.shareFiles(files, 'Resultats Championnat Improvisem')
+      this.showActionMessage('Slides Improvisem prêtes à être partagées.')
+    } catch (error) {
+      this.showActionMessage(this.errorMessage(error, 'Partage des slides Improvisem annulé ou impossible.'), 'error')
     } finally {
       this.isSharing = false
     }
@@ -1898,9 +2052,10 @@ export class ToolsComponent {
     try {
       const file = await this.createSocialReelFile()
       this.downloadBlob(file, file.name)
+      this.showActionMessage(`Reel téléchargé : ${file.name}`)
     } catch (error) {
       this.socialReelError = error instanceof Error ? error.message : 'Export impossible'
-      throw error
+      this.showActionMessage(this.socialReelError, 'error')
     } finally {
       this.isSocialReelExporting = false
     }
@@ -1917,9 +2072,10 @@ export class ToolsComponent {
     try {
       const file = await this.createSocialReelFile()
       await this.shareFiles([file], 'Reel LUDI')
+      this.showActionMessage('Reel prêt à être partagé.')
     } catch (error) {
       this.socialReelError = error instanceof Error ? error.message : 'Partage impossible'
-      throw error
+      this.showActionMessage(this.socialReelError, 'error')
     } finally {
       this.isSharing = false
     }

@@ -1393,6 +1393,26 @@ app-galaxy {
   font-weight: 800;
 }
 
+.tools-action-message {
+  position: fixed;
+  right: 1rem;
+  bottom: 1rem;
+  z-index: 1100;
+  max-width: min(24rem, calc(100vw - 2rem));
+  margin: 0;
+  padding: 0.85rem 1rem;
+  border: 1px solid rgb(255 248 237 / 22%);
+  background: #206a45;
+  color: #fff;
+  box-shadow: 0 0.8rem 2rem rgb(0 0 0 / 32%);
+  font-size: 0.9rem;
+  font-weight: 850;
+
+  &.error {
+    background: #9e2132;
+  }
+}
+
 .planning-tools {
   min-height: 100vh;
   background:

@@ -4853,6 +4853,10 @@ button:disabled {
   border: 1px solid rgb(255 248 237 / 14%);
   background: rgb(255 248 237 / 7%);
 
+  > * {
+    min-width: 0;
+  }
+
   strong,
   span {
     color: var(--ludi-paper);
@@ -5904,6 +5908,19 @@ button:disabled {
 
   .carousel-tools-inner {
     grid-template-columns: 1fr;
+  }
+
+  .championship-match-editor-row {
+    grid-template-columns: minmax(0, 1fr) 3rem auto 3rem minmax(0, 1fr);
+  }
+
+  .championship-match-label-input,
+  .championship-match-remove-button {
+    grid-column: 1 / -1;
+  }
+
+  .championship-match-remove-button {
+    justify-self: start;
   }
 
   .programmation-logo-presets {

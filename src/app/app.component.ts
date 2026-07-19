@@ -15,48 +15,25 @@ export class AppComponent implements OnInit {
   private static PRIVATE_TOOLS_HOME_HASH = "#outils-ludi";
   private static LEGAL_NOTICE_HASH = "#mentions-legales";
 
-  static LOADING_TEXT: string[] = [
-    "Caucus en cours",
-    "Les mains plus haut, on compte les cartons",
-    "BA-BE-BI-BO-BU",
-    "JM, c'est le meilleur parrain",
-    "La Chaise : meilleure improvisatrice",
-    "Astuce : bossez votre cristallisation",
-    "3 2 1 IMPRO !",
-    "Il a pensé à parler du chapeau ??",
-    "Et c'est une convergence, UNE CONVERGEEEEENCE 🎶",
-    "Joueurs en quiconque quiconce !  Bref, un sur deux...",
-    "Arbitre c’est un... Métier !",
-    "Préparation du pacing",
-  ];
-
   public shows$!: Observable<Show[] | undefined>;
   public highlightedShow: Show | undefined;
-  public isLoaded: boolean | undefined;
   public isToolsPage = false;
   public isProgrammationAdminPage = false;
   public isPlanningPage = false;
   public isPrivateToolsHomePage = false;
   public isLegalNoticePage = false;
-  public loadingText: String;
   private eventsJsonLdScriptId = "ludi-events-json-ld";
 
   constructor(
     private ludiService: LudiService,
     @Inject(DOCUMENT) private document: Document
-  ) {
-    this.loadingText =
-      AppComponent.LOADING_TEXT[
-        Math.floor(Math.random() * AppComponent.LOADING_TEXT.length)
-      ];
-  }
+  ) {}
 
   public ngOnInit(): void {
     this.updateToolsPage();
 
     this.shows$ = this.ludiService.show().pipe(
       tap((shows) => {
-        this.isLoaded = true;
         this.highlightedShow =
           shows.filter((s) => s.isHighlighted)[0] || shows[0];
         shows.filter((s) => s.id !== this.highlightedShow?.id);

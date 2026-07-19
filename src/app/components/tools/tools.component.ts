@@ -1943,6 +1943,7 @@ export class ToolsComponent {
     preview.classList.add('visual-export-frame')
 
     try {
+      await this.waitForImages(preview)
       await this.wait(40)
       const rect = preview.getBoundingClientRect()
       const canvas = await html2canvas(preview, {
@@ -1977,6 +1978,7 @@ export class ToolsComponent {
 
     for (let index = 0; index < slides.length; index += 1) {
       const slide = slides[index].nativeElement
+      await this.waitForImages(slide)
       const canvas = await html2canvas(slide, {
         allowTaint: false,
         backgroundColor: null,
@@ -2768,6 +2770,23 @@ export class ToolsComponent {
         reject(new Error('Export impossible'))
       })
     })
+  }
+
+  private async waitForImages(element: HTMLElement): Promise<void> {
+    const images = Array.from(element.querySelectorAll('img'))
+
+    await Promise.all(images.map(async (image) => {
+      if (!image.complete) {
+        await new Promise<void>((resolve) => {
+          image.addEventListener('load', () => resolve(), { once: true })
+          image.addEventListener('error', () => resolve(), { once: true })
+        })
+      }
+
+      if (typeof image.decode === 'function' && image.naturalWidth > 0) {
+        await image.decode().catch(() => undefined)
+      }
+    }))
   }
 
   private wait(duration: number): Promise<void> {

@@ -2141,11 +2141,17 @@ export class ToolsComponent {
     for (let index = 0; index < slides.length; index += 1) {
       const slide = slides[index].nativeElement
       await this.waitForImages(slide)
+      const width = slide.clientWidth
+      const height = slide.clientHeight
       const canvas = await html2canvas(slide, {
         allowTaint: false,
         backgroundColor: null,
-        scale: 1080 / slide.clientWidth,
+        height,
+        scale: 1080 / width,
         useCORS: true,
+        width,
+        windowHeight: height,
+        windowWidth: width,
       })
       const fileName = `${baseFileName}-${String(index + 1).padStart(2, '0')}.png`
       files.push(new File([await this.canvasToBlob(canvas)], fileName, { type: 'image/png' }))

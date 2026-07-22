@@ -4104,6 +4104,10 @@ button:disabled {
   }
 }
 
+.carousel-cover-slide.carousel-photo-overlay-export::before {
+  display: none;
+}
+
 .carousel-cover-logo {
   position: absolute;
   left: 50%;

@@ -2140,24 +2140,103 @@ export class ToolsComponent {
 
     for (let index = 0; index < slides.length; index += 1) {
       const slide = slides[index].nativeElement
+      const photo = index === 0
+        ? this.carouselCoverPhoto
+        : (index < slides.length - 1 ? this.carouselPhotoSlides[index - 1] : undefined)
       await this.waitForImages(slide)
       const width = slide.clientWidth
       const height = slide.clientHeight
-      const canvas = await html2canvas(slide, {
-        allowTaint: false,
-        backgroundColor: null,
-        height,
-        scale: 1080 / width,
-        useCORS: true,
-        width,
-        windowHeight: height,
-        windowWidth: width,
-      })
+      const backgroundImage = slide.style.backgroundImage
+      if (photo) {
+        slide.style.backgroundImage = 'none'
+        slide.classList.add('carousel-photo-overlay-export')
+      }
+
+      let overlayCanvas: HTMLCanvasElement
+      try {
+        overlayCanvas = await html2canvas(slide, {
+          allowTaint: false,
+          backgroundColor: null,
+          height,
+          scale: 1080 / width,
+          useCORS: true,
+          width,
+          windowHeight: height,
+          windowWidth: width,
+        })
+      } finally {
+        slide.style.backgroundImage = backgroundImage
+        slide.classList.remove('carousel-photo-overlay-export')
+      }
+
+      const canvas = photo
+        ? await this.composeCarouselPhoto(overlayCanvas, photo, index === 0)
+        : overlayCanvas
       const fileName = `${baseFileName}-${String(index + 1).padStart(2, '0')}.png`
       files.push(new File([await this.canvasToBlob(canvas)], fileName, { type: 'image/png' }))
     }
 
     return files
+  }
+
+  private async composeCarouselPhoto(
+    overlayCanvas: HTMLCanvasElement,
+    photo: CarouselPhoto,
+    isCover: boolean,
+  ): Promise<HTMLCanvasElement> {
+    const image = await this.loadSocialReelAsset(photo.src)
+    const canvas = document.createElement('canvas')
+    canvas.width = overlayCanvas.width
+    canvas.height = overlayCanvas.height
+    const context = canvas.getContext('2d')
+
+    if (!context) {
+      throw new Error('Impossible de préparer la photo du carrousel.')
+    }
+
+    const scale = Math.max(canvas.width / image.naturalWidth, canvas.height / image.naturalHeight)
+    const sourceWidth = canvas.width / scale
+    const sourceHeight = canvas.height / scale
+    const sourceX = (image.naturalWidth - sourceWidth) / 2
+    const sourceY = (image.naturalHeight - sourceHeight) / 2
+
+    context.imageSmoothingEnabled = true
+    context.imageSmoothingQuality = 'high'
+    context.drawImage(
+      image,
+      sourceX,
+      sourceY,
+      sourceWidth,
+      sourceHeight,
+      0,
+      0,
+      canvas.width,
+      canvas.height,
+    )
+
+    if (isCover) {
+      this.drawCarouselCoverGradient(context, canvas.width, canvas.height, 0.18, 0.08, 0.72)
+      this.drawCarouselCoverGradient(context, canvas.width, canvas.height, 0.28, 0.08, 0.82)
+    }
+
+    context.drawImage(overlayCanvas, 0, 0)
+    return canvas
+  }
+
+  private drawCarouselCoverGradient(
+    context: CanvasRenderingContext2D,
+    width: number,
+    height: number,
+    topAlpha: number,
+    middleAlpha: number,
+    bottomAlpha: number,
+  ): void {
+    const gradient = context.createLinearGradient(0, 0, 0, height)
+    gradient.addColorStop(0, `rgba(23, 18, 31, ${topAlpha})`)
+    gradient.addColorStop(0.44, `rgba(23, 18, 31, ${middleAlpha})`)
+    gradient.addColorStop(1, `rgba(23, 18, 31, ${bottomAlpha})`)
+    context.fillStyle = gradient
+    context.fillRect(0, 0, width, height)
   }
 
   private async createPedagogyFiles(): Promise<File[]> {

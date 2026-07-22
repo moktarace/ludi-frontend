@@ -3,157 +3,42 @@ import { isPrivateAccessUnlocked, PRIVATE_ACCESS_CODE, unlockPrivateAccess } fro
 import { Show } from 'src/app/model'
 import { Html2Canvas, ToolsCanvasExportService } from 'src/app/services/tools-canvas-export.service'
 import { ToolsDraftService } from 'src/app/services/tools-draft.service'
-
-type VisualFormat = 'post' | 'story' | 'reel' | 'poster'
-type VisualMode = 'show' | 'week' | 'month'
-type CarouselPlacement = 'top' | 'center' | 'bottom'
-type CarouselLogoSize = 's' | 'm' | 'l' | 'xl'
-type VisualTaglinePlacement = 'top-left' | 'top-right' | 'center-left' | 'center-right' | 'bottom-left' | 'bottom-right'
-type LegacyLogoPickerTarget = 'poster' | 'carousel'
-type MobileToolSection = 'visual' | 'carousel' | 'pedagogy' | 'reel' | 'championship'
-type ChampionshipSlideId = 'match' | 'standings' | 'dates'
-type SocialReelMediaKind = 'image' | 'video'
-type SocialReelMediaOrientation = 'portrait' | 'landscape'
-type SocialReelSlideKind = 'content' | 'insert' | 'punchline' | 'dates'
-
-interface SocialReelTextPart {
-  text: string
-  highlighted: boolean
-}
-
-interface SocialReelMedia {
-  id: string
-  name: string
-  kind: SocialReelMediaKind
-  src: string
-  objectUrl?: string
-  file: File
-  previewSrc?: string
-  previewFailed?: boolean
-  orientation?: SocialReelMediaOrientation
-  element?: HTMLImageElement | HTMLVideoElement
-  ready?: boolean
-  error?: string
-}
-
-interface SocialReelSlide {
-  id: string
-  kind: SocialReelSlideKind
-  text: string
-  parts: SocialReelTextPart[]
-  media?: SocialReelMedia
-  index: number
-}
-
-interface PersistedSocialReelState {
-  text?: string
-  duration?: number
-  includeDates?: boolean
-}
-
-interface CarouselPhoto {
-  id: string
-  name: string
-  src: string
-}
-
-interface PresetLogo {
-  label: string
-  src: string
-}
-
-interface VisualTone {
-  label: string
-  value: string
-  accent: string
-  accentRgb: string
-  taglineAccent: string
-  customBackgroundRgb: string
-}
-
-interface PedagogySlide {
-  eyebrow: string
-  title: string
-  text: string
-  image?: string
-}
-
-interface PedagogyTemplate {
-  id: string
-  label: string
-  caption: string
-  slides: PedagogySlide[]
-}
-
-interface ChampionshipTeam {
-  id: string
-  name: string
-  label: string
-  color: string
-  textColor: string
-  points: number
-  faults: number
-  faultsList: string
-}
-
-interface ChampionshipMatch {
-  id: string
-  label: string
-  teamAId: string
-  teamBId: string
-  scoreA: number
-  scoreB: number
-}
-
-interface ChampionshipStanding extends ChampionshipTeam {
-  wins: number
-  losses: number
-  draws: number
-  scored: number
-  conceded: number
-  difference: number
-  rank: number
-}
-
-interface PersistedChampionshipState {
-  title?: string
-  edition?: string
-  selectedMatchId?: string
-  teams?: ChampionshipTeam[]
-  matches?: ChampionshipMatch[]
-}
-
-interface PersistedToolsDraftState {
-  selectedFormat?: VisualFormat
-  selectedMode?: VisualMode
-  selectedShowId?: string
-  selectedToneValue?: string
-  customPoster?: string
-  customBackgroundTintEnabled?: boolean
-  customQrLink?: string
-  showQrCode?: boolean
-  isPosterHidden?: boolean
-  printLogoPlacement?: CarouselPlacement
-  printLogoSize?: CarouselLogoSize
-  visualTagline?: string
-  visualTaglinePlacement?: VisualTaglinePlacement
-  customCarouselLogo?: string
-  carouselLogoPlacement?: CarouselPlacement
-  carouselLogoSize?: CarouselLogoSize
-  carouselTextPlacement?: CarouselPlacement
-  carouselCoverText?: string
-  selectedPedagogyTemplateId?: string
-  pedagogySlides?: PedagogySlide[]
-}
-
-interface PersistedToolsMediaState {
-  customPoster?: string
-  customBackground?: string
-  customCarouselLogo?: string
-  carouselPhotos?: CarouselPhoto[]
-  pedagogySlides?: PedagogySlide[]
-  socialReelFiles?: File[]
-}
+import {
+  createInitialChampionshipMatches,
+  createInitialChampionshipTeams,
+  LEGACY_LOGOS,
+  PRESET_LOGOS,
+  VISUAL_FORMATS,
+  VISUAL_MODES,
+  VISUAL_TONES,
+} from './tools.config'
+import { PEDAGOGY_TEMPLATES } from './tools-pedagogy.config'
+import {
+  CarouselLogoSize,
+  CarouselPhoto,
+  CarouselPlacement,
+  ChampionshipMatch,
+  ChampionshipSlideId,
+  ChampionshipStanding,
+  ChampionshipTeam,
+  LegacyLogoPickerTarget,
+  MobileToolSection,
+  PedagogySlide,
+  PedagogyTemplate,
+  PersistedChampionshipState,
+  PersistedSocialReelState,
+  PersistedToolsDraftState,
+  PersistedToolsMediaState,
+  PresetLogo,
+  SocialReelMedia,
+  SocialReelMediaKind,
+  SocialReelSlide,
+  SocialReelTextPart,
+  VisualFormat,
+  VisualMode,
+  VisualTaglinePlacement,
+  VisualTone,
+} from './tools.models'
 
 @Component({
   selector: 'app-tools',
@@ -231,253 +116,13 @@ export class ToolsComponent implements OnDestroy {
 
   private socialReelLogoImage?: HTMLImageElement
 
-  public readonly formats: { label: string; value: VisualFormat }[] = [
-    { label: 'Post', value: 'post' },
-    { label: 'Affiche A2', value: 'poster' },
-  ]
+  public readonly formats = VISUAL_FORMATS
+  public readonly modes = VISUAL_MODES
+  public readonly presetLogos = PRESET_LOGOS
+  public readonly legacyLogos = LEGACY_LOGOS
+  public readonly visualTones = VISUAL_TONES
 
-  public readonly modes: { label: string; value: VisualMode }[] = [
-    { label: 'Spectacle', value: 'show' },
-    { label: 'Semaine', value: 'week' },
-    { label: 'Mois', value: 'month' },
-  ]
-
-  public readonly presetLogos: PresetLogo[] = [
-    { label: 'Improvisem', src: 'assets/logo/kit/improvisem.png' },
-    { label: 'Match', src: 'assets/logo/kit/match.png' },
-    { label: 'Ludidée', src: 'assets/logo/kit/ludidee.png' },
-    { label: 'Catch', src: 'assets/logo/kit/catch.png' },
-    { label: "Cours d'essai", src: 'assets/logo/kit/essai.png' },
-    { label: 'Top Ten', src: 'assets/logo/kit/cercle.png' },
-  ]
-
-  public readonly legacyLogos: PresetLogo[] = [
-    { label: 'À la manière ludienne', src: 'assets/logo/kit/legacy/a-la-maniere-ludienne.png' },
-    { label: "Avez-vous déjà vu un spectacle d'impro", src: 'assets/logo/kit/legacy/avez-vous-deja-vu-un-spectacle-dimpro.png' },
-    { label: "Championnat étudiant d'impro", src: 'assets/logo/kit/legacy/championnat-etudiant-dimpro.png' },
-    { label: 'Comment faire péter une histoire dans la minute', src: 'assets/logo/kit/legacy/comment-faire-peter-une-histoire-dans-la-minute.png' },
-    { label: 'El Día del Muerto', src: 'assets/logo/kit/legacy/el-dia-del-muerto.png' },
-    { label: 'Face à Face', src: 'assets/logo/kit/legacy/face-a-face.png' },
-    { label: 'Festival de la LUDI', src: 'assets/logo/kit/legacy/festival-de-la-ludi.png' },
-    { label: 'Festival de si si LUDI', src: 'assets/logo/kit/legacy/festival-de-si-si-ludi.png' },
-    { label: 'Impro & Faits Divers', src: 'assets/logo/kit/legacy/impro-et-faits-divers.png' },
-    { label: 'Impro Football Club', src: 'assets/logo/kit/legacy/impro-football-club.png' },
-    { label: 'Improv on the Corner', src: 'assets/logo/kit/legacy/improv-on-the-corner.png' },
-    { label: "L'étrange Noël de la LUDI", src: 'assets/logo/kit/legacy/letrange-noel-de-la-ludi.png' },
-    { label: "L'impro fait sa rentrée", src: 'assets/logo/kit/legacy/limpro-fait-sa-rentree.png' },
-    { label: 'La crim ne paie pas', src: 'assets/logo/kit/legacy/la-crim-ne-paie-pas.png' },
-    { label: "La LUDI face à la Guilde de l'Improbable", src: 'assets/logo/kit/legacy/la-ludi-face-a-la-guilde-de-limprobable.png' },
-    { label: 'Le Cercle des menteurs fieffés', src: 'assets/logo/kit/legacy/le-cercle-des-menteurs-fieffes.png' },
-    { label: 'Le dernier festival de la LUDI', src: 'assets/logo/kit/legacy/le-dernier-festival-de-la-ludi.png' },
-    { label: "Le dernier festival de la LUDI (pour l'instant)", src: 'assets/logo/kit/legacy/le-dernier-festival-de-la-ludi-pour-linstant.png' },
-    { label: 'Le Voyage exquis', src: 'assets/logo/kit/legacy/le-voyage-exquis.png' },
-    { label: 'Les Inédits de la LUDI', src: 'assets/logo/kit/legacy/les-inedits-de-la-ludi.png' },
-    { label: 'Les Ludiens du Père Noël', src: 'assets/logo/kit/legacy/les-ludiens-du-pere-noel.png' },
-    { label: 'Les Pirates du Midi', src: 'assets/logo/kit/legacy/les-pirates-du-midi.png' },
-    { label: 'Love & Improv', src: 'assets/logo/kit/legacy/love-and-improv.png' },
-    { label: "Maman, j'ai raté l'impro", src: 'assets/logo/kit/legacy/maman-jai-rate-limpro.png' },
-    { label: "Match d'impro", src: 'assets/logo/kit/legacy/match-dimpro.png' },
-    { label: 'Match des Pioupioux', src: 'assets/logo/kit/legacy/match-des-pioupioux.png' },
-    { label: 'Menu Maxi Best Of', src: 'assets/logo/kit/legacy/menu-maxi-best-of.png' },
-    { label: 'Milla Palace & Vincent Las Vegas', src: 'assets/logo/kit/legacy/milla-palace-et-vincent-las-vegas.png' },
-    { label: 'Objectif LIQA', src: 'assets/logo/kit/legacy/objectif-liqa.png' },
-    { label: 'Objectif LUDI', src: 'assets/logo/kit/legacy/objectif-ludi.png' },
-    { label: 'Old School vs New School', src: 'assets/logo/kit/legacy/old-school-vs-new-school.png' },
-    { label: 'Question pour Impro', src: 'assets/logo/kit/legacy/question-pour-impro.png' },
-    { label: 'Toulouse + Suisse', src: 'assets/logo/kit/legacy/toulouse-suisse.png' },
-    { label: "Voyage au centre de l'impro", src: 'assets/logo/kit/legacy/voyage-au-centre-de-limpro.png' },
-  ]
-
-  public readonly visualTones: VisualTone[] = [
-    {
-      label: 'Rouge LUDI',
-      value: 'ludi-red',
-      accent: '#df2f42',
-      accentRgb: '223 47 66',
-      taglineAccent: '#ff6f9f',
-      customBackgroundRgb: '223 47 66',
-    },
-    {
-      label: 'Prune',
-      value: 'plum',
-      accent: '#7a315f',
-      accentRgb: '122 49 95',
-      taglineAccent: '#ff73d4',
-      customBackgroundRgb: '122 49 95',
-    },
-    {
-      label: 'Vert scène',
-      value: 'stage-green',
-      accent: '#5cb52e',
-      accentRgb: '92 181 46',
-      taglineAccent: '#b9ff45',
-      customBackgroundRgb: '92 181 46',
-    },
-    {
-      label: 'Orange affiche',
-      value: 'poster-orange',
-      accent: '#d96b35',
-      accentRgb: '217 107 53',
-      taglineAccent: '#ffbd3d',
-      customBackgroundRgb: '217 107 53',
-    },
-    {
-      label: 'Turquoise nuit',
-      value: 'night-turquoise',
-      accent: '#00a99a',
-      accentRgb: '0 169 154',
-      taglineAccent: '#4dffe7',
-      customBackgroundRgb: '0 169 154',
-    },
-    {
-      label: 'Jaune projecteur',
-      value: 'spotlight-yellow',
-      accent: '#f0b92e',
-      accentRgb: '240 185 46',
-      taglineAccent: '#fff04d',
-      customBackgroundRgb: '240 185 46',
-    },
-    {
-      label: 'Toulouse',
-      value: 'toulouse',
-      accent: '#e04f7a',
-      accentRgb: '224 79 122',
-      taglineAccent: '#ff5fa8',
-      customBackgroundRgb: '224 79 122',
-    },
-  ]
-
-  public readonly pedagogyTemplates: PedagogyTemplate[] = [
-    {
-      id: 'match',
-      label: "C'est quoi un match d'impro ?",
-      caption: "Petit mode d'emploi avant de venir voir un match d'impro à la LUDI.",
-      slides: [
-        {
-          eyebrow: 'Impro 101',
-          title: "C'est quoi un match d'impro ?",
-          text: "Deux équipes montent sur scène. Personne ne connaît l'histoire à l'avance.",
-        },
-        {
-          eyebrow: 'Le principe',
-          title: 'Une contrainte, zéro filet',
-          text: "L'arbitre annonce un thème, une durée, parfois une catégorie. Les joueur·euse·s inventent tout en direct.",
-        },
-        {
-          eyebrow: 'Le public',
-          title: 'Tu votes',
-          text: "À la fin de chaque improvisation, le public choisit l'équipe qui l'a embarqué.",
-        },
-        {
-          eyebrow: 'La soirée',
-          title: 'Ça rit, ça tente, ça surprend',
-          text: "Un match peut être drôle, absurde, touchant, chaotique. C'est vivant, donc ça ne se rejoue jamais pareil.",
-        },
-        {
-          eyebrow: 'À Toulouse',
-          title: 'Viens voir ça en vrai',
-          text: "La LUDI joue toute l'année à Toulouse. Prochaine date sur luditoulouse.org.",
-        },
-      ],
-    },
-    {
-      id: 'first-time',
-      label: 'Première fois à la LUDI',
-      caption: "Tu n'as jamais vu d'impro ? Voilà comment se passe une soirée LUDI.",
-      slides: [
-        {
-          eyebrow: 'Première fois',
-          title: 'Tu peux venir sans rien connaître',
-          text: "Pas besoin d'avoir déjà vu de l'impro. Tu t'installes, le spectacle fait le reste.",
-        },
-        {
-          eyebrow: 'Avant le show',
-          title: 'On arrive, on se pose',
-          text: "La plupart des spectacles se jouent à Paul Sabatier, souvent au CAP ou autour du campus.",
-        },
-        {
-          eyebrow: 'Pendant',
-          title: 'Tout est inventé devant toi',
-          text: "Les comédien·ne·s construisent les scènes avec les contraintes du moment et l'énergie du public.",
-        },
-        {
-          eyebrow: 'Ambiance',
-          title: "C'est simple et vivant",
-          text: "Tu peux rire fort, voter, réagir, découvrir une équipe. L'impro aime le public présent.",
-        },
-        {
-          eyebrow: 'On se voit ?',
-          title: 'Prochaines dates',
-          text: "Toutes les infos sont sur luditoulouse.org et sur @luditoulouse.",
-        },
-      ],
-    },
-    {
-      id: 'why-impro',
-      label: "Pourquoi venir voir de l'impro ?",
-      caption: "Quelques bonnes raisons de venir voir du théâtre d'impro à Toulouse.",
-      slides: [
-        {
-          eyebrow: 'Pourquoi venir ?',
-          title: "Parce que c'est vivant",
-          text: "Chaque spectacle existe une seule fois. Ce que tu vois ce soir-là ne reviendra pas pareil.",
-        },
-        {
-          eyebrow: 'Sur scène',
-          title: "L'histoire se fabrique en direct",
-          text: "Les personnages, les enjeux, les accidents et les grandes idées naissent sous tes yeux.",
-        },
-        {
-          eyebrow: 'Dans la salle',
-          title: 'Le public compte',
-          text: "Ton énergie change la soirée. À la LUDI, la salle fait partie du spectacle.",
-        },
-        {
-          eyebrow: 'À Toulouse',
-          title: 'Une troupe historique',
-          text: "Depuis 1997, la LUDI joue, forme et fait circuler l'impro à Toulouse et ailleurs.",
-        },
-        {
-          eyebrow: 'À bientôt',
-          title: 'Viens essayer',
-          text: "Choisis une date, réserve si besoin, et laisse-toi surprendre.",
-        },
-      ],
-    },
-    {
-      id: 'catch',
-      label: "C'est quoi un catch d'impro ?",
-      caption: "Le catch d'impro, c'est une soirée intense, théâtrale et très joueuse.",
-      slides: [
-        {
-          eyebrow: 'Format',
-          title: "C'est quoi un catch d'impro ?",
-          text: "Des duos, des personnages, une énergie de ring, et des impros qui partent très vite.",
-        },
-        {
-          eyebrow: 'Sur scène',
-          title: 'Deux binômes entrent en jeu',
-          text: "Chaque duo défend son univers avec du jeu, de la mauvaise foi théâtrale et beaucoup d'écoute.",
-        },
-        {
-          eyebrow: 'Règles',
-          title: 'Des contraintes très visibles',
-          text: "L'arbitre ou le maître de cérémonie lance les thèmes et garde la tension du spectacle.",
-        },
-        {
-          eyebrow: 'Public',
-          title: 'Tu choisis ton camp',
-          text: "Le public encourage, réagit, vote, et fait monter la température.",
-        },
-        {
-          eyebrow: 'À voir',
-          title: "C'est du théâtre en direct",
-          text: "Drôle, physique, imprévisible. Bref : parfait pour découvrir l'impro autrement.",
-        },
-      ],
-    },
-  ]
-
+  public readonly pedagogyTemplates = PEDAGOGY_TEMPLATES
   public selectedFormat: VisualFormat = 'post'
   public selectedMode: VisualMode = 'show'
   public selectedShowId: string = ''
@@ -514,58 +159,8 @@ export class ToolsComponent implements OnDestroy {
   public isPedagogyExporting = false
   public championshipTitle = 'Championnat Improvisem'
   public championshipEdition = 'Bouclier Improvisem'
-  public championshipTeams: ChampionshipTeam[] = [
-    {
-      id: 'yellow',
-      name: 'Equipe Jaune',
-      label: 'Jaune',
-      color: '#ffd326',
-      textColor: '#17121f',
-      points: 3,
-      faults: 2,
-      faultsList: 'Cabotinage solaire; Accessoire imaginaire non homologue',
-    },
-    {
-      id: 'black',
-      name: 'Equipe Noire',
-      label: 'Noir',
-      color: '#18181d',
-      textColor: '#fff8ed',
-      points: 2,
-      faults: 4,
-      faultsList: "Refus d'obstacle; Regard arbitral beaucoup trop intense",
-    },
-    {
-      id: 'red',
-      name: 'Equipe Rouge',
-      label: 'Rouge',
-      color: '#df2f42',
-      textColor: '#fff8ed',
-      points: 4,
-      faults: 1,
-      faultsList: 'Jeu dangereusement charismatique',
-    },
-    {
-      id: 'white',
-      name: 'Equipe Blanche',
-      label: 'Blanc',
-      color: '#fff8ed',
-      textColor: '#17121f',
-      points: 1,
-      faults: 3,
-      faultsList: 'Mime de porte discutable; Propulsion narrative non declaree',
-    },
-  ]
-  public championshipMatches: ChampionshipMatch[] = [
-    { id: 'match-1', label: 'Match 1', teamAId: '', teamBId: '', scoreA: 0, scoreB: 0 },
-    { id: 'match-2', label: 'Match 2', teamAId: '', teamBId: '', scoreA: 0, scoreB: 0 },
-    { id: 'match-3', label: 'Match 3', teamAId: '', teamBId: '', scoreA: 0, scoreB: 0 },
-    { id: 'match-4', label: 'Match 4', teamAId: '', teamBId: '', scoreA: 0, scoreB: 0 },
-    { id: 'match-5', label: 'Match 5', teamAId: '', teamBId: '', scoreA: 0, scoreB: 0 },
-    { id: 'match-6', label: 'Match 6', teamAId: '', teamBId: '', scoreA: 0, scoreB: 0 },
-    { id: 'small-final', label: 'Petite finale', teamAId: '', teamBId: '', scoreA: 0, scoreB: 0 },
-    { id: 'big-final', label: 'Grande finale', teamAId: '', teamBId: '', scoreA: 0, scoreB: 0 },
-  ]
+  public championshipTeams = createInitialChampionshipTeams()
+  public championshipMatches = createInitialChampionshipMatches()
   public selectedChampionshipMatchId = this.championshipMatches[0].id
   public championshipPreviewIndex = 0
   public isChampionshipExporting = false
@@ -2260,95 +1855,13 @@ export class ToolsComponent implements OnDestroy {
       }
 
       const canvas = photo
-        ? await this.composeCarouselPhoto(overlayCanvas, photo, index === 0)
-        : this.composeCarouselBaseBackground(overlayCanvas)
+        ? await this.canvasExport.composePhoto(overlayCanvas, photo, index === 0)
+        : this.canvasExport.composeBaseBackground(overlayCanvas)
       const fileName = `${baseFileName}-${String(index + 1).padStart(2, '0')}.png`
       files.push(new File([await this.canvasExport.canvasToBlob(canvas)], fileName, { type: 'image/png' }))
     }
 
     return files
-  }
-
-  private async composeCarouselPhoto(
-    overlayCanvas: HTMLCanvasElement,
-    photo: CarouselPhoto,
-    isCover: boolean,
-  ): Promise<HTMLCanvasElement> {
-    const image = await this.loadSocialReelAsset(photo.src)
-    const canvas = document.createElement('canvas')
-    canvas.width = overlayCanvas.width
-    canvas.height = overlayCanvas.height
-    const context = canvas.getContext('2d')
-
-    if (!context) {
-      throw new Error('Impossible de préparer la photo du carrousel.')
-    }
-    if (!image.naturalWidth || !image.naturalHeight || !canvas.width || !canvas.height) {
-      throw new Error(`Dimensions invalides pour ${photo.name}.`)
-    }
-
-    const scale = Math.max(canvas.width / image.naturalWidth, canvas.height / image.naturalHeight)
-    const sourceWidth = canvas.width / scale
-    const sourceHeight = canvas.height / scale
-    const sourceX = (image.naturalWidth - sourceWidth) / 2
-    const sourceY = (image.naturalHeight - sourceHeight) / 2
-
-    context.imageSmoothingEnabled = true
-    context.imageSmoothingQuality = 'high'
-    context.drawImage(
-      image,
-      sourceX,
-      sourceY,
-      sourceWidth,
-      sourceHeight,
-      0,
-      0,
-      canvas.width,
-      canvas.height,
-    )
-
-    if (isCover) {
-      this.drawCarouselCoverGradient(context, canvas.width, canvas.height, 0.18, 0.08, 0.72)
-      this.drawCarouselCoverGradient(context, canvas.width, canvas.height, 0.28, 0.08, 0.82)
-    }
-
-    context.drawImage(overlayCanvas, 0, 0)
-    return canvas
-  }
-
-  private drawCarouselCoverGradient(
-    context: CanvasRenderingContext2D,
-    width: number,
-    height: number,
-    topAlpha: number,
-    middleAlpha: number,
-    bottomAlpha: number,
-  ): void {
-    const gradient = context.createLinearGradient(0, 0, 0, height)
-    gradient.addColorStop(0, `rgba(23, 18, 31, ${topAlpha})`)
-    gradient.addColorStop(0.44, `rgba(23, 18, 31, ${middleAlpha})`)
-    gradient.addColorStop(1, `rgba(23, 18, 31, ${bottomAlpha})`)
-    context.fillStyle = gradient
-    context.fillRect(0, 0, width, height)
-  }
-
-  private composeCarouselBaseBackground(overlayCanvas: HTMLCanvasElement): HTMLCanvasElement {
-    const canvas = document.createElement('canvas')
-    canvas.width = overlayCanvas.width
-    canvas.height = overlayCanvas.height
-    const context = canvas.getContext('2d')
-    if (!context || !canvas.width || !canvas.height) {
-      throw new Error('Impossible de préparer le fond du carrousel.')
-    }
-
-    const gradient = context.createLinearGradient(0, 0, canvas.width, canvas.height)
-    gradient.addColorStop(0, 'rgba(23, 18, 31, 0.96)')
-    gradient.addColorStop(0.48, 'rgba(33, 21, 40, 0.96)')
-    gradient.addColorStop(1, 'rgba(223, 47, 66, 0.92)')
-    context.fillStyle = gradient
-    context.fillRect(0, 0, canvas.width, canvas.height)
-    context.drawImage(overlayCanvas, 0, 0)
-    return canvas
   }
 
   private async createPedagogyFiles(): Promise<File[]> {
@@ -2387,7 +1900,7 @@ export class ToolsComponent implements OnDestroy {
       } finally {
         stagedSlide.dispose()
       }
-      const canvas = this.composeCarouselBaseBackground(overlayCanvas)
+      const canvas = this.canvasExport.composeBaseBackground(overlayCanvas)
       const fileName = `${baseFileName}-${String(index + 1).padStart(2, '0')}.png`
       files.push(new File([await this.canvasExport.canvasToBlob(canvas)], fileName, { type: 'image/png' }))
     }
@@ -2440,52 +1953,13 @@ export class ToolsComponent implements OnDestroy {
         stagedSlide.dispose()
       }
       const canvas = slideName === 'dates'
-        ? this.composeCarouselBaseBackground(overlayCanvas)
-        : this.composeChampionshipBackground(overlayCanvas)
+        ? this.canvasExport.composeBaseBackground(overlayCanvas)
+        : this.canvasExport.composeChampionshipBackground(overlayCanvas)
       const fileName = `${baseFileName}-${slideName}.png`
       files.push(new File([await this.canvasExport.canvasToBlob(canvas)], fileName, { type: 'image/png' }))
     }
 
     return files
-  }
-
-  private composeChampionshipBackground(overlayCanvas: HTMLCanvasElement): HTMLCanvasElement {
-    const canvas = document.createElement('canvas')
-    canvas.width = overlayCanvas.width
-    canvas.height = overlayCanvas.height
-    const context = canvas.getContext('2d')
-    if (!context || !canvas.width || !canvas.height) {
-      throw new Error('Impossible de préparer le fond du championnat.')
-    }
-
-    const stripes = context.createLinearGradient(0, 0, canvas.width, canvas.height)
-    stripes.addColorStop(0, '#09090c')
-    stripes.addColorStop(0.36, '#09090c')
-    stripes.addColorStop(0.361, '#df2f42')
-    stripes.addColorStop(0.52, '#df2f42')
-    stripes.addColorStop(0.521, '#fff8ed')
-    stripes.addColorStop(0.57, '#fff8ed')
-    stripes.addColorStop(0.571, '#101015')
-    stripes.addColorStop(1, '#101015')
-    context.fillStyle = stripes
-    context.fillRect(0, 0, canvas.width, canvas.height)
-
-    const glow = context.createRadialGradient(
-      canvas.width * 0.18,
-      canvas.height * 0.12,
-      0,
-      canvas.width * 0.18,
-      canvas.height * 0.12,
-      canvas.width * 0.62,
-    )
-    glow.addColorStop(0, 'rgba(255, 255, 255, 0.14)')
-    glow.addColorStop(0.1, 'rgba(255, 255, 255, 0.14)')
-    glow.addColorStop(0.11, 'rgba(255, 255, 255, 0)')
-    glow.addColorStop(1, 'rgba(255, 255, 255, 0)')
-    context.fillStyle = glow
-    context.fillRect(0, 0, canvas.width, canvas.height)
-    context.drawImage(overlayCanvas, 0, 0)
-    return canvas
   }
 
   private async createSocialReelFile(): Promise<File> {
@@ -2748,7 +2222,7 @@ export class ToolsComponent implements OnDestroy {
         windowHeight: height,
         windowWidth: width,
       })
-      return this.composeCarouselBaseBackground(overlayCanvas)
+      return this.canvasExport.composeBaseBackground(overlayCanvas)
     } finally {
       stagedSlide.dispose()
     }

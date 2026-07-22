@@ -3849,9 +3849,9 @@ button:disabled {
   top: 0;
   display: flex;
   gap: 1rem;
-  width: 0;
-  height: 0;
-  overflow: visible;
+  width: 416px;
+  height: 520px;
+  overflow: hidden;
   pointer-events: none;
   transform: translateX(-200vw);
 }
@@ -5025,6 +5025,10 @@ button:disabled {
     line-height: 0.8;
     transform: rotate(-7deg);
   }
+}
+
+.championship-slide.championship-overlay-export::before {
+  display: none;
 }
 
 .championship-slash {

@@ -1,4 +1,4 @@
-import { Component, ElementRef, HostListener, Input, QueryList, ViewChild, ViewChildren } from '@angular/core'
+import { Component, ElementRef, HostListener, Input, OnDestroy, QueryList, ViewChild, ViewChildren } from '@angular/core'
 import { isPrivateAccessUnlocked, PRIVATE_ACCESS_CODE, unlockPrivateAccess } from 'src/app/config/private-access'
 import { Show } from 'src/app/model'
 
@@ -145,11 +145,20 @@ interface PersistedToolsDraftState {
   pedagogySlides?: PedagogySlide[]
 }
 
+interface PersistedToolsMediaState {
+  customPoster?: string
+  customBackground?: string
+  customCarouselLogo?: string
+  carouselPhotos?: CarouselPhoto[]
+  pedagogySlides?: PedagogySlide[]
+  socialReelFiles?: File[]
+}
+
 @Component({
   selector: 'app-tools',
   templateUrl: './tools.component.html',
 })
-export class ToolsComponent {
+export class ToolsComponent implements OnDestroy {
   private static REEL_DURATION_MS = 7000
   private static REEL_FRAME_RATE = 12
   private static CAROUSEL_MAX_PHOTOS = 19
@@ -157,6 +166,9 @@ export class ToolsComponent {
   private static CHAMPIONSHIP_STORAGE_KEY = 'ludi-tools-championnat-improvisem'
   private static SOCIAL_REEL_STORAGE_KEY = 'ludi-tools-reel-slideshow'
   private static DRAFT_STORAGE_KEY = 'ludi-tools-draft'
+  private static DRAFT_MEDIA_DATABASE = 'ludi-tools-drafts'
+  private static DRAFT_MEDIA_STORE = 'media'
+  private static DRAFT_MEDIA_KEY = 'current'
   private static SOCIAL_REEL_WIDTH = 1080
   private static SOCIAL_REEL_HEIGHT = 1920
   private static SOCIAL_REEL_FRAME_RATE = 24
@@ -571,11 +583,29 @@ export class ToolsComponent {
   public mobileToolSection: MobileToolSection = 'visual'
   private draftSaveTimer?: number
   private actionMessageTimer?: number
+  private mediaDraftRestored = false
 
   constructor() {
     this.restoreDraftState()
     this.restoreChampionshipState()
     this.restoreSocialReelState()
+    void this.restoreDraftMediaState()
+  }
+
+  public ngOnDestroy(): void {
+    window.clearTimeout(this.draftSaveTimer)
+    window.clearTimeout(this.actionMessageTimer)
+    this.persistDraftState()
+    for (const media of this.socialReelMedia) {
+      if (media.objectUrl) {
+        URL.revokeObjectURL(media.objectUrl)
+      }
+      if (media.element instanceof HTMLVideoElement) {
+        media.element.pause()
+        media.element.removeAttribute('src')
+        media.element.load()
+      }
+    }
   }
 
   @HostListener('input')
@@ -1122,11 +1152,11 @@ export class ToolsComponent {
   }
 
   public get smallFinalMatch(): ChampionshipMatch {
-    return this.championshipMatches.find((match) => match.id === 'small-final') || this.championshipMatches[6]
+    return this.championshipMatches.find((match) => match.id === 'small-final') || this.championshipMatches[6] || this.selectedChampionshipMatch
   }
 
   public get bigFinalMatch(): ChampionshipMatch {
-    return this.championshipMatches.find((match) => match.id === 'big-final') || this.championshipMatches[7]
+    return this.championshipMatches.find((match) => match.id === 'big-final') || this.championshipMatches[7] || this.selectedChampionshipMatch
   }
 
   public get canGoToPreviousChampionshipSlide(): boolean {
@@ -1305,12 +1335,16 @@ export class ToolsComponent {
   public handleCarouselDrop(event: DragEvent): void {
     event.preventDefault()
     this.isCarouselDragActive = false
-    this.addCarouselFiles(event.dataTransfer?.files)
+    void this.addCarouselFiles(event.dataTransfer?.files).catch((error) => {
+      this.showActionMessage(this.errorMessage(error, 'Impossible de charger les photos.'), 'error')
+    })
   }
 
   public updateCarouselPhotos(event: Event): void {
     const input = event.target as HTMLInputElement
-    this.addCarouselFiles(input.files)
+    void this.addCarouselFiles(input.files).catch((error) => {
+      this.showActionMessage(this.errorMessage(error, 'Impossible de charger les photos.'), 'error')
+    })
     input.value = ''
   }
 
@@ -1450,7 +1484,15 @@ export class ToolsComponent {
 
     try {
       const media = await Promise.all(acceptedFiles.map((file) => this.createSocialReelMedia(file)))
-      this.socialReelMedia = [...this.socialReelMedia, ...media].slice(0, 20)
+      const combinedMedia = [...this.socialReelMedia, ...media]
+      const discardedMedia = combinedMedia.slice(20)
+      for (const discarded of discardedMedia) {
+        if (discarded.objectUrl) {
+          URL.revokeObjectURL(discarded.objectUrl)
+        }
+      }
+      this.socialReelMedia = combinedMedia.slice(0, 20)
+      this.scheduleDraftSave()
     } catch (error) {
       this.socialReelError = error instanceof Error ? error.message : 'Impossible de charger un media.'
     } finally {
@@ -1692,8 +1734,11 @@ export class ToolsComponent {
     reader.onload = () => {
       if (typeof reader.result === 'string') {
         callback(reader.result)
+        this.scheduleDraftSave()
       }
     }
+    reader.onerror = () => this.showActionMessage(`Impossible de lire ${file.name}.`, 'error')
+    reader.onabort = () => this.showActionMessage(`Chargement de ${file.name} annulé.`, 'error')
     reader.readAsDataURL(file)
     input.value = ''
   }
@@ -1728,6 +1773,10 @@ export class ToolsComponent {
       window.localStorage.setItem(ToolsComponent.DRAFT_STORAGE_KEY, JSON.stringify(state))
     } catch {
       // The tools remain usable when storage is unavailable or full.
+    }
+
+    if (this.mediaDraftRestored) {
+      void this.persistDraftMediaState()
     }
   }
 
@@ -1780,6 +1829,98 @@ export class ToolsComponent {
     return asset && !asset.startsWith('data:') && !asset.startsWith('blob:') ? asset : undefined
   }
 
+  private async persistDraftMediaState(): Promise<void> {
+    const state: PersistedToolsMediaState = {
+      customPoster: this.customPoster,
+      customBackground: this.customBackground,
+      customCarouselLogo: this.customCarouselLogo,
+      carouselPhotos: this.carouselPhotos,
+      pedagogySlides: this.pedagogySlides,
+      socialReelFiles: this.socialReelMedia.map((media) => media.file),
+    }
+
+    let database: IDBDatabase | undefined
+    try {
+      database = await this.openDraftDatabase()
+      const transaction = database.transaction(ToolsComponent.DRAFT_MEDIA_STORE, 'readwrite')
+      const transactionDone = this.waitForDraftTransaction(transaction)
+      transaction.objectStore(ToolsComponent.DRAFT_MEDIA_STORE).put(state, ToolsComponent.DRAFT_MEDIA_KEY)
+      await transactionDone
+    } catch {
+      // IndexedDB can be unavailable or out of quota; the text draft is still kept.
+    } finally {
+      database?.close()
+    }
+  }
+
+  private async restoreDraftMediaState(): Promise<void> {
+    let database: IDBDatabase | undefined
+    try {
+      database = await this.openDraftDatabase()
+      const transaction = database.transaction(ToolsComponent.DRAFT_MEDIA_STORE, 'readonly')
+      const transactionDone = this.waitForDraftTransaction(transaction)
+      const request = transaction.objectStore(ToolsComponent.DRAFT_MEDIA_STORE).get(ToolsComponent.DRAFT_MEDIA_KEY)
+      const stateRequest = new Promise<PersistedToolsMediaState | undefined>((resolve, reject) => {
+        request.onsuccess = () => resolve(request.result as PersistedToolsMediaState | undefined)
+        request.onerror = () => reject(request.error || new Error('Brouillon média illisible.'))
+      })
+      const [state] = await Promise.all([stateRequest, transactionDone])
+
+      if (!state) {
+        return
+      }
+
+      if (typeof state.customPoster === 'string') this.customPoster = state.customPoster
+      if (typeof state.customBackground === 'string') this.customBackground = state.customBackground
+      if (typeof state.customCarouselLogo === 'string') this.customCarouselLogo = state.customCarouselLogo
+      if (Array.isArray(state.carouselPhotos)) {
+        this.carouselPhotos = state.carouselPhotos
+          .filter((photo) => photo && typeof photo.id === 'string' && typeof photo.src === 'string')
+          .slice(0, ToolsComponent.CAROUSEL_MAX_PHOTOS)
+      }
+      if (Array.isArray(state.pedagogySlides) && state.pedagogySlides.length) {
+        this.pedagogySlides = state.pedagogySlides.slice(0, ToolsComponent.PEDAGOGY_MAX_CONTENT_SLIDES)
+      }
+      if (Array.isArray(state.socialReelFiles)) {
+        const files = state.socialReelFiles.filter((file) => file instanceof File).slice(0, 20)
+        this.socialReelMedia = await Promise.all(files.map((file) => this.createSocialReelMedia(file)))
+      }
+    } catch {
+      // Ignore unavailable or corrupted media drafts.
+    } finally {
+      this.mediaDraftRestored = true
+      database?.close()
+    }
+  }
+
+  private openDraftDatabase(): Promise<IDBDatabase> {
+    return new Promise((resolve, reject) => {
+      if (typeof indexedDB === 'undefined') {
+        reject(new Error('IndexedDB indisponible.'))
+        return
+      }
+
+      const request = indexedDB.open(ToolsComponent.DRAFT_MEDIA_DATABASE, 1)
+      request.onupgradeneeded = () => {
+        const database = request.result
+        if (!database.objectStoreNames.contains(ToolsComponent.DRAFT_MEDIA_STORE)) {
+          database.createObjectStore(ToolsComponent.DRAFT_MEDIA_STORE)
+        }
+      }
+      request.onsuccess = () => resolve(request.result)
+      request.onerror = () => reject(request.error || new Error('IndexedDB indisponible.'))
+      request.onblocked = () => reject(new Error('IndexedDB est bloqué par un autre onglet.'))
+    })
+  }
+
+  private waitForDraftTransaction(transaction: IDBTransaction): Promise<void> {
+    return new Promise((resolve, reject) => {
+      transaction.oncomplete = () => resolve()
+      transaction.onerror = () => reject(transaction.error || new Error('Sauvegarde du brouillon impossible.'))
+      transaction.onabort = () => reject(transaction.error || new Error('Sauvegarde du brouillon annulée.'))
+    })
+  }
+
   private showActionMessage(message: string, type: 'success' | 'error' = 'success'): void {
     window.clearTimeout(this.actionMessageTimer)
     this.actionMessage = message
@@ -1812,17 +1953,21 @@ export class ToolsComponent {
 
       if (Array.isArray(state.teams)) {
         const savedTeams = new Map(state.teams.map((team) => [team.id, team]))
-        this.championshipTeams = this.championshipTeams.map((team) => ({
-          ...team,
-          ...savedTeams.get(team.id),
-          id: team.id,
-          color: team.color,
-          textColor: team.textColor,
-        }))
+        this.championshipTeams = this.championshipTeams.map((team) => {
+          const saved = savedTeams.get(team.id)
+          return {
+            ...team,
+            name: typeof saved?.name === 'string' ? saved.name : team.name,
+            label: typeof saved?.label === 'string' ? saved.label : team.label,
+            points: this.safeScore(saved?.points ?? team.points),
+            faults: this.safeScore(saved?.faults ?? team.faults),
+            faultsList: typeof saved?.faultsList === 'string' ? saved.faultsList : team.faultsList,
+          }
+        })
       }
 
       if (Array.isArray(state.matches) && state.matches.length) {
-        this.championshipMatches = state.matches
+        const restoredMatches = state.matches
           .filter((match) => match && typeof match.id === 'string')
           .map((match, index) => ({
             id: match.id || `match-${index + 1}`,
@@ -1832,6 +1977,9 @@ export class ToolsComponent {
             scoreA: this.safeScore(match.scoreA),
             scoreB: this.safeScore(match.scoreB),
           }))
+        if (restoredMatches.length) {
+          this.championshipMatches = restoredMatches
+        }
       }
 
       if (
@@ -1876,12 +2024,15 @@ export class ToolsComponent {
 
     this.carouselPhotos = [...this.carouselPhotos, ...photos]
     this.carouselPreviewIndex = Math.min(this.carouselPreviewIndex, this.carouselSlideCount - 1)
+    this.scheduleDraftSave()
   }
 
   private readFileAsDataUrl(file: File): Promise<string> {
-    return new Promise((resolve) => {
+    return new Promise((resolve, reject) => {
       const reader = new FileReader()
       reader.onload = () => resolve(typeof reader.result === 'string' ? reader.result : '')
+      reader.onerror = () => reject(new Error(`Impossible de lire ${file.name}.`))
+      reader.onabort = () => reject(new Error(`Chargement de ${file.name} annulé.`))
       reader.readAsDataURL(file)
     })
   }
@@ -2146,15 +2297,20 @@ export class ToolsComponent {
       await this.waitForImages(slide)
       const width = slide.clientWidth
       const height = slide.clientHeight
-      const backgroundImage = slide.style.backgroundImage
+      if (!width || !height) {
+        throw new Error(`Dimensions invalides pour la slide ${index + 1}.`)
+      }
+      const stagedSlide = this.createStagedExportSlide(slide, width, height)
+      stagedSlide.element.style.backgroundImage = 'none'
+      stagedSlide.element.style.backgroundColor = 'transparent'
       if (photo) {
-        slide.style.backgroundImage = 'none'
-        slide.classList.add('carousel-photo-overlay-export')
+        stagedSlide.element.classList.add('carousel-photo-overlay-export')
       }
 
       let overlayCanvas: HTMLCanvasElement
       try {
-        overlayCanvas = await html2canvas(slide, {
+        await this.waitForImages(stagedSlide.element)
+        overlayCanvas = await html2canvas(stagedSlide.element, {
           allowTaint: false,
           backgroundColor: null,
           height,
@@ -2164,19 +2320,55 @@ export class ToolsComponent {
           windowHeight: height,
           windowWidth: width,
         })
+      } catch (error) {
+        throw new Error(`Slide ${index + 1} : ${this.errorMessage(error, 'rendu impossible')}`)
       } finally {
-        slide.style.backgroundImage = backgroundImage
-        slide.classList.remove('carousel-photo-overlay-export')
+        stagedSlide.dispose()
       }
 
       const canvas = photo
         ? await this.composeCarouselPhoto(overlayCanvas, photo, index === 0)
-        : overlayCanvas
+        : this.composeCarouselBaseBackground(overlayCanvas)
       const fileName = `${baseFileName}-${String(index + 1).padStart(2, '0')}.png`
       files.push(new File([await this.canvasToBlob(canvas)], fileName, { type: 'image/png' }))
     }
 
     return files
+  }
+
+  private createStagedExportSlide(
+    source: HTMLElement,
+    width: number,
+    height: number,
+  ): { element: HTMLElement; dispose: () => void } {
+    const wrapper = document.createElement('div')
+    const element = source.cloneNode(true) as HTMLElement
+    wrapper.setAttribute('aria-hidden', 'true')
+    Object.assign(wrapper.style, {
+      height: `${height}px`,
+      left: '0',
+      overflow: 'visible',
+      pointerEvents: 'none',
+      position: 'fixed',
+      top: '0',
+      width: `${width}px`,
+      zIndex: '-2147483647',
+    })
+    Object.assign(element.style, {
+      display: 'grid',
+      flex: 'none',
+      height: `${height}px`,
+      margin: '0',
+      transform: 'none',
+      width: `${width}px`,
+    })
+    wrapper.appendChild(element)
+    document.body.appendChild(wrapper)
+
+    return {
+      element,
+      dispose: () => wrapper.remove(),
+    }
   }
 
   private async composeCarouselPhoto(
@@ -2192,6 +2384,9 @@ export class ToolsComponent {
 
     if (!context) {
       throw new Error('Impossible de préparer la photo du carrousel.')
+    }
+    if (!image.naturalWidth || !image.naturalHeight || !canvas.width || !canvas.height) {
+      throw new Error(`Dimensions invalides pour ${photo.name}.`)
     }
 
     const scale = Math.max(canvas.width / image.naturalWidth, canvas.height / image.naturalHeight)
@@ -2239,6 +2434,25 @@ export class ToolsComponent {
     context.fillRect(0, 0, width, height)
   }
 
+  private composeCarouselBaseBackground(overlayCanvas: HTMLCanvasElement): HTMLCanvasElement {
+    const canvas = document.createElement('canvas')
+    canvas.width = overlayCanvas.width
+    canvas.height = overlayCanvas.height
+    const context = canvas.getContext('2d')
+    if (!context || !canvas.width || !canvas.height) {
+      throw new Error('Impossible de préparer le fond du carrousel.')
+    }
+
+    const gradient = context.createLinearGradient(0, 0, canvas.width, canvas.height)
+    gradient.addColorStop(0, 'rgba(23, 18, 31, 0.96)')
+    gradient.addColorStop(0.48, 'rgba(33, 21, 40, 0.96)')
+    gradient.addColorStop(1, 'rgba(223, 47, 66, 0.92)')
+    context.fillStyle = gradient
+    context.fillRect(0, 0, canvas.width, canvas.height)
+    context.drawImage(overlayCanvas, 0, 0)
+    return canvas
+  }
+
   private async createPedagogyFiles(): Promise<File[]> {
     if (!this.pedagogySlidesRef?.length) {
       return []
@@ -2252,12 +2466,31 @@ export class ToolsComponent {
 
     for (let index = 0; index < slides.length; index += 1) {
       const slide = slides[index].nativeElement
-      const canvas = await html2canvas(slide, {
-        allowTaint: false,
-        backgroundColor: null,
-        scale: 1080 / slide.clientWidth,
-        useCORS: true,
-      })
+      const width = slide.clientWidth
+      const height = slide.clientHeight
+      if (!width || !height) {
+        throw new Error(`Dimensions invalides pour la slide pédagogique ${index + 1}.`)
+      }
+      const stagedSlide = this.createStagedExportSlide(slide, width, height)
+      stagedSlide.element.style.backgroundImage = 'none'
+      stagedSlide.element.style.backgroundColor = 'transparent'
+      let overlayCanvas: HTMLCanvasElement
+      try {
+        await this.waitForImages(stagedSlide.element)
+        overlayCanvas = await html2canvas(stagedSlide.element, {
+          allowTaint: false,
+          backgroundColor: null,
+          height,
+          scale: 1080 / width,
+          useCORS: true,
+          width,
+          windowHeight: height,
+          windowWidth: width,
+        })
+      } finally {
+        stagedSlide.dispose()
+      }
+      const canvas = this.composeCarouselBaseBackground(overlayCanvas)
       const fileName = `${baseFileName}-${String(index + 1).padStart(2, '0')}.png`
       files.push(new File([await this.canvasToBlob(canvas)], fileName, { type: 'image/png' }))
     }
@@ -2272,24 +2505,91 @@ export class ToolsComponent {
 
     const html2canvasModule = await import('html2canvas')
     const html2canvas = html2canvasModule.default
-    const slides = this.championshipSlidesRef.toArray().slice(0, 3)
+    const slides = this.championshipSlidesRef.toArray().map((item) => item.nativeElement)
+    const orderedSlides: Array<{ name: ChampionshipSlideId; slide: HTMLElement }> = []
+    const matchSlide = slides.find((slide) => slide.classList.contains('championship-match-result-slide'))
+    const standingsSlide = slides.find((slide) => slide.classList.contains('championship-bracket-slide'))
+    const datesSlide = slides.find((slide) => slide.classList.contains('carousel-dates-slide'))
+    if (matchSlide) orderedSlides.push({ name: 'match', slide: matchSlide })
+    if (standingsSlide) orderedSlides.push({ name: 'standings', slide: standingsSlide })
+    if (datesSlide) orderedSlides.push({ name: 'dates', slide: datesSlide })
     const files: File[] = []
     const baseFileName = this.fileNameBase(`championnat-improvisem-${this.slugify(this.championshipTitle)}`)
 
-    for (let index = 0; index < slides.length; index += 1) {
-      const slide = slides[index].nativeElement
-      const canvas = await html2canvas(slide, {
-        allowTaint: false,
-        backgroundColor: null,
-        scale: 1080 / slide.clientWidth,
-        useCORS: true,
-      })
-      const slideName: ChampionshipSlideId = index === 0 ? 'match' : index === 1 ? 'standings' : 'dates'
+    for (let index = 0; index < orderedSlides.length; index += 1) {
+      const { name: slideName, slide } = orderedSlides[index]
+      const width = slide.clientWidth
+      const height = slide.clientHeight
+      if (!width || !height) {
+        throw new Error(`Dimensions invalides pour la slide championnat ${index + 1}.`)
+      }
+      const stagedSlide = this.createStagedExportSlide(slide, width, height)
+      stagedSlide.element.style.backgroundImage = 'none'
+      stagedSlide.element.style.backgroundColor = 'transparent'
+      stagedSlide.element.classList.add('championship-overlay-export')
+      let overlayCanvas: HTMLCanvasElement
+      try {
+        await this.waitForImages(stagedSlide.element)
+        overlayCanvas = await html2canvas(stagedSlide.element, {
+          allowTaint: false,
+          backgroundColor: null,
+          height,
+          scale: 1080 / width,
+          useCORS: true,
+          width,
+          windowHeight: height,
+          windowWidth: width,
+        })
+      } finally {
+        stagedSlide.dispose()
+      }
+      const canvas = slideName === 'dates'
+        ? this.composeCarouselBaseBackground(overlayCanvas)
+        : this.composeChampionshipBackground(overlayCanvas)
       const fileName = `${baseFileName}-${slideName}.png`
       files.push(new File([await this.canvasToBlob(canvas)], fileName, { type: 'image/png' }))
     }
 
     return files
+  }
+
+  private composeChampionshipBackground(overlayCanvas: HTMLCanvasElement): HTMLCanvasElement {
+    const canvas = document.createElement('canvas')
+    canvas.width = overlayCanvas.width
+    canvas.height = overlayCanvas.height
+    const context = canvas.getContext('2d')
+    if (!context || !canvas.width || !canvas.height) {
+      throw new Error('Impossible de préparer le fond du championnat.')
+    }
+
+    const stripes = context.createLinearGradient(0, 0, canvas.width, canvas.height)
+    stripes.addColorStop(0, '#09090c')
+    stripes.addColorStop(0.36, '#09090c')
+    stripes.addColorStop(0.361, '#df2f42')
+    stripes.addColorStop(0.52, '#df2f42')
+    stripes.addColorStop(0.521, '#fff8ed')
+    stripes.addColorStop(0.57, '#fff8ed')
+    stripes.addColorStop(0.571, '#101015')
+    stripes.addColorStop(1, '#101015')
+    context.fillStyle = stripes
+    context.fillRect(0, 0, canvas.width, canvas.height)
+
+    const glow = context.createRadialGradient(
+      canvas.width * 0.18,
+      canvas.height * 0.12,
+      0,
+      canvas.width * 0.18,
+      canvas.height * 0.12,
+      canvas.width * 0.62,
+    )
+    glow.addColorStop(0, 'rgba(255, 255, 255, 0.14)')
+    glow.addColorStop(0.1, 'rgba(255, 255, 255, 0.14)')
+    glow.addColorStop(0.11, 'rgba(255, 255, 255, 0)')
+    glow.addColorStop(1, 'rgba(255, 255, 255, 0)')
+    context.fillStyle = glow
+    context.fillRect(0, 0, canvas.width, canvas.height)
+    context.drawImage(overlayCanvas, 0, 0)
+    return canvas
   }
 
   private async createSocialReelFile(): Promise<File> {
@@ -2329,7 +2629,7 @@ export class ToolsComponent {
 
     const stream = canvas.captureStream(ToolsComponent.SOCIAL_REEL_FRAME_RATE)
     const mimeType = this.socialReelMimeType()
-    const recorder = new MediaRecorder(stream, { mimeType })
+    const recorder = this.createCanvasRecorder(stream, mimeType)
     const chunks: BlobPart[] = []
 
     recorder.ondataavailable = (event) => {
@@ -2342,33 +2642,41 @@ export class ToolsComponent {
       recorder.onstop = () => resolve()
     })
 
-    recorder.start()
+    try {
+      recorder.start()
+      const frameDelay = 1000 / ToolsComponent.SOCIAL_REEL_FRAME_RATE
+      for (const slide of slides) {
+        const media = slide.media?.ready ? slide.media : undefined
+        if (media?.kind === 'video') {
+          await this.resetSocialReelVideo(media)
+        }
 
-    const frameDelay = 1000 / ToolsComponent.SOCIAL_REEL_FRAME_RATE
-    for (const slide of slides) {
-      const media = slide.media?.ready ? slide.media : undefined
-      if (media?.kind === 'video') {
-        await this.resetSocialReelVideo(media)
+        const framesPerSlide = Math.ceil(this.socialReelSlideSeconds(slide) * ToolsComponent.SOCIAL_REEL_FRAME_RATE)
+        for (let frame = 0; frame < framesPerSlide; frame += 1) {
+          const progress = frame / Math.max(framesPerSlide - 1, 1)
+          this.drawSocialReelFrame(context, slide, progress, datesSnapshot)
+          await this.wait(frameDelay)
+        }
       }
 
-      const framesPerSlide = Math.ceil(this.socialReelSlideSeconds(slide) * ToolsComponent.SOCIAL_REEL_FRAME_RATE)
-      for (let frame = 0; frame < framesPerSlide; frame += 1) {
-        const progress = frame / Math.max(framesPerSlide - 1, 1)
-        this.drawSocialReelFrame(context, slide, progress, datesSnapshot)
-        await this.wait(frameDelay)
+      recorder.stop()
+      await stopped
+      return new Blob(chunks, { type: mimeType })
+    } finally {
+      if (recorder.state !== 'inactive') {
+        recorder.stop()
       }
+      stream.getTracks().forEach((track) => track.stop())
+      this.pauseSocialReelVideos()
     }
+  }
 
-    recorder.stop()
-    await stopped
-
+  private pauseSocialReelVideos(): void {
     for (const media of this.socialReelMedia) {
       if (media.kind === 'video' && media.element instanceof HTMLVideoElement) {
         media.element.pause()
       }
     }
-
-    return new Blob(chunks, { type: mimeType })
   }
 
   private async prepareSocialReelMedia(slides: SocialReelSlide[]): Promise<void> {
@@ -2525,13 +2833,30 @@ export class ToolsComponent {
       return undefined
     }
 
-    await this.wait(40)
-    return html2canvas(slide, {
-      allowTaint: false,
-      backgroundColor: null,
-      scale: 1080 / slide.clientWidth,
-      useCORS: true,
-    })
+    const width = slide.clientWidth
+    const height = slide.clientHeight
+    if (!width || !height) {
+      return undefined
+    }
+    const stagedSlide = this.createStagedExportSlide(slide, width, height)
+    stagedSlide.element.style.backgroundImage = 'none'
+    stagedSlide.element.style.backgroundColor = 'transparent'
+    try {
+      await this.waitForImages(stagedSlide.element)
+      const overlayCanvas = await html2canvas(stagedSlide.element, {
+        allowTaint: false,
+        backgroundColor: null,
+        height,
+        scale: 1080 / width,
+        useCORS: true,
+        width,
+        windowHeight: height,
+        windowWidth: width,
+      })
+      return this.composeCarouselBaseBackground(overlayCanvas)
+    } finally {
+      stagedSlide.dispose()
+    }
   }
 
   private drawSocialReelDatesSnapshot(
@@ -2935,7 +3260,7 @@ export class ToolsComponent {
     const mimeType = MediaRecorder.isTypeSupported('video/webm;codecs=vp9')
       ? 'video/webm;codecs=vp9'
       : 'video/webm'
-    const recorder = new MediaRecorder(stream, { mimeType })
+    const recorder = this.createCanvasRecorder(stream, mimeType)
     const chunks: BlobPart[] = []
 
     recorder.ondataavailable = (event) => {
@@ -2950,49 +3275,58 @@ export class ToolsComponent {
 
     const preview = this.visualCanvas.nativeElement
     preview.classList.add('visual-export-frame')
-    await this.wait(80)
-    const previewRect = preview.getBoundingClientRect()
-
-    const snapshot = await html2canvas(preview, {
-      allowTaint: false,
-      backgroundColor: null,
-      height: Math.ceil(previewRect.height),
-      scale: this.exportScale,
-      useCORS: true,
-      width: Math.ceil(previewRect.width),
-      windowHeight: Math.ceil(previewRect.height),
-      windowWidth: Math.ceil(previewRect.width),
-    })
-    preview.classList.remove('visual-export-frame')
-
-    recorder.start()
-
-    const frameCount = Math.ceil(ToolsComponent.REEL_DURATION_MS / (1000 / ToolsComponent.REEL_FRAME_RATE))
-    const frameDelay = 1000 / ToolsComponent.REEL_FRAME_RATE
-    for (let frame = 0; frame < frameCount; frame += 1) {
-      const progress = frame / Math.max(frameCount - 1, 1)
-      const easedProgress = 1 - Math.pow(1 - progress, 3)
-      const scale = 1 + easedProgress * 0.055
-      const fadeOpacity = Math.max(0, 1 - progress / 0.16)
-      const drawWidth = width * scale
-      const drawHeight = height * scale
-      const offsetX = (width - drawWidth) / 2
-      const offsetY = (height - drawHeight) / 2 - easedProgress * 14
-
-      context.clearRect(0, 0, width, height)
-      context.drawImage(snapshot, offsetX, offsetY, drawWidth, drawHeight)
-
-      if (fadeOpacity > 0) {
-        context.fillStyle = `rgba(23, 18, 31, ${fadeOpacity})`
-        context.fillRect(0, 0, width, height)
-      }
-
-      await this.wait(frameDelay)
+    let snapshot: HTMLCanvasElement
+    try {
+      await this.wait(80)
+      const previewRect = preview.getBoundingClientRect()
+      snapshot = await html2canvas(preview, {
+        allowTaint: false,
+        backgroundColor: null,
+        height: Math.ceil(previewRect.height),
+        scale: this.exportScale,
+        useCORS: true,
+        width: Math.ceil(previewRect.width),
+        windowHeight: Math.ceil(previewRect.height),
+        windowWidth: Math.ceil(previewRect.width),
+      })
+    } finally {
+      preview.classList.remove('visual-export-frame')
     }
 
-    recorder.stop()
-    await stopped
-    return new Blob(chunks, { type: mimeType })
+    try {
+      recorder.start()
+      const frameCount = Math.ceil(ToolsComponent.REEL_DURATION_MS / (1000 / ToolsComponent.REEL_FRAME_RATE))
+      const frameDelay = 1000 / ToolsComponent.REEL_FRAME_RATE
+      for (let frame = 0; frame < frameCount; frame += 1) {
+        const progress = frame / Math.max(frameCount - 1, 1)
+        const easedProgress = 1 - Math.pow(1 - progress, 3)
+        const scale = 1 + easedProgress * 0.055
+        const fadeOpacity = Math.max(0, 1 - progress / 0.16)
+        const drawWidth = width * scale
+        const drawHeight = height * scale
+        const offsetX = (width - drawWidth) / 2
+        const offsetY = (height - drawHeight) / 2 - easedProgress * 14
+
+        context.clearRect(0, 0, width, height)
+        context.drawImage(snapshot, offsetX, offsetY, drawWidth, drawHeight)
+
+        if (fadeOpacity > 0) {
+          context.fillStyle = `rgba(23, 18, 31, ${fadeOpacity})`
+          context.fillRect(0, 0, width, height)
+        }
+
+        await this.wait(frameDelay)
+      }
+
+      recorder.stop()
+      await stopped
+      return new Blob(chunks, { type: mimeType })
+    } finally {
+      if (recorder.state !== 'inactive') {
+        recorder.stop()
+      }
+      stream.getTracks().forEach((track) => track.stop())
+    }
   }
 
   private downloadBlob(blob: Blob, fileName: string): void {
@@ -3380,6 +3714,15 @@ export class ToolsComponent {
     return 'video/webm'
   }
 
+  private createCanvasRecorder(stream: MediaStream, mimeType: string): MediaRecorder {
+    try {
+      return new MediaRecorder(stream, { mimeType })
+    } catch (error) {
+      stream.getTracks().forEach((track) => track.stop())
+      throw error
+    }
+  }
+
   private persistSocialReelState(): void {
     try {
       const state: PersistedSocialReelState = {
@@ -3437,9 +3780,24 @@ export class ToolsComponent {
     }
 
     if (this.isA2Format) {
-      return 4961 / 420
+      const printScale = 4961 / 420
+      if (this.isConstrainedCanvasDevice) {
+        const mobileCanvasPixelLimit = 12_000_000
+        const safeScale = Math.sqrt(mobileCanvasPixelLimit / (420 * 594))
+        return Math.min(printScale, safeScale)
+      }
+      return printScale
     }
 
     return 1920 / 600
+  }
+
+  private get isConstrainedCanvasDevice(): boolean {
+    if (typeof window === 'undefined' || typeof navigator === 'undefined') {
+      return false
+    }
+
+    const deviceMemory = (navigator as Navigator & { deviceMemory?: number }).deviceMemory
+    return window.matchMedia('(max-width: 768px)').matches || Boolean(deviceMemory && deviceMemory <= 4)
   }
 }

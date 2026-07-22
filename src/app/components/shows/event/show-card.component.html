@@ -1,34 +1,29 @@
-<div class="my-3 px-3 show-card event-card">
-  <div class="mb-3">
-    <div class="row text-center">
-      <img
-        [src]="show?.logoLink || 'assets/event/noimg.png'"
-        loading="lazy"
-        class="img-fluid m-auto"
-        [class.kit-logo-image]="isKitLogo"
-        [alt]="show?.name"
-      />
-      <div class="my-2 rotate shadow text-uppercase bg-danger">
-        <h2 class="my-auto">{{ formattedDate }}</h2>
-      </div>
-      <div class="rotate shadow text-uppercase text-danger bg-white">
-        <h2 class="my-auto">{{ show?.location }}</h2>
-      </div>
-      <div class="mt-1">
-        <h5 class="d-inline mr-1" *ngIf="isFree"><span class="badge bg-white text-black">Entrée gratuite</span></h5>
-        <h5 class="d-inline mx-1" *ngIf="!show?.reservationLink"><span class="badge bg-white text-black">Sans réservation</span></h5>  
-        <h5 class="d-inline mx-1" *ngIf="show?.reservationLink"><span class="badge bg-white text-black">Réservation conseillée</span></h5>  
-        <h5 class="d-inline mx-1" *ngIf="show?.freeForStudents"><span class="badge bg-white text-black">Gratuit pour les étudiant·e·s</span></h5>
-      </div>
-      <div class="row text-center m-auto" *ngIf="show?.shortDescription">
-        <h5 class="m-auto">{{ show?.shortDescription }}</h5>
-      </div>
-      <div class="row text-center m-auto" [ngClass]="{ 'mt-3': !show?.reducedPrice }">
-        <div class="bg-transparent border-0">
-          <app-show-reservation-buttons [show]="show">
-          </app-show-reservation-buttons>
-        </div>
-      </div>
+<article class="program-card" [class.program-card-primary]="variant === 'primary'" [class.program-card-compact]="variant === 'compact'">
+  <div class="program-card-media">
+    <img
+      [src]="show?.logoLink || 'assets/event/noimg.png'"
+      loading="lazy"
+      [class.kit-logo-image]="isKitLogo"
+      [alt]="show?.name || 'Spectacle de la LUDI'"
+    />
+    <span *ngIf="variant === 'primary'" class="program-card-label">À l'affiche</span>
+  </div>
+  <div class="program-card-content">
+    <div class="program-card-banners">
+      <p class="program-card-date">{{ formattedDate }} à {{ formattedTime }}</p>
+      <p class="program-card-venue">{{ show?.location }}</p>
+    </div>
+    <h2>{{ show?.name }}</h2>
+    <div class="program-card-meta">
+      <span>{{ priceLabel }}</span>
+      <span>{{ show?.reservationLink ? 'Réservation conseillée' : 'Sans réservation' }}</span>
+      <span *ngIf="show?.freeForStudents">Gratuit pour les étudiant·e·s</span>
+    </div>
+    <p *ngIf="show?.shortDescription" class="program-card-description">
+      {{ show?.shortDescription }}
+    </p>
+    <div class="program-card-action" *ngIf="show?.reservationLink">
+      <app-show-reservation-buttons [show]="show"></app-show-reservation-buttons>
     </div>
   </div>
-</div>
+</article>

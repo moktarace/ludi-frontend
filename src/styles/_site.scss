@@ -528,55 +528,403 @@ div.bg-dark.bg-black {
   color: var(--ludi-paper) !important;
 }
 
-.event-card {
-  height: calc(100% - 2rem);
-  padding: 1rem !important;
-  border: 0;
+.section-intro {
+  max-width: 28rem;
+  margin: -0.35rem 0 2rem;
+  color: rgb(255 248 237 / 68%);
+  line-height: 1.5;
+}
+
+.featured-program {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.25rem;
+  align-items: start;
+}
+
+.featured-program-main,
+.featured-program-secondary app-show-card {
+  display: block;
+  min-width: 0;
+}
+
+.featured-program-secondary {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1.25rem;
+}
+
+.program-card {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  height: 100%;
+  border: 1px solid rgb(255 248 237 / 16%);
   border-radius: var(--ludi-radius);
-  background: transparent;
-  box-shadow: 0 1rem 2.5rem rgb(0 0 0 / 14%);
+  background:
+    linear-gradient(145deg, rgb(23 18 31 / 98%) 0%, rgb(33 21 40 / 98%) 56%, rgb(181 31 48 / 92%) 145%),
+    url(/assets/background/bg02.jpg);
+  background-position: center;
+  background-size: cover;
+  box-shadow: 0 1.25rem 3rem rgb(0 0 0 / 24%);
+  transition: border-color 180ms ease, box-shadow 180ms ease, transform 180ms ease;
+
+  &::before {
+    content: "LUDI";
+    position: absolute;
+    right: -0.08em;
+    bottom: -0.05em;
+    z-index: -1;
+    color: rgb(255 248 237 / 5%);
+    font-family: "The Bold Font", system-ui, sans-serif;
+    font-size: clamp(5rem, 12vw, 9rem);
+    line-height: 0.8;
+    transform: rotate(-4deg);
+  }
+
+  &:hover {
+    border-color: rgb(255 248 237 / 34%);
+    box-shadow: 0 1.5rem 3.2rem rgb(0 0 0 / 30%);
+    transform: translateY(-2px);
+  }
+}
+
+.program-card-primary {
+  display: grid;
+  grid-template-rows: clamp(20rem, 32vw, 25rem) auto;
+}
+
+.program-card-compact {
+  display: grid;
+  grid-template-rows: clamp(16rem, 25vw, 20rem) auto;
+}
+
+.program-card-media {
+  position: relative;
+  min-width: 0;
+  min-height: 0;
+  background:
+    radial-gradient(circle at 50% 44%, rgb(255 248 237 / 10%) 0%, rgb(255 248 237 / 0%) 54%),
+    transparent;
 
   img {
     width: 100%;
-    aspect-ratio: 1;
+    height: 100%;
     object-fit: cover;
-    border-radius: calc(var(--ludi-radius) - 0.15rem);
   }
 
   img.kit-logo-image {
-    padding: 0.45rem;
+    padding: clamp(0.8rem, 3vw, 2rem);
+    background: transparent;
+    filter: drop-shadow(0 1rem 1.5rem rgb(0 0 0 / 28%));
     object-fit: contain;
   }
+}
 
-  > .mb-3 > .row > .bg-danger,
-  > .mb-3 > .row > .bg-white {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 0;
-    box-shadow: none !important;
-  }
+.program-card-primary .program-card-media img.kit-logo-image {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 62%;
+  height: 68%;
+  padding: 0;
+  transform: translate(-50%, -50%);
+}
 
-  > .mb-3 > .row > .bg-danger {
-    background-color: var(--ludi-red) !important;
-  }
+.program-card-compact .program-card-media img.kit-logo-image {
+  padding: clamp(2.2rem, 4vw, 3.6rem);
+}
 
-  > .mb-3 > .row > .bg-white {
-    background-color: var(--ludi-paper) !important;
-  }
+.program-card-label {
+  position: absolute;
+  top: 1rem;
+  left: 1rem;
+  padding: 0.45rem 0.7rem 0.38rem;
+  border-radius: 0.15rem;
+  background: var(--ludi-red);
+  box-shadow: 0 0.65rem 1.3rem rgb(181 31 48 / 35%);
+  color: white;
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  transform: rotate(-1.5deg);
+}
+
+.program-card-content {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: clamp(1rem, 2.5vw, 1.55rem);
 
   h2 {
-    width: 100%;
-    margin: 0 !important;
-    padding: 0.92rem 1rem 0.78rem;
+    margin: 0.2rem 0 0.8rem;
     font-family: "The Bold Font", system-ui, sans-serif;
-    font-size: clamp(1.3rem, 2.8vw, 1.9rem);
-    line-height: 0.95;
-    transform: translateY(0.04em);
+    font-size: clamp(1.55rem, 3vw, 2.35rem);
+    line-height: 0.98;
+    text-transform: uppercase;
+  }
+}
+
+.program-card-primary .program-card-content {
+  align-items: center;
+  padding-top: 0;
+  text-align: center;
+
+  h2 {
+    max-width: 18ch;
+    font-size: clamp(2.2rem, 5vw, 3.5rem);
+  }
+}
+
+.program-card-primary .program-card-banners {
+  justify-items: center;
+  margin-bottom: -2rem;
+  transform: translateY(-3rem);
+}
+
+.program-card-primary .program-card-description {
+  max-width: 46rem;
+}
+
+.program-card-compact .program-card-content {
+  position: relative;
+  padding: 1.15rem;
+
+  h2 {
+    display: -webkit-box;
+    overflow: hidden;
+    margin: 0.9rem 0 0.55rem;
+    font-size: clamp(1.45rem, 2.3vw, 1.9rem);
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+  }
+}
+
+.program-card-banners {
+  display: grid;
+  width: 100%;
+  justify-items: start;
+  gap: 0.28rem;
+}
+
+.program-card-date,
+.program-card-venue {
+  display: inline-flex;
+  min-height: 2.4rem;
+  max-width: 100%;
+  align-items: center;
+  margin: 0;
+  padding: 0.58rem 1.1rem 0.42rem;
+  font-family: "The Bold Font", system-ui, sans-serif;
+  font-weight: 400;
+  line-height: 0.9;
+  text-transform: uppercase;
+  box-shadow: 0 0.5rem 1rem rgb(0 0 0 / 22%);
+}
+
+.program-card-date {
+  background: var(--ludi-red);
+  color: var(--ludi-paper);
+  font-size: 1.15rem;
+  transform: rotate(-0.7deg);
+}
+
+.program-card-venue {
+  overflow: hidden;
+  background: var(--ludi-paper);
+  color: var(--ludi-red-deep);
+  font-size: 0.95rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  transform: rotate(0.35deg);
+}
+
+.program-card-primary .program-card-date {
+  min-height: 3rem;
+  padding: 0.72rem 1.4rem 0.55rem;
+  font-size: clamp(1.35rem, 2.4vw, 1.75rem);
+}
+
+.program-card-primary .program-card-venue {
+  min-height: 2.6rem;
+  padding: 0.58rem 1.25rem 0.42rem;
+  font-size: clamp(1.05rem, 1.8vw, 1.35rem);
+}
+
+.program-card-compact .program-card-date,
+.program-card-compact .program-card-venue {
+  min-height: 2.1rem;
+  padding: 0.5rem 0.78rem 0.36rem;
+}
+
+.program-card-compact .program-card-date {
+  font-size: clamp(0.9rem, 1.4vw, 1.05rem);
+}
+
+.program-card-compact .program-card-venue {
+  font-size: clamp(0.76rem, 1.15vw, 0.9rem);
+}
+
+.program-card-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-top: auto;
+
+  span {
+    padding: 0.28rem 0.5rem;
+    border: 0;
+    border-radius: 0.12rem;
+    background: var(--ludi-paper);
+    color: var(--ludi-ink);
+    font-size: 0.72rem;
+    font-weight: 900;
+  }
+}
+
+.program-card-description {
+  display: -webkit-box;
+  overflow: hidden;
+  margin: 1rem 0 0;
+  color: rgb(255 248 237 / 72%);
+  line-height: 1.45;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.program-card-compact .program-card-description {
+  margin: 0.8rem 0 0;
+  font-size: 0.88rem;
+  line-height: 1.45;
+  -webkit-line-clamp: 3;
+}
+
+.program-card-action {
+  margin-top: 1rem;
+}
+
+.upcoming-agenda {
+  overflow: hidden;
+  padding: clamp(1rem, 3vw, 1.7rem);
+  border: 1px solid rgb(255 248 237 / 12%);
+  border-radius: 0.9rem;
+  background: rgb(255 248 237 / 5%);
+  box-shadow: 0 1.25rem 3rem rgb(0 0 0 / 14%);
+}
+
+.agenda-month + .agenda-month {
+  margin-top: 2rem;
+}
+
+.agenda-month > h2 {
+  margin: 0 0 0.75rem;
+  color: var(--ludi-red);
+  font-size: 0.82rem;
+  font-weight: 900;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+}
+
+.agenda-events {
+  overflow: hidden;
+  border: 1px solid rgb(255 248 237 / 10%);
+  border-radius: 0.65rem;
+}
+
+.agenda-event {
+  display: grid;
+  grid-template-columns: 4.5rem minmax(0, 1fr) auto;
+  gap: 1rem;
+  align-items: center;
+  min-height: 6rem;
+  padding: 0.8rem 1rem;
+  background: rgb(23 18 31 / 48%);
+  transition: background-color 160ms ease;
+
+  &:hover {
+    background: rgb(255 248 237 / 7%);
   }
 
-  h5 {
-    line-height: 1.35;
+  & + & {
+    border-top: 1px solid rgb(255 248 237 / 10%);
+  }
+}
+
+.agenda-date {
+  display: grid;
+  min-height: 4rem;
+  place-content: center;
+  border-radius: 0.55rem;
+  background: var(--ludi-red);
+  color: white;
+  line-height: 1;
+  text-align: center;
+
+  span {
+    font-size: 0.68rem;
+    font-weight: 900;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  strong {
+    margin-top: 0.2rem;
+    font-family: "The Bold Font", system-ui, sans-serif;
+    font-size: 1.65rem;
+    font-weight: 400;
+  }
+}
+
+.agenda-event-content {
+  min-width: 0;
+
+  h3 {
+    overflow: hidden;
+    margin: 0 0 0.45rem;
+    font-size: clamp(1rem, 2vw, 1.25rem);
+    font-weight: 800;
+    line-height: 1.2;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  p {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem 1rem;
+    margin: 0;
+    color: rgb(255 248 237 / 62%);
+    font-size: 0.82rem;
+  }
+
+  p span {
+    display: inline-flex;
+    gap: 0.3rem;
+    align-items: center;
+  }
+}
+
+.agenda-event-link {
+  display: inline-flex;
+  gap: 0.5rem;
+  align-items: center;
+  justify-content: center;
+  min-height: 2.7rem;
+  padding: 0.55rem 0.8rem;
+  border: 1px solid rgb(255 248 237 / 20%);
+  border-radius: 999px;
+  color: var(--ludi-paper);
+  font-size: 0.78rem;
+  font-weight: 800;
+  text-decoration: none;
+
+  &:hover,
+  &:focus-visible {
+    border-color: var(--ludi-red);
+    background: var(--ludi-red);
+    color: white;
   }
 }
 
@@ -599,6 +947,39 @@ div.bg-dark.bg-black {
   border-color: rgb(255 255 255 / 18%) !important;
   padding-top: 0.85rem;
   padding-bottom: 0.85rem;
+}
+
+.upcoming-actions {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: center;
+  padding-top: 1.25rem;
+}
+
+.upcoming-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.75rem 1.2rem;
+  border: 1px solid rgb(255 255 255 / 42%);
+  border-radius: 999px;
+  background: rgb(255 255 255 / 7%);
+  color: var(--ludi-paper);
+  font-weight: 700;
+  transition: background-color 160ms ease, border-color 160ms ease, transform 160ms ease;
+
+  &:hover,
+  &:focus-visible {
+    border-color: var(--ludi-paper);
+    background: rgb(255 255 255 / 14%);
+    color: var(--ludi-paper);
+    transform: translateY(-1px);
+  }
+
+  &:focus-visible {
+    outline: 3px solid rgb(255 255 255 / 28%);
+    outline-offset: 3px;
+  }
 }
 
 .about-section .container,
@@ -1510,8 +1891,83 @@ app-galaxy {
     padding: 3.5rem 0;
   }
 
-  .event-card {
-    padding: 0.85rem !important;
+  .section-intro {
+    margin-top: 0.75rem;
+  }
+
+  .featured-program {
+    grid-template-columns: 1fr;
+  }
+
+  .featured-program-secondary {
+    grid-template-columns: 1fr;
+  }
+
+  .program-card-primary {
+    grid-template-rows: minmax(17rem, 68vw) auto;
+  }
+
+  .program-card-compact {
+    grid-template-columns: 1fr;
+    grid-template-rows: minmax(15rem, 66vw) auto;
+  }
+
+  .program-card-compact .program-card-content {
+    padding: 1rem;
+  }
+
+  .upcoming-agenda {
+    margin-inline: -0.25rem;
+    padding: 0.65rem;
+  }
+
+  .agenda-month + .agenda-month {
+    margin-top: 1.5rem;
+  }
+
+  .agenda-event {
+    grid-template-columns: 3.6rem minmax(0, 1fr) auto;
+    gap: 0.75rem;
+    min-height: 5.4rem;
+    padding: 0.65rem;
+  }
+
+  .agenda-date {
+    min-height: 3.9rem;
+  }
+
+  .agenda-event-content h3 {
+    font-size: 0.98rem;
+  }
+
+  .agenda-event-content p {
+    display: grid;
+    gap: 0.18rem;
+    font-size: 0.74rem;
+  }
+
+  .agenda-event-content p span:first-child {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .agenda-event-link {
+    width: 2.5rem;
+    min-height: 2.5rem;
+    padding: 0;
+  }
+
+  .agenda-event-link span {
+    display: none;
+  }
+
+  .upcoming-toggle {
+    width: 100%;
+  }
+
+  .upcoming-actions {
+    flex-direction: column;
   }
 
   .about-inner {
@@ -1798,6 +2254,12 @@ app-galaxy {
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .program-card,
+  .upcoming-toggle {
+    transform: none;
+    transition: none;
+  }
+
   .galaxy-tree-card,
   .galaxy-tree,
   .galaxy-tree-glow,
@@ -1814,6 +2276,16 @@ app-galaxy {
 
   .galaxy-fruit-inner {
     transition: none;
+  }
+}
+
+@media (min-width: 769px) and (max-width: 991px) {
+  .featured-program-secondary {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .featured-program-secondary app-show-card:last-child {
+    grid-column: 1 / -1;
   }
 }
 

@@ -1,22 +1,46 @@
-<app-highlighted-show-card [show]="highlightedShow">
-</app-highlighted-show-card>
 <div class="container section-block shows-section text-white" id="next-show">
-    <h1 class="text-uppercase">Nos prochaines dates</h1>
-    <div class="grid">
-        <div class="row">
-            <div *ngFor="let show of shows | slice:0:4; let i=index" class="col-md-6">
-                <app-show-card [show]="show">
-                </app-show-card>
-            </div>
+    <h1 class="text-uppercase">À l'affiche</h1>
+    <div class="featured-program" *ngIf="primaryShow as nextShow">
+        <app-show-card class="featured-program-main" [show]="nextShow" variant="primary">
+        </app-show-card>
+        <div class="featured-program-secondary">
+            <app-show-card
+                *ngFor="let show of secondaryShows"
+                [show]="show"
+                variant="compact">
+            </app-show-card>
         </div>
     </div>
 </div>
-<div class="container section-block upcoming-section text-white" *ngIf="shows && shows.length > 4">
-    <h1 class="text-uppercase" id="programmation">Dates à venir</h1>
-    <div class="grid">
-        <div class="row m-auto">
-            <app-shows-list [shows]="shows | slice:4:(displayAllShows ? undefined : 10)">
-            </app-shows-list>
-        </div>
+<div class="container section-block upcoming-section text-white" *ngIf="upcomingShows.length">
+    <h1 class="text-uppercase" id="programmation">Toute la programmation</h1>
+    <p class="lead section-intro">Retrouvez toutes nos prochaines dates en un coup d'œil.</p>
+    <div class="upcoming-agenda" id="upcoming-shows-list" aria-live="polite">
+        <app-shows-list
+            [shows]="displayedUpcomingShows"
+            [agendaMode]="true">
+        </app-shows-list>
+    </div>
+    <div class="upcoming-actions" *ngIf="remainingUpcomingShowsCount > 0 || canCollapseUpcomingShows">
+        <button
+            *ngIf="remainingUpcomingShowsCount > 0"
+            type="button"
+            class="upcoming-toggle"
+            aria-controls="upcoming-shows-list"
+            [attr.aria-expanded]="isUpcomingExpanded"
+            (click)="showMoreShows()">
+            Voir {{ nextUpcomingShowsCount }} {{ nextUpcomingShowsCount > 1 ? 'dates supplémentaires' : 'date supplémentaire' }}
+            <i class="bi bi-chevron-down" aria-hidden="true"></i>
+        </button>
+        <button
+            *ngIf="canCollapseUpcomingShows"
+            type="button"
+            class="upcoming-toggle"
+            aria-controls="upcoming-shows-list"
+            aria-expanded="true"
+            (click)="collapseShows()">
+            Réduire la liste
+            <i class="bi bi-chevron-up" aria-hidden="true"></i>
+        </button>
     </div>
 </div>

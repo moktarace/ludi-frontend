@@ -7,7 +7,8 @@ import { Show } from '../../../model'
 })
 export class ShowCardComponent {
 
-  private static SHORT_DATE_FORMATTER = new Intl.DateTimeFormat("fr-FR", { hour12: false, weekday: "long", month: "long", day: "numeric", hour: "2-digit", minute: "2-digit" });
+  private static SHORT_DATE_FORMATTER = new Intl.DateTimeFormat("fr-FR", { weekday: "long", month: "long", day: "numeric" });
+  private static TIME_FORMATTER = new Intl.DateTimeFormat('fr-FR', { hour: '2-digit', minute: '2-digit', hour12: false });
 
   @Input()
   public show?: Show | null = {
@@ -19,6 +20,9 @@ export class ShowCardComponent {
     price: 0,
     reducedPrice: 0,
   }
+
+  @Input()
+  public variant: 'primary' | 'compact' = 'compact';
   
   constructor() { }
 
@@ -30,7 +34,27 @@ export class ShowCardComponent {
     if (!this.show?.date) {
       return 'Date à venir';
     }
-    return ShowCardComponent.SHORT_DATE_FORMATTER.format(new Date(this.show.date * 1000)).replace(/(\d{2}):(\d{2})/, '$1h $2');
+    return ShowCardComponent.SHORT_DATE_FORMATTER.format(new Date(this.show.date * 1000));
+  }
+
+  public get formattedTime(): string | undefined {
+    if (!this.show?.date) {
+      return undefined;
+    }
+
+    return ShowCardComponent.TIME_FORMATTER
+      .format(new Date(this.show.date * 1000))
+      .replace(/(\d{2}):(\d{2})/, '$1h $2');
+  }
+
+  public get priceLabel(): string {
+    if (!this.show?.price) {
+      return 'Entrée gratuite';
+    }
+
+    return this.show.reducedPrice
+      ? `${this.show.price} € / ${this.show.reducedPrice} €`
+      : `${this.show.price} €`;
   }
 
   public get isKitLogo(): boolean {

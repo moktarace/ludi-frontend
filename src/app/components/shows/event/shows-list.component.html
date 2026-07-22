@@ -1,3 +1,36 @@
+<div class="agenda-list" *ngIf="agendaMode; else classicList">
+  <section class="agenda-month" *ngFor="let group of monthGroups">
+    <h2>{{ group.label }}</h2>
+    <div class="agenda-events">
+      <article class="agenda-event" *ngFor="let show of group.shows">
+        <time class="agenda-date" [attr.datetime]="dateTimeAttribute(show)">
+          <span>{{ formattedWeekday(show) }}</span>
+          <strong>{{ formattedDay(show) }}</strong>
+        </time>
+        <div class="agenda-event-content">
+          <h3>{{ show.name }}</h3>
+          <p>
+            <span *ngIf="show.location"><i class="bi bi-geo-alt" aria-hidden="true"></i>{{ show.location }}</span>
+            <span><i class="bi bi-clock" aria-hidden="true"></i>{{ formattedTime(show) }}</span>
+            <span>{{ priceLabel(show) }}</span>
+          </p>
+        </div>
+        <a
+          *ngIf="retrieveMainLink(show)"
+          class="agenda-event-link"
+          target="_blank"
+          rel="noopener noreferrer"
+          [href]="retrieveMainLink(show)"
+          [attr.aria-label]="'Plus d’informations sur ' + show.name">
+          <span>Plus d'infos</span>
+          <i class="bi bi-arrow-right" aria-hidden="true"></i>
+        </a>
+      </article>
+    </div>
+  </section>
+</div>
+
+<ng-template #classicList>
 <div class="my-3">
   <div class="mb-3">
     <div class="container">
@@ -14,13 +47,15 @@
         <div class="col">
           <a
             target="_blank"
+            rel="noopener noreferrer"
             *ngIf="retrieveMainLink(show)"
             class="text-white"
             [href]="retrieveMainLink(show)"
-            >Plus d'info</a
+            >Plus d'infos</a
           >
         </div>
       </div>
     </div>
   </div>
 </div>
+</ng-template>

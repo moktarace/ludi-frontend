@@ -36,7 +36,6 @@ export class AppComponent implements OnInit {
       tap((shows) => {
         this.highlightedShow =
           shows.filter((s) => s.isHighlighted)[0] || shows[0];
-        shows.filter((s) => s.id !== this.highlightedShow?.id);
         this.updateEventsJsonLd(shows);
         this.scrollToCurrentAnchor();
       })

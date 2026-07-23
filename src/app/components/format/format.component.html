@@ -1,106 +1,138 @@
-<div class="formats-wrap">
-  <div class="container section-block formats-intro text-white">
-    <h1 class="text-uppercase">Nos spectacles</h1>
-    <p class="lead formats-kicker">
-      La LUDI propose plusieurs formats de spectacle d'improvisation à Toulouse.
-      Du classique match d'impro au concept expérimental, voici nos principaux
-      rendez-vous sur scène.
+<section class="about-formats" aria-labelledby="about-formats-title">
+  <div class="about-formats-intro">
+    <p class="about-formats-kicker">Sur scène</p>
+    <h2 id="about-formats-title">Nos formats de spectacle</h2>
+    <p>
+      Du grand classique aux concepts les plus nerveux, chaque spectacle a son
+      terrain de jeu et sa propre énergie.
     </p>
   </div>
 
-  <div class="container formats-section text-white">
-    <section class="format-feature">
-      <div class="format-copy">
-        <div class="format-logo">
-          <img src="/assets/logo/kit/match.png" alt="Match au CAP" />
-        </div>
-        <div class="format-location text-center text-uppercase">
-          <h2 class="my-auto">Salle le cap - métro paul sabatier</h2>
-        </div>
-        <div class="format-badges">
-          <span class="badge bg-light text-black">Réservation conseillée</span>
-        </div>
-        <p class="lead line-break">
-          Un Match d'Impro grand format dans la fameuse Salle du CAP à Paul
-          Sabatier. C'est ici qu'on reçoit d'autres ligues d'impro de France et
-          même du monde entier.
+  <div class="about-formats-grid">
+    <article class="about-format-card">
+      <div class="about-format-gallery" aria-label="Photos du match au CAP">
+        <img
+          class="about-format-photo"
+          loading="lazy"
+          src="/assets/photo/cap01.jpeg"
+          alt=""
+        />
+        <img
+          class="about-format-photo"
+          loading="lazy"
+          src="/assets/photo/cap03.jpg"
+          alt=""
+        />
+        <img
+          class="about-format-photo"
+          loading="lazy"
+          src="/assets/photo/cap05.jpeg"
+          alt=""
+        />
+        <img
+          class="about-format-photo"
+          loading="lazy"
+          src="/assets/photo/cap06.jpeg"
+          alt=""
+        />
+      </div>
+      <div class="about-format-copy">
+        <img
+          class="about-format-logo"
+          src="/assets/logo/kit/match.png"
+          alt="Match au CAP"
+        />
+        <h3>Le match d'impro</h3>
+        <p>
+          Deux équipes en chandails, un arbitre, des thèmes et des catégories :
+          le public assiste à la rencontre et vote pour ses improvisations
+          préférées.
         </p>
-        <app-shows-list
-          [displayLocation]="false"
-          [shows]="capShows"
-        ></app-shows-list>
       </div>
+    </article>
 
-      <div class="format-gallery" aria-label="Photos du match au CAP">
-        <img src="/assets/photo/cap01.jpeg" alt="Match au CAP" />
-        <img src="/assets/photo/cap03.jpg" alt="Match au CAP" />
-        <img src="/assets/photo/cap05.jpeg" alt="Match au CAP" />
-        <img src="/assets/photo/cap06.jpeg" alt="Match au CAP" />
+    <article class="about-format-card">
+      <div class="about-format-gallery" aria-label="Photos Improvisem">
+        <img
+          class="about-format-photo"
+          loading="lazy"
+          src="/assets/photo/improvisem00.jpeg"
+          alt=""
+        />
+        <img
+          class="about-format-photo"
+          loading="lazy"
+          src="/assets/photo/improvisem02.jpeg"
+          alt=""
+        />
+        <img
+          class="about-format-photo"
+          loading="lazy"
+          src="/assets/photo/improvisem03.jpeg"
+          alt=""
+        />
+        <img
+          class="about-format-photo"
+          loading="lazy"
+          src="/assets/photo/improvisem04.jpeg"
+          alt=""
+        />
       </div>
-    </section>
-
-    <section class="format-feature format-feature-reverse">
-      <div class="format-copy">
-        <div class="format-logo">
-          <img src="/assets/logo/kit/improvisem.png" alt="Improvisem" />
-        </div>
-        <div class="format-location text-center text-uppercase">
-          <h2 class="my-auto">La Turbine - métro Palais de Justice</h2>
-        </div>
-        <div class="format-badges">
-          <span class="badge bg-light text-black">Entrée gratuite</span>
-          <span class="badge bg-light text-black">Sans réservation</span>
-        </div>
-        <p class="lead line-break">
-          Notre championnat interne ! Tous les membres de la LUDI, débutant·e·s
-          comme confirmé·e·s, s'affrontent avec à la clé : La Gloire Éternelle.
+      <div class="about-format-copy">
+        <img
+          class="about-format-logo"
+          src="/assets/logo/kit/improvisem.png"
+          alt="Improvisem"
+        />
+        <h3>Improvisem</h3>
+        <p>
+          Notre championnat interne réunit les membres de la LUDI, des
+          débutant·e·s aux plus confirmé·e·s, dans une compétition joyeuse pour
+          la Gloire Éternelle.
         </p>
-        <app-shows-list
-          [displayLocation]="false"
-          [shows]="improvisemShows"
-        ></app-shows-list>
       </div>
+    </article>
 
-      <div class="format-gallery" aria-label="Photos Improvisem">
-        <img src="/assets/photo/improvisem00.jpeg" alt="Improvisem" />
-        <img src="/assets/photo/improvisem02.jpeg" alt="Improvisem" />
-        <img src="/assets/photo/improvisem03.jpeg" alt="Improvisem" />
-        <img src="/assets/photo/improvisem04.jpeg" alt="Improvisem" />
+    <article class="about-format-card">
+      <div class="about-format-gallery" aria-label="Photos Catch d'impro">
+        <img
+          class="about-format-photo"
+          loading="lazy"
+          src="/assets/photo/format01.jpg"
+          alt=""
+        />
+        <img
+          class="about-format-photo"
+          loading="lazy"
+          src="/assets/photo/ludi.jpeg"
+          alt=""
+        />
+        <img
+          class="about-format-photo"
+          loading="lazy"
+          src="/assets/photo/cap04.jpg"
+          alt=""
+        />
+        <img
+          class="about-format-photo"
+          loading="lazy"
+          src="/assets/photo/cap07.jpg"
+          alt=""
+        />
       </div>
-    </section>
-
-    <section class="format-feature">
-      <div class="format-copy">
-        <div class="format-logo">
-          <img src="/assets/logo/kit/catch.png" alt="Catch d'impro" />
-        </div>
-        <div class="format-location text-center text-uppercase">
-          <h2 class="my-auto">
-            Bar Le Dada - métro Compans Caffarelli
-          </h2>
-        </div>
-        <div class="format-badges">
-          <span class="badge bg-light text-black">Entrée gratuite</span>
-          <span class="badge bg-light text-black">Sans réservation</span>
-        </div>
-        <p class="lead line-break">
-          OK, tu connais le match d'impro, mais as-tu déjà vu un catch
-          d'Impro ? C'est presque pareil, mais en 2v2. Et c'est plus nerveux,
-          et c'est aussi plus... Je n'ai pas le mot... Viens voir, tu ne vas pas
-          être déçu·e !
+      <div class="about-format-copy">
+        <img
+          class="about-format-logo"
+          src="/assets/logo/kit/catch.png"
+          alt="Catch d'impro"
+        />
+        <h3>Le catch d'impro</h3>
+        <p>
+          Des duos, des personnages hauts en couleur et un rythme sans temps
+          mort : une version plus courte, plus directe et plus explosive du
+          match.
         </p>
-        <app-shows-list
-          [displayLocation]="false"
-          [shows]="catchShows"
-        ></app-shows-list>
       </div>
-
-      <div class="format-gallery" aria-label="Photos Catch d'impro">
-        <img src="/assets/photo/format01.jpg" alt="Catch d'impro" />
-        <img src="/assets/photo/ludi.jpeg" alt="Catch d'impro" />
-        <img src="/assets/photo/cap04.jpg" alt="Catch d'impro" />
-        <img src="/assets/photo/cap07.jpg" alt="Catch d'impro" />
-      </div>
-    </section>
+    </article>
   </div>
-</div>
+</section>

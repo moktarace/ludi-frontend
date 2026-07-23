@@ -246,7 +246,6 @@ h1 {
   color: var(--ludi-paper);
 }
 
-.formats-section .text-danger,
 .join-us .text-danger {
   color: var(--ludi-red-deep) !important;
 }
@@ -942,8 +941,7 @@ div.bg-dark.bg-black {
   }
 }
 
-.upcoming-section .row.border-bottom,
-.formats-section .row.border-bottom {
+.upcoming-section .row.border-bottom {
   border-color: rgb(255 255 255 / 18%) !important;
   padding-top: 0.85rem;
   padding-bottom: 0.85rem;
@@ -984,9 +982,7 @@ div.bg-dark.bg-black {
 
 .about-section .container,
 .galaxy-section .container,
-.join-us .container,
-.formats-intro,
-.formats-section {
+.join-us .container {
   max-width: 1120px;
 }
 
@@ -1652,121 +1648,116 @@ app-galaxy {
   }
 }
 
-.formats-wrap {
-  background:
-    linear-gradient(180deg, #1d1426 0%, var(--ludi-ink) 42%, #211528 100%),
-    url(/assets/background/bg02.jpg);
-  background-position: center;
-  background-repeat: no-repeat;
-  background-size: cover;
-  color: var(--ludi-paper);
-}
-
-.formats-intro {
-  padding-bottom: 2.5rem;
-  color: var(--ludi-paper) !important;
-}
-
-.formats-kicker {
-  max-width: 48rem;
-  margin: 0;
-  color: rgb(255 248 237 / 78%);
-}
-
-.formats-section {
-  padding-bottom: 5rem;
-  color: var(--ludi-paper) !important;
-}
-
-.formats-section .lead,
-.formats-section .text-white,
-.formats-section p,
-.formats-section a {
-  color: var(--ludi-paper) !important;
-}
-
-.formats-section .row.border-bottom {
-  border-color: rgb(255 248 237 / 15%) !important;
-}
-
-.format-feature {
+.about-formats {
   display: grid;
-  grid-template-columns: minmax(0, 1.05fr) minmax(18rem, 0.95fr);
-  gap: clamp(2rem, 5vw, 4rem);
-  align-items: center;
-  padding: 4rem 0;
-  border-top: 1px solid rgb(255 248 237 / 12%);
+  gap: 1.5rem;
+  padding: clamp(1.5rem, 4vw, 2.5rem);
+  border-top: 1px solid rgb(255 248 237 / 28%);
+  border-bottom: 1px solid rgb(255 248 237 / 28%);
+  background: rgb(23 18 31 / 16%);
 }
 
-.format-feature-reverse .format-copy {
+.about-formats-intro {
+  max-width: 48rem;
+
+  h2 {
+    margin: 0;
+    color: var(--ludi-paper);
+    font-family: "The Bold Font", system-ui, sans-serif;
+    font-size: clamp(2rem, 4vw, 3.2rem);
+    line-height: 0.95;
+    text-transform: uppercase;
+  }
+
+  > p:last-child {
+    max-width: 42rem;
+    margin: 0.75rem 0 0;
+    color: rgb(255 248 237 / 82%);
+    font-size: 1.05rem;
+    line-height: 1.55;
+  }
+}
+
+.about-formats-kicker {
+  margin: 0 0 0.35rem;
+  color: var(--ludi-gold);
+  font-size: 0.82rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.about-formats-grid {
+  display: grid;
+  gap: 1.25rem;
+}
+
+.about-format-card {
+  display: grid;
+  grid-template-columns: minmax(0, 1.08fr) minmax(18rem, 0.92fr);
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid rgb(255 248 237 / 24%);
+  border-radius: var(--ludi-radius);
+  background: rgb(23 18 31 / 24%);
+  box-shadow: 0 1rem 2rem rgb(84 12 27 / 24%);
+}
+
+.about-format-card:nth-child(even) .about-format-gallery {
   order: 2;
 }
 
-.format-feature-reverse .format-gallery {
+.about-format-card:nth-child(even) .about-format-copy {
   order: 1;
 }
 
-.format-copy {
-  min-width: 0;
-}
-
-.format-logo {
-  text-align: center;
-}
-
-.format-logo img {
-  width: min(18rem, 72vw);
-  aspect-ratio: 1;
-  object-fit: contain;
-  filter: drop-shadow(0 1rem 2rem rgb(0 0 0 / 24%));
-}
-
-.format-location {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-top: 1.25rem;
-  border-radius: 0;
-  background: rgb(255 248 237 / 94%);
-  color: var(--ludi-red-deep);
-  box-shadow: 0 1rem 2rem rgb(0 0 0 / 16%);
-}
-
-.format-location h2 {
-  width: 100%;
-  margin: 0 !important;
-  padding: 0.92rem 1rem 0.78rem;
-  font-family: "The Bold Font", system-ui, sans-serif;
-  font-size: clamp(1.35rem, 3vw, 2rem);
-  line-height: 0.95;
-  transform: translateY(0.04em);
-}
-
-.format-badges {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.45rem;
-  margin: 0.9rem 0 1rem;
-}
-
-.format-copy app-shows-list {
-  display: block;
-  margin-top: 1.5rem;
-}
-
-.format-gallery {
+.about-format-gallery {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 0.75rem;
+  overflow: hidden;
+  aspect-ratio: 4 / 3;
+  background: var(--ludi-ink);
+  gap: 0.4rem;
+  padding: 0.4rem;
 }
 
-.format-gallery img {
+.about-format-photo {
   width: 100%;
-  aspect-ratio: 1;
+  height: 100%;
+  min-height: 0;
   object-fit: cover;
-  border: 1px solid rgb(255 248 237 / 16%);
-  border-radius: var(--ludi-radius);
-  box-shadow: 0 1rem 2rem rgb(0 0 0 / 18%);
+}
+
+.about-format-logo {
+  width: min(16rem, 88%);
+  height: 6.5rem;
+  margin: 0 auto 1.25rem;
+  object-fit: contain;
+  filter: drop-shadow(0 0.8rem 1rem rgb(0 0 0 / 28%));
+}
+
+.about-format-copy {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  justify-content: center;
+  padding: clamp(1.5rem, 4vw, 3rem);
+
+  h3 {
+    margin: 0 0 0.55rem;
+    color: var(--ludi-paper);
+    font-family: "The Bold Font", system-ui, sans-serif;
+    font-size: clamp(1.65rem, 3vw, 2.35rem);
+    line-height: 1;
+    text-transform: uppercase;
+  }
+
+  p {
+    margin: 0;
+    color: rgb(255 248 237 / 86%);
+    font-size: 1.03rem;
+    line-height: 1.55;
+  }
 }
 
 @import './internal-tools';
@@ -2149,31 +2140,37 @@ app-galaxy {
     grid-template-columns: 1fr;
   }
 
-  .formats-intro {
-    padding-bottom: 1.5rem;
+  .about-formats-grid {
+    gap: 1rem;
   }
 
-  .formats-section {
-    padding-bottom: 3.5rem;
+  .about-formats {
+    padding: 1rem;
   }
 
-  .format-feature {
+  .about-format-card {
     grid-template-columns: 1fr;
-    gap: 1.75rem;
-    padding: 3rem 0;
   }
 
-  .format-feature-reverse .format-copy,
-  .format-feature-reverse .format-gallery {
+  .about-format-card:nth-child(even) .about-format-gallery,
+  .about-format-card:nth-child(even) .about-format-copy {
     order: initial;
   }
 
-  .format-gallery {
-    gap: 0.55rem;
+  .about-format-gallery {
+    aspect-ratio: 1;
+    gap: 0.3rem;
+    padding: 0.3rem;
   }
 
-  .format-location h2 {
-    font-size: 1.35rem;
+  .about-format-copy {
+    padding: 1.3rem;
+  }
+
+  .about-format-logo {
+    width: min(14rem, 82%);
+    height: 5.8rem;
+    margin-bottom: 1rem;
   }
 
   .visual-tools-inner {

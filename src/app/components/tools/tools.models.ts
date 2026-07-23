@@ -42,7 +42,6 @@ export interface SocialReelSlide {
 export interface PersistedSocialReelState {
   text?: string
   duration?: number
-  includeDates?: boolean
 }
 
 export interface CarouselPhoto {

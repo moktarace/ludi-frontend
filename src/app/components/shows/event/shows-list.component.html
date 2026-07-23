@@ -1,4 +1,4 @@
-<div class="agenda-list" *ngIf="agendaMode; else classicList">
+<div class="agenda-list">
   <section class="agenda-month" *ngFor="let group of monthGroups">
     <h2>{{ group.label }}</h2>
     <div class="agenda-events">
@@ -29,33 +29,3 @@
     </div>
   </section>
 </div>
-
-<ng-template #classicList>
-<div class="my-3">
-  <div class="mb-3">
-    <div class="container">
-      <div class="row border-bottom" *ngFor="let show of shows">
-        <div class="col">
-          <p class="text-uppercase">{{ formattedDate(show) }}</p>
-        </div>
-        <div [ngClass]="{'col-md-6' : displayLocation, 'col-md-8' : !displayLocation}">
-          <p class="fs-5 text-uppercase">{{ show?.name }}</p>
-        </div>
-        <div class="col text-capitalize" *ngIf="displayLocation">
-          <p>{{ show?.location }}</p>
-        </div>
-        <div class="col">
-          <a
-            target="_blank"
-            rel="noopener noreferrer"
-            *ngIf="retrieveMainLink(show)"
-            class="text-white"
-            [href]="retrieveMainLink(show)"
-            >Plus d'infos</a
-          >
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
-</ng-template>

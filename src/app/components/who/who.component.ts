@@ -5,5 +5,4 @@ import { Component } from '@angular/core'
   templateUrl: './who.component.html',
 })
 export class WhoComponent {
-  constructor() { }
 }

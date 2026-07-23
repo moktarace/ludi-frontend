@@ -246,10 +246,6 @@ h1 {
   color: var(--ludi-paper);
 }
 
-.join-us .text-danger {
-  color: var(--ludi-red-deep) !important;
-}
-
 .img-polaroid {
   padding: 0;
   background-color: white;
@@ -261,7 +257,6 @@ h1 {
 }
 
 .rotate,
-.negative-rotate,
 #picture-noel,
 #picture-impro-2,
 #picture-impro-1,
@@ -269,35 +264,8 @@ h1 {
   transform: none;
 }
 
-.text-logo {
-  color: var(--ludi-red);
-  font-family: "Butter Luchy Free", sans-serif;
-}
-
 div.bg-dark.bg-black {
   background-color: black !important;
-}
-
-.line-break {
-  white-space: pre-line;
-}
-
-.next-date {
-  background-color: var(--ludi-paper);
-  background: url(/assets/background/bg02.jpg);
-  background-position: center;
-  background-repeat: no-repeat;
-  background-size: cover;
-  height: 1080px;
-  width: 1080px;
-}
-
-.desktop-only {
-  display: block;
-}
-
-.mobile-only {
-  display: none;
 }
 
 .site-hero {
@@ -491,34 +459,6 @@ div.bg-dark.bg-black {
       box-shadow: 0 1rem 2rem rgb(0 0 0 / 22%);
       transform: translateY(-2px);
     }
-  }
-}
-
-.featured-show {
-  background: linear-gradient(180deg, var(--ludi-ink) 0%, #211528 100%);
-  padding: 4.5rem 0;
-
-  img {
-    border-radius: var(--ludi-radius);
-    box-shadow: var(--ludi-shadow);
-  }
-
-  img.kit-logo-image {
-    width: 100%;
-    max-height: 26rem;
-    object-fit: contain;
-    box-shadow: none;
-  }
-
-  h3.bg-white {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    min-height: 3.25rem;
-    border-radius: 0;
-    padding: 0.92rem 1rem 0.78rem;
-    box-shadow: 0 1rem 2rem rgb(0 0 0 / 16%);
-    line-height: 0.95;
   }
 }
 
@@ -1023,14 +963,6 @@ div.bg-dark.bg-black {
   }
 }
 
-.galaxy-kicker {
-  margin: 0 0 0.6rem;
-  color: var(--ludi-gold);
-  font-size: 0.88rem;
-  font-weight: 950;
-  text-transform: uppercase;
-}
-
 app-galaxy {
   --galaxy-gyro-x: 0rem;
   --galaxy-gyro-y: 0rem;
@@ -1413,11 +1345,6 @@ app-galaxy {
   box-shadow: none;
 }
 
-.galaxy-fruit-1 {
-  left: 9%;
-  top: 13%;
-}
-
 .galaxy-fruit-2 {
   left: 23%;
   top: 8%;
@@ -1436,11 +1363,6 @@ app-galaxy {
 .galaxy-fruit-5 {
   right: 9%;
   top: 14%;
-}
-
-.galaxy-fruit-6 {
-  left: 5%;
-  top: 36%;
 }
 
 .galaxy-fruit-7 {
@@ -1476,11 +1398,6 @@ app-galaxy {
 .galaxy-fruit-13 {
   right: 28%;
   bottom: 9%;
-}
-
-.galaxy-fruit-14 {
-  right: 11%;
-  bottom: 17%;
 }
 
 .galaxy-fruit-15 {
@@ -1762,14 +1679,6 @@ app-galaxy {
 
 @import './internal-tools';
 @media (max-width: 768px) {
-  .desktop-only {
-    display: none;
-  }
-
-  .mobile-only {
-    display: block;
-  }
-
   .compact-site-header {
     min-height: 4.35rem;
     padding: 0.65rem 1rem;
@@ -1876,10 +1785,6 @@ app-galaxy {
       min-height: 3rem;
       font-size: 1rem;
     }
-  }
-
-  .featured-show {
-    padding: 3.5rem 0;
   }
 
   .section-intro {
@@ -2032,11 +1937,6 @@ app-galaxy {
     width: 1rem;
   }
 
-  .galaxy-fruit-1 {
-    left: 4%;
-    top: 13%;
-  }
-
   .galaxy-fruit-2 {
     left: 11%;
     top: 16%;
@@ -2055,11 +1955,6 @@ app-galaxy {
   .galaxy-fruit-5 {
     right: 10%;
     top: 36%;
-  }
-
-  .galaxy-fruit-6 {
-    left: 3%;
-    top: 33%;
   }
 
   .galaxy-fruit-7 {
@@ -2098,11 +1993,6 @@ app-galaxy {
     right: 34%;
     top: 29%;
     bottom: auto;
-  }
-
-  .galaxy-fruit-14 {
-    left: 6%;
-    bottom: 27%;
   }
 
   .galaxy-fruit-15 {
@@ -2287,14 +2177,6 @@ app-galaxy {
 }
 
 @media (min-width: 768px) {
-  .desktop-only {
-    display: block;
-  }
-
-  .mobile-only {
-    display: none;
-  }
-
   .programmation-admin-inner {
     padding-right: 1rem;
     padding-left: 1rem;

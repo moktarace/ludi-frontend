@@ -24,21 +24,11 @@ export class ShowsComponent {
     this.rebuildShowCollections();
   }
 
-  public get shows(): Show[] {
-    return this.currentShows;
-  }
-
   @Input()
   public set highlightedShow(show: Show | null | undefined) {
     this.currentHighlightedShow = show;
     this.rebuildShowCollections();
   }
-
-  public get highlightedShow(): Show | null | undefined {
-    return this.currentHighlightedShow;
-  }
-
-  constructor() { }
 
   public get primaryShow(): Show | undefined {
     return this.featuredShows[0];

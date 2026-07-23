@@ -2,7 +2,6 @@ import { NgModule } from '@angular/core'
 import { FormsModule } from '@angular/forms'
 import { BrowserModule } from '@angular/platform-browser'
 import { HttpClientModule } from '@angular/common/http';
-import { AppRoutingModule } from './app-routing.module'
 import { AppComponent } from './app.component'
 import { ShowCardComponent } from './components/shows/event/show-card.component'
 import { ShowReservationButtonsComponent } from './components/shows/event//utility/show-reservation-buttons.component'
@@ -10,7 +9,6 @@ import { FooterComponent } from './components/footer/footer.component'
 import { HeaderComponent } from './components/header/header.component'
 import { WhoComponent } from './components/who/who.component'
 import { ShowsListComponent } from './components/shows/event//shows-list.component';
-import { HighlightedShowCardComponent } from './components/shows/event/highlighted-show-card.component';
 import { ShowsComponent } from './components/shows/shows.component';
 import { NoShowsComponent } from './components/no-shows/no-shows.component';
 import { FormatComponent } from './components/format/format.component';
@@ -32,7 +30,6 @@ import { GalaxyComponent } from './components/galaxy/galaxy.component';
     ShowCardComponent,
     NoShowsComponent,
     ShowsListComponent,
-    HighlightedShowCardComponent,
     FormatComponent,
     JoinUsComponent,
     ToolsComponent,
@@ -43,7 +40,7 @@ import { GalaxyComponent } from './components/galaxy/galaxy.component';
     GalaxyComponent,
     ShowReservationButtonsComponent
   ],
-  imports: [BrowserModule, HttpClientModule, FormsModule, AppRoutingModule],
+  imports: [BrowserModule, HttpClientModule, FormsModule],
   bootstrap: [AppComponent],
   providers: [],
 })

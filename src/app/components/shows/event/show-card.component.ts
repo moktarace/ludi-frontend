@@ -24,12 +24,6 @@ export class ShowCardComponent {
   @Input()
   public variant: 'primary' | 'compact' = 'compact';
   
-  constructor() { }
-
-  public get isFree() {
-    return !this.show?.price
-  }
-
   public get formattedDate(): string | undefined {
     if (!this.show?.date) {
       return 'Date à venir';

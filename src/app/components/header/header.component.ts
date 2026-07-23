@@ -8,8 +8,6 @@ export class HeaderComponent {
   @Input()
   public compact = false;
 
-  constructor() { }
-
   public get title(): string {
     if (window.screen.width < 1000) {
       return "LA LUDI DE TOULOUSE";

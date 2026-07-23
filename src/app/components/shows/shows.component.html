@@ -16,10 +16,8 @@
     <h1 class="text-uppercase" id="programmation">Toute la programmation</h1>
     <p class="lead section-intro">Retrouvez toutes nos prochaines dates en un coup d'œil.</p>
     <div class="upcoming-agenda" id="upcoming-shows-list" aria-live="polite">
-        <app-shows-list
-            [shows]="displayedUpcomingShows"
-            [agendaMode]="true">
-        </app-shows-list>
+      <app-shows-list [shows]="displayedUpcomingShows">
+      </app-shows-list>
     </div>
     <div class="upcoming-actions" *ngIf="remainingUpcomingShowsCount > 0 || canCollapseUpcomingShows">
         <button

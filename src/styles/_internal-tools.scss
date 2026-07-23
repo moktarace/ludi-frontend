@@ -3802,50 +3802,6 @@ button:disabled {
   align-content: start;
 }
 
-.championship-scoreboard {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 0.45rem;
-
-  article {
-    display: grid;
-    gap: 0.12rem;
-    min-width: 0;
-    padding: 0.55rem 0.45rem;
-    border: 0.13rem solid #09090c;
-    background: var(--team-color);
-    color: var(--team-text);
-    box-shadow: 0.16rem 0.16rem 0 #09090c;
-    transform: skew(-5deg);
-  }
-
-  span,
-  strong,
-  em,
-  small {
-    display: block;
-    font-style: normal;
-    font-weight: 1000;
-    line-height: 1;
-    text-transform: uppercase;
-    transform: skew(5deg);
-  }
-
-  span,
-  small {
-    font-size: 0.54rem;
-  }
-
-  strong {
-    font-size: 0.78rem;
-    word-break: keep-all;
-  }
-
-  em {
-    font-size: 1rem;
-  }
-}
-
 .championship-fault-board {
   display: grid;
   gap: 0.22rem;
@@ -3966,12 +3922,6 @@ button:disabled {
   }
 }
 
-.championship-finals-row {
-  display: grid;
-  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
-  gap: 0.5rem;
-}
-
 .championship-ranking-list {
   display: grid;
   gap: 0.36rem;
@@ -4057,79 +4007,6 @@ button:disabled {
   }
 }
 
-.championship-final-card {
-  display: grid;
-  gap: 0.18rem;
-  min-width: 0;
-  padding: 0.54rem;
-  border: 0.14rem solid #09090c;
-  background: #fff8ed;
-  color: #09090c;
-  box-shadow: 0.2rem 0.2rem 0 #09090c;
-
-  &.big {
-    background: var(--team-color);
-    color: #fff8ed;
-    transform: rotate(1.4deg);
-  }
-
-  span,
-  strong,
-  em {
-    display: block;
-    font-style: normal;
-    font-weight: 1000;
-    line-height: 1;
-    text-transform: uppercase;
-  }
-
-  span,
-  em {
-    font-size: 0.62rem;
-  }
-
-  strong {
-    font-family: "The Bold Font", system-ui, sans-serif;
-    font-size: 1.12rem;
-    line-height: 0.86;
-    overflow-wrap: anywhere;
-  }
-}
-
-.championship-shield {
-  display: grid;
-  justify-items: center;
-  gap: 0.16rem;
-  width: 68%;
-  justify-self: center;
-  padding: 0.48rem 0.82rem 0.62rem;
-  border: 0.16rem solid #09090c;
-  border-radius: 50% 50% 42% 42% / 36% 36% 58% 58%;
-  background:
-    linear-gradient(145deg, #f7d36b 0%, #9d6a18 48%, #fff0a6 100%);
-  color: #09090c;
-  box-shadow: 0.24rem 0.24rem 0 #09090c;
-
-  span,
-  strong {
-    display: block;
-    font-weight: 1000;
-    line-height: 1;
-    text-align: center;
-    text-transform: uppercase;
-  }
-
-  span {
-    font-size: 0.58rem;
-  }
-
-  strong {
-    font-family: "The Bold Font", system-ui, sans-serif;
-    font-size: 1.22rem;
-    overflow-wrap: anywhere;
-  }
-}
-
 .championship-slide-footer {
   display: flex;
   justify-content: space-between;
@@ -4200,16 +4077,6 @@ button:disabled {
   }
 }
 
-.instagram-media-frame .championship-scoreboard strong,
-.carousel-export-slides .championship-scoreboard strong {
-  font-size: 0.96rem;
-}
-
-.instagram-media-frame .championship-scoreboard em,
-.carousel-export-slides .championship-scoreboard em {
-  font-size: 1.18rem;
-}
-
 .instagram-media-frame .championship-fault-board h3,
 .carousel-export-slides .championship-fault-board h3 {
   font-size: 1.22rem;
@@ -4234,16 +4101,6 @@ button:disabled {
 .carousel-export-slides .championship-match-team strong,
 .carousel-export-slides .championship-match-team em {
   font-size: 0.62rem;
-}
-
-.instagram-media-frame .championship-final-card strong,
-.carousel-export-slides .championship-final-card strong {
-  font-size: 1.36rem;
-}
-
-.instagram-media-frame .championship-shield strong,
-.carousel-export-slides .championship-shield strong {
-  font-size: 1.42rem;
 }
 
 @keyframes reel-background-pan {
@@ -4316,4 +4173,3 @@ button:disabled {
     opacity: 1;
   }
 }
-

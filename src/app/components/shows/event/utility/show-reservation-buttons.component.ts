@@ -20,6 +20,4 @@ export class ShowReservationButtonsComponent {
   public get mainLink(): string {
     return this.show?.reservationLink || '';
   }
-
-  constructor() { }
 }

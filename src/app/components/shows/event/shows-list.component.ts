@@ -12,44 +12,17 @@ interface ShowMonthGroup {
 })
 export class ShowsListComponent {
 
-    private static SHORT_DATE_FORMATTER = new Intl.DateTimeFormat("fr-FR", { hour12: false, weekday: "short", month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" });
     private static MONTH_FORMATTER = new Intl.DateTimeFormat('fr-FR', { month: 'long', year: 'numeric' });
     private static WEEKDAY_FORMATTER = new Intl.DateTimeFormat('fr-FR', { weekday: 'short' });
     private static DAY_FORMATTER = new Intl.DateTimeFormat('fr-FR', { day: '2-digit' });
     private static TIME_FORMATTER = new Intl.DateTimeFormat('fr-FR', { hour: '2-digit', minute: '2-digit', hour12: false });
 
-    private currentShows: Show[] = [];
-
     @Input()
     public set shows(shows: Show[] | null | undefined) {
-        this.currentShows = shows || [];
-        this.monthGroups = this.buildMonthGroups(this.currentShows);
+        this.monthGroups = this.buildMonthGroups(shows || []);
     }
-
-    public get shows(): Show[] {
-        return this.currentShows;
-    }
-
-    @Input()
-    public displayLocation?: boolean = true;
-
-    @Input()
-    public agendaMode = false;
 
     public monthGroups: ShowMonthGroup[] = [];
-
-    constructor() { }
-
-    public isFree(show: Show): boolean {
-        return !show?.price
-    }
-
-    public formattedDate(show: Show): string | undefined {
-        if (!show?.date) {
-            return undefined;
-        }
-        return ShowsListComponent.SHORT_DATE_FORMATTER.format(new Date(show.date * 1000)).replace(/(\d{2}):(\d{2})/, '$1h $2');
-    }
 
     public retrieveMainLink(show: Show): string {
         return show?.reservationLink || '';

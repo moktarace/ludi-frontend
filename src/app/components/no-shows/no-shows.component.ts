@@ -5,5 +5,4 @@ import { Component } from '@angular/core'
   templateUrl: './no-shows.component.html',
 })
 export class NoShowsComponent {
-  constructor() { }
 }

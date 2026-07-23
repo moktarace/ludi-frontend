@@ -5,5 +5,4 @@ import { Component } from '@angular/core'
   templateUrl: './join-us.component.html',
 })
 export class JoinUsComponent {
-  constructor() { }
 }

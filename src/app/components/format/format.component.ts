@@ -5,5 +5,4 @@ import { Component } from '@angular/core'
   templateUrl: './format.component.html',
 })
 export class FormatComponent {
-  constructor() { }
 }

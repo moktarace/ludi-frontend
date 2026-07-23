@@ -168,7 +168,6 @@ export class ToolsComponent implements OnDestroy {
   public socialReelMedia: SocialReelMedia[] = []
   public socialReelPreviewIndex = 0
   public socialReelSecondsPerSlide = 4
-  public socialReelIncludeDates = true
   public isSocialReelExporting = false
   public socialReelError = ''
   public actionMessage = ''
@@ -734,25 +733,8 @@ export class ToolsComponent implements OnDestroy {
     return this.getMatchWinner(this.selectedChampionshipMatch)
   }
 
-  public get selectedMatchLoser(): ChampionshipStanding | undefined {
-    return this.getMatchLoser(this.selectedChampionshipMatch)
-  }
-
   public get championshipWinner(): ChampionshipStanding {
     return this.selectedMatchWinner || this.championshipStandings[0]
-  }
-
-  public get championshipRunnerUp(): ChampionshipStanding | undefined {
-    const finalLoser = this.getMatchLoser(this.bigFinalMatch)
-    return finalLoser || this.championshipStandings[1]
-  }
-
-  public get smallFinalMatch(): ChampionshipMatch {
-    return this.championshipMatches.find((match) => match.id === 'small-final') || this.championshipMatches[6] || this.selectedChampionshipMatch
-  }
-
-  public get bigFinalMatch(): ChampionshipMatch {
-    return this.championshipMatches.find((match) => match.id === 'big-final') || this.championshipMatches[7] || this.selectedChampionshipMatch
   }
 
   public get canGoToPreviousChampionshipSlide(): boolean {
@@ -1020,7 +1002,7 @@ export class ToolsComponent implements OnDestroy {
       return
     }
 
-    this.pedagogySlides = this.pedagogySlides.filter((slide, slideIndex) => slideIndex !== index)
+    this.pedagogySlides = this.pedagogySlides.filter((_, slideIndex) => slideIndex !== index)
     this.pedagogyPreviewIndex = Math.min(this.pedagogyPreviewIndex, this.pedagogyTotalSlideCount - 1)
   }
 
@@ -1058,12 +1040,6 @@ export class ToolsComponent implements OnDestroy {
 
   public updateSocialReelSeconds(value: number): void {
     this.socialReelSecondsPerSlide = Math.max(2, Math.min(Number(value) || 4, 9))
-    this.persistSocialReelState()
-  }
-
-  public updateSocialReelIncludeDates(value: boolean): void {
-    this.socialReelIncludeDates = true
-    this.socialReelPreviewIndex = Math.min(this.socialReelPreviewIndex, this.socialReelSlideCount - 1)
     this.persistSocialReelState()
   }
 
@@ -1147,14 +1123,6 @@ export class ToolsComponent implements OnDestroy {
         // The export still works; some browsers require a user gesture for preview playback.
       })
     }
-  }
-
-  public socialReelMediaLabel(media?: SocialReelMedia): string {
-    if (!media) {
-      return 'Fond LUDI par defaut'
-    }
-
-    return media.kind === 'video' ? `Video: ${media.name}` : `Image: ${media.name}`
   }
 
   public selectSocialReelPreview(index: number): void {
@@ -2605,10 +2573,6 @@ export class ToolsComponent implements OnDestroy {
     }
   }
 
-  private async exportReel(html2canvas: Html2Canvas): Promise<void> {
-    this.canvasExport.downloadBlob(await this.createReelBlob(html2canvas), this.exportFileName)
-  }
-
   private async createReelBlob(html2canvas: Html2Canvas): Promise<Blob> {
     if (!this.visualCanvas) {
       throw new Error('Aucun reel à exporter')
@@ -2747,20 +2711,6 @@ export class ToolsComponent implements OnDestroy {
     }
 
     return this.safeScore(match.scoreA) > this.safeScore(match.scoreB)
-      ? this.standingById(match.teamAId)
-      : this.standingById(match.teamBId)
-  }
-
-  private getMatchLoser(match: ChampionshipMatch): ChampionshipStanding | undefined {
-    if (!this.isCompleteChampionshipMatch(match)) {
-      return undefined
-    }
-
-    if (this.safeScore(match.scoreA) === this.safeScore(match.scoreB)) {
-      return undefined
-    }
-
-    return this.safeScore(match.scoreA) < this.safeScore(match.scoreB)
       ? this.standingById(match.teamAId)
       : this.standingById(match.teamBId)
   }
@@ -3055,7 +3005,6 @@ export class ToolsComponent implements OnDestroy {
     const state: PersistedSocialReelState = {
       text: this.socialReelText,
       duration: this.socialReelSecondsPerSlide,
-      includeDates: this.socialReelIncludeDates,
     }
     this.drafts.writeJson(ToolsComponent.SOCIAL_REEL_STORAGE_KEY, state)
   }
@@ -3074,7 +3023,6 @@ export class ToolsComponent implements OnDestroy {
       if (typeof state.duration === 'number') {
         this.socialReelSecondsPerSlide = Math.max(2, Math.min(state.duration, 9))
       }
-      this.socialReelIncludeDates = true
     } catch {
       // Ignore corrupted drafts.
     }

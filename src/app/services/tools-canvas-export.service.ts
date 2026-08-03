@@ -92,6 +92,7 @@ export class ToolsCanvasExportService {
     overlayCanvas: HTMLCanvasElement,
     photo: CanvasPhoto,
     isCover: boolean,
+    positionY: number = 0.5,
   ): Promise<HTMLCanvasElement> {
     const image = await this.loadImage(photo.src)
     const canvas = document.createElement('canvas')
@@ -107,7 +108,8 @@ export class ToolsCanvasExportService {
     const sourceWidth = canvas.width / scale
     const sourceHeight = canvas.height / scale
     const sourceX = (image.naturalWidth - sourceWidth) / 2
-    const sourceY = (image.naturalHeight - sourceHeight) / 2
+    const safePositionY = Math.max(0, Math.min(positionY, 1))
+    const sourceY = (image.naturalHeight - sourceHeight) * safePositionY
     context.imageSmoothingEnabled = true
     context.imageSmoothingQuality = 'high'
     context.drawImage(image, sourceX, sourceY, sourceWidth, sourceHeight, 0, 0, canvas.width, canvas.height)

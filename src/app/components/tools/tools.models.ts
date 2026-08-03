@@ -4,7 +4,7 @@ export type CarouselPlacement = 'top' | 'center' | 'bottom'
 export type CarouselLogoSize = 's' | 'm' | 'l' | 'xl'
 export type VisualTaglinePlacement = 'top-left' | 'top-right' | 'center-left' | 'center-right' | 'bottom-left' | 'bottom-right'
 export type LegacyLogoPickerTarget = 'poster' | 'carousel'
-export type MobileToolSection = 'visual' | 'carousel' | 'pedagogy' | 'reel' | 'championship'
+export type MobileToolSection = 'visual' | 'player' | 'carousel' | 'pedagogy' | 'reel' | 'championship'
 export type ChampionshipSlideId = 'match' | 'standings' | 'dates'
 export type SocialReelMediaKind = 'image' | 'video'
 export type SocialReelMediaOrientation = 'portrait' | 'landscape'
@@ -130,6 +130,10 @@ export interface PersistedToolsDraftState {
   printLogoSize?: CarouselLogoSize
   visualTagline?: string
   visualTaglinePlacement?: VisualTaglinePlacement
+  selectedPlayerShowId?: string
+  playerName?: string
+  playerDescription?: string
+  playerShowLogoSize?: CarouselLogoSize
   customCarouselLogo?: string
   carouselLogoPlacement?: CarouselPlacement
   carouselLogoSize?: CarouselLogoSize
@@ -142,6 +146,7 @@ export interface PersistedToolsDraftState {
 export interface PersistedToolsMediaState {
   customPoster?: string
   customBackground?: string
+  playerPhoto?: string
   customCarouselLogo?: string
   carouselPhotos?: CarouselPhoto[]
   pedagogySlides?: PedagogySlide[]

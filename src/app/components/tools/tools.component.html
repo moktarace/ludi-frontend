@@ -17,6 +17,7 @@
       aria-label="Choisir un outil du kit réseaux"
     >
       <option value="visual">Une annonce</option>
+      <option value="player">Un·e joueur·euse</option>
       <option value="carousel">Un remerciement</option>
       <option value="pedagogy">Un carrousel pédagogique</option>
       <option value="reel">Un Reel / Short</option>
@@ -370,6 +371,171 @@
       </div>
     </div>
 
+  </div>
+
+  <div class="container carousel-tools-inner player-tools-inner" *ngIf="isUnlocked" [class.mobile-tool-section-hidden]="mobileToolSection !== 'player'">
+    <div class="carousel-tools-panel player-tools-panel">
+      <h2>Présentation joueur·euse</h2>
+      <p>
+        Compose un portrait Instagram et termine le visuel par toutes les
+        informations du prochain spectacle.
+      </p>
+
+      <div class="visual-control-group">
+        <label for="player-show">Spectacle à venir</label>
+        <select
+          id="player-show"
+          class="form-select"
+          [(ngModel)]="selectedPlayerShowId"
+          [disabled]="!upcomingShows.length"
+        >
+          <option value="">Prochain spectacle / à l'affiche</option>
+          <option *ngFor="let show of upcomingShows" [value]="showId(show)">
+            {{ show.name }} — {{ formattedDate(show) }}
+          </option>
+        </select>
+        <small class="player-form-hint" *ngIf="!upcomingShows.length">
+          Aucun spectacle à venir n'est disponible dans la programmation.
+        </small>
+      </div>
+
+      <div class="visual-control-group">
+        <label>Taille du logo du spectacle</label>
+        <div class="visual-segmented carousel-size-control">
+          <button type="button" [class.active]="playerShowLogoSize === 's'" (click)="playerShowLogoSize = 's'">S</button>
+          <button type="button" [class.active]="playerShowLogoSize === 'm'" (click)="playerShowLogoSize = 'm'">M</button>
+          <button type="button" [class.active]="playerShowLogoSize === 'l'" (click)="playerShowLogoSize = 'l'">L</button>
+          <button type="button" [class.active]="playerShowLogoSize === 'xl'" (click)="playerShowLogoSize = 'xl'">XL</button>
+        </div>
+      </div>
+
+      <div class="visual-control-group">
+        <label for="player-photo-upload">Photo du ou de la joueur·euse</label>
+        <input
+          id="player-photo-upload"
+          type="file"
+          accept="image/*"
+          class="form-control"
+          (change)="updatePlayerPhoto($event)"
+        />
+        <small class="player-form-hint">
+          La photo est utilisée plein cadre, avec son fond.
+        </small>
+        <div class="visual-inline-actions" *ngIf="playerPhoto">
+          <button type="button" (click)="removePlayerPhoto()">Retirer la photo</button>
+        </div>
+      </div>
+
+      <div class="visual-control-group">
+        <label for="player-name">Nom</label>
+        <input
+          id="player-name"
+          type="text"
+          class="form-control"
+          [(ngModel)]="playerName"
+          maxlength="52"
+          placeholder="Ex : Camille Dupont"
+        />
+      </div>
+
+      <div class="visual-control-group">
+        <label for="player-description">Description</label>
+        <textarea
+          id="player-description"
+          class="form-control"
+          [(ngModel)]="playerDescription"
+          rows="6"
+          maxlength="360"
+          placeholder="Son style de jeu, ce qu’iel apporte au spectacle, une anecdote…"
+        ></textarea>
+        <small class="player-form-hint">{{ playerDescription.length }}/360 caractères</small>
+      </div>
+
+      <div class="visual-control-group">
+        <label>Teinte principale</label>
+        <div class="visual-tone-options">
+          <button
+            type="button"
+            *ngFor="let tone of visualTones"
+            [class.active]="selectedToneValue === tone.value"
+            [style.--tone-color]="tone.accent"
+            (click)="selectedToneValue = tone.value"
+          >
+            <span></span>
+            {{ tone.label }}
+          </button>
+        </div>
+      </div>
+
+      <button
+        type="button"
+        class="btn btn-danger visual-export-button"
+        [disabled]="!canExportPlayerCard || isPlayerExporting"
+        (click)="exportPlayerCard()"
+      >
+        {{ playerExportLabel }}
+      </button>
+      <button
+        type="button"
+        class="btn btn-light visual-share-button"
+        [disabled]="!canExportPlayerCard || isSharing"
+        (click)="sharePlayerCard()"
+      >
+        {{ shareLabel }}
+      </button>
+      <p class="visual-export-note">PNG 1080 × 1350 px, prêt pour un post Instagram.</p>
+    </div>
+
+    <div class="visual-preview-shell player-preview-shell">
+      <article
+        #playerCard
+        class="player-card player-card-full"
+        [style.--visual-accent]="visualAccent"
+        [style.--visual-accent-rgb]="visualAccentRgb"
+      >
+        <img class="player-ludi-logo" src="assets/logo/logo.png" alt="LUDI Toulouse" />
+        <div class="player-profile">
+          <div class="player-card-background-mark">LUDI</div>
+          <div
+            class="player-photo-frame"
+            *ngIf="playerPhoto; else playerPhotoPlaceholder"
+            [style.background-image]="playerPhotoBackgroundImage"
+          ></div>
+          <ng-template #playerPhotoPlaceholder>
+            <div class="player-photo-placeholder">
+              <span>Ajoute<br />une photo</span>
+            </div>
+          </ng-template>
+
+          <div class="player-profile-copy">
+            <h3 [class.player-name-long]="playerName.length > 28">{{ playerName || 'Prénom Nom' }}</h3>
+            <div class="player-description">
+              {{ playerDescription || 'Ajoute ici une courte présentation du ou de la joueur·euse.' }}
+            </div>
+            <div class="carousel-date-item player-event-date-item" *ngIf="selectedPlayerShow as show">
+              <span>{{ formattedDate(show) }}</span>
+              <strong>{{ show.name }}</strong>
+              <small>{{ show.location || 'Lieu à venir' }}</small>
+              <em>{{ priceLabel(show) }}</em>
+            </div>
+          </div>
+
+          <aside class="player-event-reminder" *ngIf="selectedPlayerShow as show; else playerShowPlaceholder">
+            <div [ngClass]="['player-show-logo', 'player-show-logo-' + playerShowLogoSize]" *ngIf="show.logoLink; else playerShowName">
+              <img [src]="show.logoLink" [alt]="show.name || 'Logo du spectacle'" />
+            </div>
+            <ng-template #playerShowName>
+              <strong class="player-show-name">{{ show.name || 'Spectacle LUDI' }}</strong>
+            </ng-template>
+          </aside>
+          <ng-template #playerShowPlaceholder>
+            <aside class="player-event-reminder player-event-empty">
+              <strong>Ajoute un spectacle à venir</strong>
+            </aside>
+          </ng-template>
+        </div>
+      </article>
+    </div>
   </div>
 
   <div class="container carousel-tools-inner" *ngIf="isUnlocked" [class.mobile-tool-section-hidden]="mobileToolSection !== 'carousel'">

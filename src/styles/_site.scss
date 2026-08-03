@@ -2119,7 +2119,8 @@ app-galaxy {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-  .visual-preview-post {
+  .visual-preview-post,
+  .player-card {
     width: min(420px, calc(100vw - 2rem));
     height: min(525px, calc((100vw - 2rem) * 1.25));
   }

@@ -105,6 +105,9 @@ export class ToolsComponent implements OnDestroy {
   @ViewChildren('carouselSlide')
   public carouselSlides?: QueryList<ElementRef<HTMLElement>>
 
+  @ViewChild('playerCard')
+  public playerCard?: ElementRef<HTMLElement>
+
   @ViewChildren('pedagogySlide')
   public pedagogySlidesRef?: QueryList<ElementRef<HTMLElement>>
 
@@ -142,6 +145,12 @@ export class ToolsComponent implements OnDestroy {
   public isUnlocked = isPrivateAccessUnlocked()
   public isExporting = false
   public isSharing = false
+  public selectedPlayerShowId = ''
+  public playerName = ''
+  public playerDescription = ''
+  public playerPhoto?: string
+  public playerShowLogoSize: CarouselLogoSize = 'm'
+  public isPlayerExporting = false
   public carouselPhotos: CarouselPhoto[] = []
   public customCarouselLogo?: string
   public carouselLogoPlacement: CarouselPlacement = 'top'
@@ -230,6 +239,36 @@ export class ToolsComponent implements OnDestroy {
       this.highlightedShow ||
       shows[0]
     )
+  }
+
+  public get upcomingShows(): Show[] {
+    const startOfToday = new Date()
+    startOfToday.setHours(0, 0, 0, 0)
+    return this.sortedShows.filter((show) => Boolean(show.date && show.date * 1000 >= startOfToday.getTime()))
+  }
+
+  public get selectedPlayerShow(): Show | undefined {
+    const shows = this.upcomingShows
+    if (!shows.length) {
+      return undefined
+    }
+
+    const highlightedShow = this.highlightedShow && shows.some((show) => this.showId(show) === this.showId(this.highlightedShow as Show))
+      ? this.highlightedShow
+      : undefined
+    return shows.find((show) => this.showId(show) === this.selectedPlayerShowId) || highlightedShow || shows[0]
+  }
+
+  public get canExportPlayerCard(): boolean {
+    return Boolean(this.playerPhoto && this.playerName.trim() && this.playerDescription.trim() && this.selectedPlayerShow)
+  }
+
+  public get playerExportLabel(): string {
+    return this.isPlayerExporting ? 'Export en cours...' : 'Télécharger le PNG'
+  }
+
+  public get playerPhotoBackgroundImage(): string | null {
+    return this.playerPhoto ? `url("${this.playerPhoto}")` : null
   }
 
   public get visualShows(): Show[] {
@@ -868,6 +907,17 @@ export class ToolsComponent implements OnDestroy {
     })
   }
 
+  public updatePlayerPhoto(event: Event): void {
+    this.readImage(event, (image) => {
+      this.playerPhoto = image
+    })
+  }
+
+  public removePlayerPhoto(): void {
+    this.playerPhoto = undefined
+    this.scheduleDraftSave()
+  }
+
   public removePoster(): void {
     this.customPoster = undefined
     this.isPosterHidden = true
@@ -1318,6 +1368,10 @@ export class ToolsComponent implements OnDestroy {
       printLogoSize: this.printLogoSize,
       visualTagline: this.visualTagline,
       visualTaglinePlacement: this.visualTaglinePlacement,
+      selectedPlayerShowId: this.selectedPlayerShowId,
+      playerName: this.playerName,
+      playerDescription: this.playerDescription,
+      playerShowLogoSize: this.playerShowLogoSize,
       customCarouselLogo: this.persistableAsset(this.customCarouselLogo),
       carouselLogoPlacement: this.carouselLogoPlacement,
       carouselLogoSize: this.carouselLogoSize,
@@ -1363,6 +1417,10 @@ export class ToolsComponent implements OnDestroy {
       if (state.printLogoSize && logoSizes.includes(state.printLogoSize)) this.printLogoSize = state.printLogoSize
       if (typeof state.visualTagline === 'string') this.visualTagline = state.visualTagline
       if (state.visualTaglinePlacement && taglinePlacements.includes(state.visualTaglinePlacement)) this.visualTaglinePlacement = state.visualTaglinePlacement
+      if (typeof state.selectedPlayerShowId === 'string') this.selectedPlayerShowId = state.selectedPlayerShowId
+      if (typeof state.playerName === 'string') this.playerName = state.playerName
+      if (typeof state.playerDescription === 'string') this.playerDescription = state.playerDescription
+      if (state.playerShowLogoSize && logoSizes.includes(state.playerShowLogoSize)) this.playerShowLogoSize = state.playerShowLogoSize
       if (typeof state.customCarouselLogo === 'string') this.customCarouselLogo = state.customCarouselLogo
       if (state.carouselLogoPlacement && placements.includes(state.carouselLogoPlacement)) this.carouselLogoPlacement = state.carouselLogoPlacement
       if (state.carouselLogoSize && logoSizes.includes(state.carouselLogoSize)) this.carouselLogoSize = state.carouselLogoSize
@@ -1387,6 +1445,7 @@ export class ToolsComponent implements OnDestroy {
     const state: PersistedToolsMediaState = {
       customPoster: this.customPoster,
       customBackground: this.customBackground,
+      playerPhoto: this.playerPhoto,
       customCarouselLogo: this.customCarouselLogo,
       carouselPhotos: this.carouselPhotos,
       pedagogySlides: this.pedagogySlides,
@@ -1405,6 +1464,7 @@ export class ToolsComponent implements OnDestroy {
 
       if (typeof state.customPoster === 'string') this.customPoster = state.customPoster
       if (typeof state.customBackground === 'string') this.customBackground = state.customBackground
+      if (typeof state.playerPhoto === 'string') this.playerPhoto = state.playerPhoto
       if (typeof state.customCarouselLogo === 'string') this.customCarouselLogo = state.customCarouselLogo
       if (Array.isArray(state.carouselPhotos)) {
         this.carouselPhotos = state.carouselPhotos
@@ -1558,6 +1618,40 @@ export class ToolsComponent implements OnDestroy {
       this.showActionMessage(this.errorMessage(error, 'Téléchargement du visuel impossible.'), 'error')
     } finally {
       this.isExporting = false
+    }
+  }
+
+  public async exportPlayerCard(): Promise<void> {
+    if (!this.canExportPlayerCard || this.isPlayerExporting) {
+      return
+    }
+
+    this.isPlayerExporting = true
+    try {
+      const file = await this.createPlayerFile()
+      this.canvasExport.downloadBlob(file, file.name)
+      this.showActionMessage(`Présentation téléchargée : ${file.name}`)
+    } catch (error) {
+      this.showActionMessage(this.errorMessage(error, 'Téléchargement de la présentation impossible.'), 'error')
+    } finally {
+      this.isPlayerExporting = false
+    }
+  }
+
+  public async sharePlayerCard(): Promise<void> {
+    if (!this.canExportPlayerCard || this.isSharing) {
+      return
+    }
+
+    this.isSharing = true
+    try {
+      const file = await this.createPlayerFile()
+      await this.shareFiles([file], `Présentation de ${this.playerName.trim()}`)
+      this.showActionMessage('Présentation prête à être partagée.')
+    } catch (error) {
+      this.showActionMessage(this.errorMessage(error, 'Partage de la présentation annulé ou impossible.'), 'error')
+    } finally {
+      this.isSharing = false
     }
   }
 
@@ -1773,6 +1867,57 @@ export class ToolsComponent implements OnDestroy {
     } finally {
       preview.classList.remove('visual-export-frame')
     }
+  }
+
+  private async createPlayerFile(): Promise<File> {
+    if (!this.playerCard || !this.playerPhoto || !this.canExportPlayerCard) {
+      throw new Error('Complète le spectacle, la photo, le nom et la description.')
+    }
+
+    const html2canvas = await this.canvasExport.loadRenderer()
+    const preview = this.playerCard.nativeElement
+    const playerPhoto = this.playerPhoto
+    await this.canvasExport.waitForImages(preview)
+    const rect = preview.getBoundingClientRect()
+    const width = Math.ceil(rect.width)
+    const height = Math.ceil(rect.height)
+    if (!width || !height) {
+      throw new Error('Dimensions invalides pour la présentation.')
+    }
+
+    const stagedCard = this.canvasExport.stageElement(preview, width, height)
+    stagedCard.element.style.backgroundImage = 'none'
+    stagedCard.element.style.backgroundColor = 'transparent'
+    stagedCard.element.style.boxShadow = 'none'
+    const stagedPhoto = stagedCard.element.querySelector<HTMLElement>('.player-photo-frame')
+    if (stagedPhoto) {
+      stagedPhoto.style.backgroundImage = 'none'
+    }
+
+    let overlayCanvas: HTMLCanvasElement
+    try {
+      await this.canvasExport.waitForImages(stagedCard.element)
+      overlayCanvas = await html2canvas(stagedCard.element, {
+        allowTaint: false,
+        backgroundColor: null,
+        height,
+        scale: 1080 / width,
+        useCORS: true,
+        width,
+        windowHeight: height,
+        windowWidth: width,
+      })
+    } finally {
+      stagedCard.dispose()
+    }
+
+    const canvas = await this.canvasExport.composePhoto(overlayCanvas, {
+      name: this.playerName.trim() || 'photo joueur·euse',
+      src: playerPhoto,
+    }, false, 0.28)
+    return new File([await this.canvasExport.canvasToBlob(canvas)], this.playerFileName, {
+      type: 'image/png',
+    })
   }
 
   private async createCarouselFiles(): Promise<File[]> {
@@ -2670,6 +2815,18 @@ export class ToolsComponent implements OnDestroy {
     const extension = this.isReelFormat ? 'webm' : 'png'
     const base = this.fileNameBase(this.visualExportKind)
     return `${base}-${this.selectedFormat}.${extension}`
+  }
+
+  private get playerFileName(): string {
+    const show = this.selectedPlayerShow
+    const parts = ['ludi', 'presentation-joueureuse', this.slugify(this.playerName.trim())]
+    if (show?.name) {
+      parts.push(this.slugify(show.name))
+    }
+    if (show?.date) {
+      parts.push(this.fileDate(new Date(show.date * 1000)))
+    }
+    return `${parts.filter(Boolean).join('-')}.png`
   }
 
   private get visualExportKind(): string {

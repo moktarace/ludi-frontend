@@ -57,18 +57,19 @@
       <a
         class="galaxy-fruit"
         *ngFor="let league of leagues"
-        [ngClass]="[league.position, league.isSecret ? 'galaxy-fruit-secret' : '']"
-        [attr.href]="league.href || null"
-        [attr.target]="league.href ? '_blank' : null"
-        [attr.rel]="league.href ? 'noopener noreferrer' : null"
-        [attr.tabindex]="league.href ? null : '0'"
+        [ngClass]="[league.position, league.isSecret ? 'galaxy-fruit-secret-origin' : '', league.isSecret && !isSecretRevealed(league) ? 'galaxy-fruit-secret' : '']"
+        [attr.href]="league.href && (!league.isSecret || isSecretRevealed(league)) ? league.href : null"
+        [attr.target]="league.href && (!league.isSecret || isSecretRevealed(league)) ? '_blank' : null"
+        [attr.rel]="league.href && (!league.isSecret || isSecretRevealed(league)) ? 'noopener noreferrer' : null"
+        [attr.tabindex]="league.href && (!league.isSecret || isSecretRevealed(league)) ? null : '0'"
         [attr.aria-label]="league.label"
+        (click)="handleLeagueClick($event, league)"
       >
         <span class="galaxy-fruit-inner">
           <span class="galaxy-fruit-face galaxy-fruit-front">
-            <img *ngIf="league.logo" [src]="league.logo" [alt]="league.label" />
-            <span *ngIf="!league.logo && !league.isSecret">{{ league.initials }}</span>
-            <span *ngIf="league.isSecret" class="galaxy-secret-star" aria-hidden="true"></span>
+            <img *ngIf="league.logo && (!league.isSecret || isSecretRevealed(league))" [src]="league.logo" [alt]="league.label" />
+            <span *ngIf="!league.logo && (!league.isSecret || isSecretRevealed(league))">{{ league.initials }}</span>
+            <span *ngIf="league.isSecret && !isSecretRevealed(league)" class="galaxy-secret-star" aria-hidden="true"></span>
           </span>
           <span class="galaxy-fruit-face galaxy-fruit-back">
             {{ league.label }}

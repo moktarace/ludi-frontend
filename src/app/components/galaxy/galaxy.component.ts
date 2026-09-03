@@ -22,6 +22,8 @@ export class GalaxyComponent implements OnDestroy {
 
   public twinkles: GalaxyParticle[] = []
 
+  public revealedSecretLeague = ''
+
   private readonly particleTimers: Array<ReturnType<typeof setTimeout>> = []
 
   public readonly leagues: DescendantLeague[] = [
@@ -96,6 +98,13 @@ export class GalaxyComponent implements OnDestroy {
       position: 'galaxy-fruit-10',
     },
     {
+      label: 'LES DOUGGI DINGGO',
+      initials: 'DD',
+      logo: 'assets/galaxy/douggi.jpg',
+      href: 'https://www.instagram.com/douggi_dinggo',
+      position: 'galaxy-fruit-14',
+    },
+    {
       label: 'TIMY',
       initials: 'TY',
       href: 'https://www.instagram.com/timy_impro/',
@@ -105,6 +114,8 @@ export class GalaxyComponent implements OnDestroy {
     {
       label: 'CASE LUDIQUE',
       initials: 'CL',
+      logo: 'assets/galaxy/caseludique.png',
+      href: 'https://www.instagram.com/caseludique',
       position: 'galaxy-fruit-15',
       isSecret: true,
     },
@@ -116,6 +127,19 @@ export class GalaxyComponent implements OnDestroy {
 
   public ngOnDestroy(): void {
     this.particleTimers.forEach((timer) => clearTimeout(timer))
+  }
+
+  public handleLeagueClick(event: Event, league: DescendantLeague): void {
+    if (!league.isSecret || this.isSecretRevealed(league)) {
+      return
+    }
+
+    event.preventDefault()
+    this.revealedSecretLeague = league.label
+  }
+
+  public isSecretRevealed(league: DescendantLeague): boolean {
+    return this.revealedSecretLeague === league.label
   }
 
   @HostListener('window:deviceorientation', ['$event'])

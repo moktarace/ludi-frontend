@@ -1323,6 +1323,10 @@ app-galaxy {
   opacity: 0;
 }
 
+.galaxy-fruit-secret-origin {
+  transform: translate(-50%, 50%);
+}
+
 .galaxy-fruit-secret:hover,
 .galaxy-fruit-secret:focus-visible {
   opacity: 1;
@@ -1398,6 +1402,11 @@ app-galaxy {
 .galaxy-fruit-13 {
   right: 28%;
   bottom: 9%;
+}
+
+.galaxy-fruit-14 {
+  left: 17%;
+  bottom: 27%;
 }
 
 .galaxy-fruit-15 {
@@ -1993,6 +2002,12 @@ app-galaxy {
     right: 34%;
     top: 29%;
     bottom: auto;
+  }
+
+  .galaxy-fruit-14 {
+    left: 21%;
+    top: auto;
+    bottom: 31%;
   }
 
   .galaxy-fruit-15 {

@@ -1,0 +1,177 @@
+<div class="container carousel-tools-inner vote-card-tools-inner">
+  <section class="carousel-tools-panel vote-card-tools-panel">
+    <p class="vote-card-kicker">Matériel de match</p>
+    <h2>Carton de vote</h2>
+    <p>
+      Compose un carton A4 avec une couleur par face. Le duo jaune et bleu est
+      prêt par défaut ; les couleurs du championnat Improvisem sont aussi disponibles.
+    </p>
+
+    <div class="visual-control-group">
+      <label>Équipe du recto</label>
+      <div class="vote-card-color-options" role="group" aria-label="Équipe du recto">
+        <button
+          type="button"
+          *ngFor="let color of colors"
+          [class.active]="frontColorId === color.id"
+          [style.--swatch-color]="color.color"
+          (click)="selectColor('front', color)"
+        >
+          <span class="vote-card-color-swatch"></span>
+          <strong>{{ color.label }}</strong>
+          <small>{{ color.group }}</small>
+        </button>
+      </div>
+    </div>
+
+    <div class="visual-control-group">
+      <label>Équipe du verso</label>
+      <div class="vote-card-color-options" role="group" aria-label="Équipe du verso">
+        <button
+          type="button"
+          *ngFor="let color of colors"
+          [class.active]="backColorId === color.id"
+          [style.--swatch-color]="color.color"
+          (click)="selectColor('back', color)"
+        >
+          <span class="vote-card-color-swatch"></span>
+          <strong>{{ color.label }}</strong>
+          <small>{{ color.group }}</small>
+        </button>
+      </div>
+    </div>
+
+    <details class="visual-custom-panel" open>
+      <summary>Texte des faces</summary>
+      <div class="vote-card-label-fields">
+        <label for="vote-card-front-label">
+          Recto
+          <input
+            id="vote-card-front-label"
+            type="text"
+            class="form-control"
+            maxlength="22"
+            [(ngModel)]="frontLabel"
+            (ngModelChange)="persistState()"
+          />
+        </label>
+        <label for="vote-card-back-label">
+          Verso
+          <input
+            id="vote-card-back-label"
+            type="text"
+            class="form-control"
+            maxlength="22"
+            [(ngModel)]="backLabel"
+            (ngModelChange)="persistState()"
+          />
+        </label>
+      </div>
+    </details>
+
+    <div class="vote-card-export-actions">
+      <button
+        type="button"
+        class="btn btn-danger"
+        [disabled]="isBusy"
+        (click)="exportPdf()"
+      >
+        {{ isExportingPdf ? 'Création du PDF...' : 'Télécharger le PDF recto verso' }}
+      </button>
+      <button
+        type="button"
+        class="btn btn-light"
+        [disabled]="isBusy"
+        (click)="exportPngs()"
+      >
+        {{ isExportingPng ? 'Création des PNG...' : 'Télécharger les 2 PNG' }}
+      </button>
+    </div>
+    <p class="visual-export-note">
+      A4 portrait, 300 ppp (2480 x 3508 px). Pour le PDF : taille réelle,
+      recto verso sur le bord long.
+    </p>
+    <p
+      class="vote-card-action-message"
+      [class.error]="actionMessageType === 'error'"
+      *ngIf="actionMessage"
+      role="status"
+      aria-live="polite"
+    >
+      {{ actionMessage }}
+    </p>
+  </section>
+
+  <section class="vote-card-preview-shell" aria-label="Aperçu du carton de vote">
+    <div class="vote-card-preview-toolbar">
+      <div class="visual-segmented">
+        <button
+          type="button"
+          [class.active]="previewFaceId === 'front'"
+          (click)="selectPreview('front')"
+        >
+          Recto
+        </button>
+        <button
+          type="button"
+          [class.active]="previewFaceId === 'back'"
+          (click)="selectPreview('back')"
+        >
+          Verso
+        </button>
+      </div>
+      <span>A4</span>
+    </div>
+
+    <div class="vote-card-preview-frame">
+      <ng-container
+        *ngTemplateOutlet="voteCardFaceTemplate; context: { face: currentPreviewFace }"
+      ></ng-container>
+    </div>
+    <p>Les liens LUDI et Instagram sont présents sur chaque face.</p>
+  </section>
+
+  <ng-template #voteCardFaceTemplate let-face="face">
+    <article
+      class="vote-card-face"
+      [attr.data-vote-face]="face.id"
+      [style.--vote-color]="face.color.color"
+      [style.--vote-text]="face.color.textColor"
+    >
+      <div class="vote-card-face-background" aria-hidden="true">
+        <img *ngFor="let photo of photos" [src]="photo.src" alt="" />
+      </div>
+
+      <div class="vote-card-face-brand">
+        <div class="vote-card-ludi-mark">
+          <img src="assets/logo/logo.png" alt="LUDI Toulouse" />
+        </div>
+      </div>
+
+      <main class="vote-card-face-main">
+        <div class="vote-card-choice-copy">
+          <span>Mon vote va aux</span>
+          <h3 [class.long]="face.label.length > 10">{{ face.label }}</h3>
+        </div>
+        <div class="vote-card-vote-mark" aria-hidden="true">
+          <span></span>
+        </div>
+      </main>
+
+      <footer class="vote-card-face-footer">
+        <div class="vote-card-dates-link">
+          <span>Retrouvez toutes nos dates sur</span>
+          <strong>luditoulouse.org</strong>
+        </div>
+        <div class="vote-card-instagram-link">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <rect x="3" y="3" width="18" height="18" rx="5"></rect>
+            <circle cx="12" cy="12" r="4"></circle>
+            <circle cx="17.4" cy="6.7" r="1"></circle>
+          </svg>
+          <span>@luditoulouse</span>
+        </div>
+      </footer>
+    </article>
+  </ng-template>
+</div>

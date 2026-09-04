@@ -13,6 +13,7 @@ import { ShowsComponent } from './components/shows/shows.component';
 import { NoShowsComponent } from './components/no-shows/no-shows.component';
 import { FormatComponent } from './components/format/format.component';
 import { ToolsComponent } from './components/tools/tools.component';
+import { VoteCardComponent } from './components/tools/vote-card/vote-card.component';
 import { JoinUsComponent } from './components/join-us/join-us.component';
 import { ProgrammationAdminComponent } from './components/programmation-admin/programmation-admin.component';
 import { PlanningComponent } from './components/planning/planning.component';
@@ -33,6 +34,7 @@ import { GalaxyComponent } from './components/galaxy/galaxy.component';
     FormatComponent,
     JoinUsComponent,
     ToolsComponent,
+    VoteCardComponent,
     ProgrammationAdminComponent,
     PlanningComponent,
     PrivateToolsHomeComponent,

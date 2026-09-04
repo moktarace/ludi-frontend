@@ -12,6 +12,12 @@ export interface CanvasPhoto {
   src: string
 }
 
+export interface PdfJpegPage {
+  bytes: Uint8Array
+  width: number
+  height: number
+}
+
 @Injectable({ providedIn: 'root' })
 export class ToolsCanvasExportService {
   public async loadRenderer(): Promise<Html2Canvas> {
@@ -62,6 +68,19 @@ export class ToolsCanvasExportService {
     })
   }
 
+  public canvasToPngBlob(canvas: HTMLCanvasElement): Blob {
+    const encoded = canvas.toDataURL('image/png').split(',')[1]
+    if (!encoded) {
+      throw new Error('Export PNG impossible')
+    }
+    const binary = window.atob(encoded)
+    const bytes = new Uint8Array(binary.length)
+    for (let index = 0; index < binary.length; index += 1) {
+      bytes[index] = binary.charCodeAt(index)
+    }
+    return new Blob([bytes], { type: 'image/png' })
+  }
+
   public downloadBlob(blob: Blob, fileName: string): void {
     const url = URL.createObjectURL(blob)
     const link = document.createElement('a')
@@ -71,6 +90,100 @@ export class ToolsCanvasExportService {
     link.click()
     link.remove()
     window.setTimeout(() => URL.revokeObjectURL(url), 0)
+  }
+
+  public async canvasesToA4Pdf(canvases: HTMLCanvasElement[]): Promise<Blob> {
+    const pages: PdfJpegPage[] = []
+    for (const canvas of canvases) {
+      pages.push(await this.canvasToJpegPage(canvas))
+    }
+    return this.jpegPagesToA4Pdf(pages)
+  }
+
+  public async canvasToJpegPage(canvas: HTMLCanvasElement): Promise<PdfJpegPage> {
+    return {
+      bytes: await this.canvasToJpegBytes(canvas),
+      width: canvas.width,
+      height: canvas.height,
+    }
+  }
+
+  public jpegPagesToA4Pdf(pages: PdfJpegPage[]): Blob {
+    if (!pages.length) {
+      throw new Error('Aucune page à placer dans le PDF.')
+    }
+
+    const pageWidth = 595.28
+    const pageHeight = 841.89
+    const encoder = new TextEncoder()
+    const encode = (value: string): Uint8Array => encoder.encode(value)
+    const objects: Uint8Array[] = []
+    const pageObjectNumbers: number[] = []
+
+    objects[1] = encode('<< /Type /Catalog /Pages 2 0 R >>')
+
+    for (let index = 0; index < pages.length; index += 1) {
+      const pageObjectNumber = 3 + index * 3
+      const imageObjectNumber = pageObjectNumber + 1
+      const contentObjectNumber = pageObjectNumber + 2
+      const page = pages[index]
+      pageObjectNumbers.push(pageObjectNumber)
+
+      objects[pageObjectNumber] = encode([
+        '<< /Type /Page',
+        '/Parent 2 0 R',
+        `/MediaBox [0 0 ${pageWidth} ${pageHeight}]`,
+        `/Resources << /XObject << /Im0 ${imageObjectNumber} 0 R >> >>`,
+        `/Contents ${contentObjectNumber} 0 R`,
+        '>>',
+      ].join(' '))
+
+      objects[imageObjectNumber] = this.concatBytes([
+        encode([
+          '<< /Type /XObject /Subtype /Image',
+          `/Width ${page.width}`,
+          `/Height ${page.height}`,
+          '/ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode',
+          `/Length ${page.bytes.length} >>\nstream\n`,
+        ].join(' ')),
+        page.bytes,
+        encode('\nendstream'),
+      ])
+
+      const drawImage = encode(`q\n${pageWidth} 0 0 ${pageHeight} 0 0 cm\n/Im0 Do\nQ\n`)
+      objects[contentObjectNumber] = encode(`<< /Length ${drawImage.length} >>\nstream\n${new TextDecoder().decode(drawImage)}endstream`)
+    }
+
+    objects[2] = encode(`<< /Type /Pages /Kids [${pageObjectNumbers.map((number) => `${number} 0 R`).join(' ')}] /Count ${pageObjectNumbers.length} >>`)
+
+    const header = encode('%PDF-1.4\n%LUDI\n')
+    const body: Uint8Array[] = [header]
+    const offsets: number[] = [0]
+    let byteOffset = header.length
+
+    for (let objectNumber = 1; objectNumber < objects.length; objectNumber += 1) {
+      const objectHeader = encode(`${objectNumber} 0 obj\n`)
+      const objectFooter = encode('\nendobj\n')
+      offsets[objectNumber] = byteOffset
+      body.push(objectHeader, objects[objectNumber], objectFooter)
+      byteOffset += objectHeader.length + objects[objectNumber].length + objectFooter.length
+    }
+
+    const xrefOffset = byteOffset
+    const xrefRows = offsets
+      .slice(1)
+      .map((offset) => `${String(offset).padStart(10, '0')} 00000 n \n`)
+      .join('')
+    const trailer = encode([
+      `xref\n0 ${objects.length}\n`,
+      '0000000000 65535 f \n',
+      xrefRows,
+      `trailer\n<< /Size ${objects.length} /Root 1 0 R >>\n`,
+      `startxref\n${xrefOffset}\n%%EOF`,
+    ].join(''))
+    body.push(trailer)
+
+    return new Blob(body, { type: 'application/pdf' })
   }
 
   public async waitForImages(element: HTMLElement): Promise<void> {
@@ -166,6 +279,30 @@ export class ToolsCanvasExportService {
     canvas.height = source.height
     if (!canvas.width || !canvas.height || !canvas.getContext('2d')) throw new Error(errorMessage)
     return canvas
+  }
+
+  private async canvasToJpegBytes(canvas: HTMLCanvasElement): Promise<Uint8Array> {
+    const blob = await new Promise<Blob>((resolve, reject) => {
+      canvas.toBlob((result) => {
+        if (result) {
+          resolve(result)
+          return
+        }
+        reject(new Error('Impossible de préparer une page du PDF.'))
+      }, 'image/jpeg', 0.98)
+    })
+    return new Uint8Array(await blob.arrayBuffer())
+  }
+
+  private concatBytes(chunks: Uint8Array[]): Uint8Array {
+    const length = chunks.reduce((total, chunk) => total + chunk.length, 0)
+    const merged = new Uint8Array(length)
+    let offset = 0
+    for (const chunk of chunks) {
+      merged.set(chunk, offset)
+      offset += chunk.length
+    }
+    return merged
   }
 
   private loadImage(src: string): Promise<HTMLImageElement> {

@@ -21,6 +21,7 @@
       <option value="carousel">Un remerciement</option>
       <option value="pedagogy">Un carrousel pédagogique</option>
       <option value="reel">Un Reel / Short</option>
+      <option value="vote-card">Un carton de vote</option>
       <option value="championship">Le championnat Improvisem</option>
     </select>
   </label>
@@ -1422,6 +1423,11 @@
       </div>
     </div>
   </div>
+
+  <app-vote-card-tool
+    *ngIf="isUnlocked"
+    [class.mobile-tool-section-hidden]="mobileToolSection !== 'vote-card'"
+  ></app-vote-card-tool>
 
   <div class="container carousel-tools-inner championship-tools-inner" *ngIf="isUnlocked" [class.mobile-tool-section-hidden]="mobileToolSection !== 'championship'">
     <div class="carousel-tools-panel championship-tools-panel">

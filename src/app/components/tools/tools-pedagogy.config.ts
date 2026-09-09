@@ -100,12 +100,12 @@ export const PEDAGOGY_TEMPLATES: PedagogyTemplate[] = [
   {
     id: 'catch',
     label: "C'est quoi un Catch Impro ?",
-    caption: "Le Catch Impro, c'est une soirée intense, théâtrale et très joueuse.",
+    caption: "Créé par la compagnie Inédit Théâtre, à Strasbourg, le Catch Impro est une soirée intense, théâtrale et très joueuse.",
     slides: [
       {
         eyebrow: 'Format',
         title: "C'est quoi un Catch Impro ?",
-        text: "Des duos, des personnages, une énergie de ring, et des impros qui partent très vite.",
+        text: "Un concept créé par la compagnie Inédit Théâtre, à Strasbourg : des duos, des personnages et une énergie de ring.",
       },
       {
         eyebrow: 'Sur scène',
@@ -130,4 +130,3 @@ export const PEDAGOGY_TEMPLATES: PedagogyTemplate[] = [
     ],
   },
 ]
-

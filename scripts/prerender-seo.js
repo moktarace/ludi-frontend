@@ -22,7 +22,7 @@ function fallbackHtml() {
           <p>Les prochaines dates seront bientôt annoncées.</p>
         </section>
         <section>
-          <h2>Cours, matchs et catchs d'impro</h2>
+          <h2>Cours, matchs et Catch Impro</h2>
           <p>
             La LUDI joue à Toulouse, notamment autour de Paul Sabatier et du CAP,
             et accueille les personnes qui veulent découvrir l'improvisation
@@ -180,7 +180,7 @@ function ludi_fallback_html(array $shows): string
     return '<main><h1>Impro Toulouse - LUDI Toulouse</h1>'
         . "<p>La LUDI Toulouse est une troupe de théâtre d'improvisation à Toulouse. Depuis 1997, elle propose des spectacles d'impro, des matchs d'impro, des catchs, des cours d'essai et des rencontres avec des ligues venues de France et de l'étranger.</p>"
         . "<section><h2>Prochains spectacles d'impro à Toulouse</h2><ul>" . $items . '</ul></section>'
-        . "<section><h2>Cours, matchs et catchs d'impro</h2><p>La LUDI joue à Toulouse, notamment autour de Paul Sabatier et du CAP, et accueille les personnes qui veulent découvrir l'improvisation théâtrale en début de saison.</p></section>"
+        . "<section><h2>Cours, matchs et Catch Impro</h2><p>La LUDI joue à Toulouse, notamment autour de Paul Sabatier et du CAP, et accueille les personnes qui veulent découvrir l'improvisation théâtrale en début de saison.</p></section>"
         . '</main>';
 }
 

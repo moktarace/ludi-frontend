@@ -99,12 +99,12 @@ export const PEDAGOGY_TEMPLATES: PedagogyTemplate[] = [
   },
   {
     id: 'catch',
-    label: "C'est quoi un catch d'impro ?",
-    caption: "Le catch d'impro, c'est une soirée intense, théâtrale et très joueuse.",
+    label: "C'est quoi un Catch Impro ?",
+    caption: "Le Catch Impro, c'est une soirée intense, théâtrale et très joueuse.",
     slides: [
       {
         eyebrow: 'Format',
-        title: "C'est quoi un catch d'impro ?",
+        title: "C'est quoi un Catch Impro ?",
         text: "Des duos, des personnages, une énergie de ring, et des impros qui partent très vite.",
       },
       {

@@ -15,7 +15,7 @@ export const PRESET_LOGOS: PresetLogo[] = [
   { label: 'Improvisem', src: 'assets/logo/kit/improvisem.png' },
   { label: 'Match', src: 'assets/logo/kit/match.png' },
   { label: 'Ludidée', src: 'assets/logo/kit/ludidee.png' },
-  { label: 'Catch', src: 'assets/logo/kit/catch.png' },
+  { label: 'Catch Impro', src: 'assets/logo/kit/catch.png' },
   { label: "Cours d'essai", src: 'assets/logo/kit/essai.png' },
   { label: 'Top Ten', src: 'assets/logo/kit/cercle.png' },
 ]

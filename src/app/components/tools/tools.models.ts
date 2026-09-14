@@ -117,6 +117,10 @@ export interface PersistedChampionshipState {
 }
 
 export interface PersistedToolsDraftState {
+  visualLogoShadowEnabled?: boolean
+  playerLogoShadowEnabled?: boolean
+  carouselLogoShadowEnabled?: boolean
+  championshipLogoShadowEnabled?: boolean
   selectedFormat?: VisualFormat
   selectedMode?: VisualMode
   selectedShowId?: string

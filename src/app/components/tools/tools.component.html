@@ -213,6 +213,14 @@
           </div>
         </div>
 
+      <div class="visual-control-group" *ngIf="selectedMode === 'show' && showPoster">
+        <label>Ombre portée du logo</label>
+        <div class="visual-segmented" role="group" aria-label="Ombre portée du logo">
+          <button type="button" [class.active]="!visualLogoShadowEnabled" [attr.aria-pressed]="!visualLogoShadowEnabled" (click)="visualLogoShadowEnabled = false">Sans</button>
+          <button type="button" [class.active]="visualLogoShadowEnabled" [attr.aria-pressed]="visualLogoShadowEnabled" (click)="visualLogoShadowEnabled = true">Avec</button>
+        </div>
+      </div>
+
         <div class="visual-control-group" *ngIf="selectedMode === 'show'">
           <label for="visual-tagline">Tagline</label>
           <input
@@ -323,7 +331,7 @@
         </div>
 
         <div class="visual-poster" [ngClass]="printLogoClass" *ngIf="showPoster">
-          <img [src]="visualPoster" [alt]="selectedShow?.name || 'Spectacle LUDI'" />
+          <img [logoShadow]="visualLogoShadowEnabled" [logoShadowSrc]="visualPoster" [alt]="selectedShow?.name || 'Spectacle LUDI'" />
         </div>
 
         <div [ngClass]="visualTaglineClass" *ngIf="showVisualTagline">
@@ -407,6 +415,14 @@
           <button type="button" [class.active]="playerShowLogoSize === 'm'" (click)="playerShowLogoSize = 'm'">M</button>
           <button type="button" [class.active]="playerShowLogoSize === 'l'" (click)="playerShowLogoSize = 'l'">L</button>
           <button type="button" [class.active]="playerShowLogoSize === 'xl'" (click)="playerShowLogoSize = 'xl'">XL</button>
+        </div>
+      </div>
+
+      <div class="visual-control-group">
+        <label>Ombre portée du logo</label>
+        <div class="visual-segmented" role="group" aria-label="Ombre portée du logo">
+          <button type="button" [class.active]="!playerLogoShadowEnabled" [attr.aria-pressed]="!playerLogoShadowEnabled" (click)="playerLogoShadowEnabled = false">Sans</button>
+          <button type="button" [class.active]="playerLogoShadowEnabled" [attr.aria-pressed]="playerLogoShadowEnabled" (click)="playerLogoShadowEnabled = true">Avec</button>
         </div>
       </div>
 
@@ -523,7 +539,7 @@
 
           <aside class="player-event-reminder" *ngIf="selectedPlayerShow as show; else playerShowPlaceholder">
             <div [ngClass]="['player-show-logo', 'player-show-logo-' + playerShowLogoSize]" *ngIf="show.logoLink; else playerShowName">
-              <img [src]="show.logoLink" [alt]="show.name || 'Logo du spectacle'" />
+              <img [logoShadow]="playerLogoShadowEnabled" [logoShadowSrc]="show.logoLink" [alt]="show.name || 'Logo du spectacle'" />
             </div>
             <ng-template #playerShowName>
               <strong class="player-show-name">{{ show.name || 'Spectacle LUDI' }}</strong>
@@ -644,6 +660,14 @@
           </div>
         </div>
 
+      <div class="visual-control-group">
+        <label>Ombre portée du logo</label>
+        <div class="visual-segmented" role="group" aria-label="Ombre portée du logo">
+          <button type="button" [class.active]="!carouselLogoShadowEnabled" [attr.aria-pressed]="!carouselLogoShadowEnabled" (click)="carouselLogoShadowEnabled = false">Sans</button>
+          <button type="button" [class.active]="carouselLogoShadowEnabled" [attr.aria-pressed]="carouselLogoShadowEnabled" (click)="carouselLogoShadowEnabled = true">Avec</button>
+        </div>
+      </div>
+
         <div class="visual-control-group">
           <label for="carousel-cover-text">Texte de couverture</label>
           <input
@@ -730,7 +754,7 @@
           [style.background-image]="carouselCoverPhoto ? photoBackground(carouselCoverPhoto) : null"
         >
           <div [ngClass]="carouselLogoClass">
-            <img [src]="carouselLogo" [alt]="selectedShow?.name || 'Spectacle LUDI'" />
+            <img [logoShadow]="carouselLogoShadowEnabled" [logoShadowSrc]="carouselLogo" [alt]="selectedShow?.name || 'Spectacle LUDI'" />
           </div>
           <strong [ngClass]="carouselTextClass">{{ carouselCoverText }}</strong>
         </div>
@@ -784,7 +808,7 @@
             [style.background-image]="carouselCoverPhoto ? photoBackground(carouselCoverPhoto) : null"
           >
             <div [ngClass]="carouselLogoClass">
-              <img [src]="carouselLogo" [alt]="selectedShow?.name || 'Spectacle LUDI'" />
+              <img [logoShadow]="carouselLogoShadowEnabled" [logoShadowSrc]="carouselLogo" [alt]="selectedShow?.name || 'Spectacle LUDI'" />
             </div>
             <strong [ngClass]="carouselTextClass">{{ carouselCoverText }}</strong>
           </div>
@@ -1438,6 +1462,14 @@
       </p>
 
       <div class="visual-control-group">
+        <label>Ombre portée du logo</label>
+        <div class="visual-segmented" role="group" aria-label="Ombre portée du logo">
+          <button type="button" [class.active]="!championshipLogoShadowEnabled" [attr.aria-pressed]="!championshipLogoShadowEnabled" (click)="championshipLogoShadowEnabled = false">Sans</button>
+          <button type="button" [class.active]="championshipLogoShadowEnabled" [attr.aria-pressed]="championshipLogoShadowEnabled" (click)="championshipLogoShadowEnabled = true">Avec</button>
+        </div>
+      </div>
+
+      <div class="visual-control-group">
         <label for="championship-title">Nom du championnat</label>
         <input
           id="championship-title"
@@ -1635,7 +1667,7 @@
         <div class="championship-slash championship-slash-one"></div>
         <div class="championship-slash championship-slash-two"></div>
         <header class="championship-slide-header">
-          <img src="assets/logo/kit/improvisem.png" alt="Improvisem" />
+          <img [logoShadow]="championshipLogoShadowEnabled" logoShadowSrc="assets/logo/kit/improvisem.png" alt="Improvisem" />
           <div>
             <span>{{ selectedChampionshipMatch.label }}</span>
             <strong>{{ selectedMatchTeamA.label }} vs {{ selectedMatchTeamB.label }}</strong>
@@ -1771,7 +1803,7 @@
       <div class="instagram-post-preview">
         <div class="instagram-post-header">
           <div class="instagram-avatar">
-            <img src="assets/logo/kit/improvisem.png" alt="Improvisem" />
+            <img [logoShadow]="championshipLogoShadowEnabled" logoShadowSrc="assets/logo/kit/improvisem.png" alt="Improvisem" />
           </div>
           <div>
             <strong>luditoulouse</strong>

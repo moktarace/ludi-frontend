@@ -1,3 +1,4 @@
+import { LogoShadowDirective } from './components/tools/logo-shadow.directive'
 import { NgModule } from '@angular/core'
 import { FormsModule } from '@angular/forms'
 import { BrowserModule } from '@angular/platform-browser'
@@ -23,6 +24,7 @@ import { GalaxyComponent } from './components/galaxy/galaxy.component';
 
 @NgModule({
   declarations: [
+    LogoShadowDirective,
     AppComponent,
     HeaderComponent,
     FooterComponent,

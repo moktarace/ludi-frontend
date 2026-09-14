@@ -136,6 +136,10 @@ export class ToolsComponent implements OnDestroy {
   public customQrLink = ''
   public showQrCode = false
   public isPosterHidden = false
+  public visualLogoShadowEnabled = false
+  public playerLogoShadowEnabled = false
+  public carouselLogoShadowEnabled = false
+  public championshipLogoShadowEnabled = false
   public printLogoPlacement: CarouselPlacement = 'center'
   public printLogoSize: CarouselLogoSize = 'm'
   public visualTagline = ''
@@ -1355,6 +1359,10 @@ export class ToolsComponent implements OnDestroy {
 
   private persistDraftState(): void {
     const state: PersistedToolsDraftState = {
+      visualLogoShadowEnabled: this.visualLogoShadowEnabled,
+      playerLogoShadowEnabled: this.playerLogoShadowEnabled,
+      carouselLogoShadowEnabled: this.carouselLogoShadowEnabled,
+      championshipLogoShadowEnabled: this.championshipLogoShadowEnabled,
       selectedFormat: this.selectedFormat,
       selectedMode: this.selectedMode,
       selectedShowId: this.selectedShowId,
@@ -1404,6 +1412,10 @@ export class ToolsComponent implements OnDestroy {
         'top-left', 'top-right', 'center-left', 'center-right', 'bottom-left', 'bottom-right',
       ]
 
+      if (typeof state.visualLogoShadowEnabled === 'boolean') this.visualLogoShadowEnabled = state.visualLogoShadowEnabled
+      if (typeof state.playerLogoShadowEnabled === 'boolean') this.playerLogoShadowEnabled = state.playerLogoShadowEnabled
+      if (typeof state.carouselLogoShadowEnabled === 'boolean') this.carouselLogoShadowEnabled = state.carouselLogoShadowEnabled
+      if (typeof state.championshipLogoShadowEnabled === 'boolean') this.championshipLogoShadowEnabled = state.championshipLogoShadowEnabled
       if (state.selectedFormat && formats.includes(state.selectedFormat)) this.selectedFormat = state.selectedFormat
       if (state.selectedMode && modes.includes(state.selectedMode)) this.selectedMode = state.selectedMode
       if (typeof state.selectedShowId === 'string') this.selectedShowId = state.selectedShowId

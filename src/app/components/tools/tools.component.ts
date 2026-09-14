@@ -350,7 +350,7 @@ export class ToolsComponent implements OnDestroy {
 
   public get visualClass(): string {
     const customClass = this.hasCustomOptions && (this.customBackground || this.hasVideoBackground) ? ' visual-has-custom-background' : ''
-    return `visual-preview visual-preview-${this.selectedFormat} visual-mode-${this.selectedMode}${customClass}${this.hasVideoBackground ? ' visual-has-video-background' : ''}`
+    return `visual-preview visual-preview-${this.selectedFormat} visual-mode-${this.selectedMode}${customClass}${this.hasVideoBackground ? ' visual-has-video-background' : ''}${this.hasVideoBackground && this.showVisualTagline ? ' visual-has-video-tagline' : ''}`
   }
 
   public get availableModes(): { label: string; value: VisualMode }[] {
@@ -410,6 +410,7 @@ export class ToolsComponent implements OnDestroy {
   }
 
   public get visualTaglineClass(): string {
+    if (this.hasVideoBackground) return 'visual-tagline visual-tagline-video'
     const logoPlacement = this.usesPrintShowLayout ? this.printLogoPlacement : 'center'
     return `visual-tagline visual-tagline-${this.visualTaglinePlacement} visual-tagline-logo-${logoPlacement}`
   }
@@ -941,7 +942,7 @@ export class ToolsComponent implements OnDestroy {
     const file = input.files?.[0]
     if (!file) return
     if (!file.size) { this.showActionMessage('Ce fichier est vide.', 'error'); input.value = ''; return }
-    if (file.type === 'video/mp4' || /\.mp4$/i.test(file.name)) {
+    if (['video/mp4', 'video/quicktime', 'video/x-quicktime'].includes(file.type) || /\.(mp4|mov)$/i.test(file.name)) {
       this.resetBackground()
       this.customBackgroundVideoFile = file
       this.setBackgroundVideo(file)
@@ -951,7 +952,7 @@ export class ToolsComponent implements OnDestroy {
       return
     }
     if (!file.type.startsWith('image/')) {
-      this.showActionMessage('Choisis une image ou une vidéo MP4.', 'error')
+      this.showActionMessage('Choisis une image ou une vidéo MP4 ou MOV.', 'error')
       input.value = ''
       return
     }
@@ -982,13 +983,13 @@ export class ToolsComponent implements OnDestroy {
 
   public onBackgroundVideoError(): void {
     this.visualVideoReady = false
-    this.visualVideoError = 'Impossible de lire cette vidéo. Essaie un MP4 encodé en H.264.'
+    this.visualVideoError = 'Impossible de lire cette vidéo dans ce navigateur. Son codec peut ne pas être pris en charge. Essaie une version MP4 encodée en H.264.'
   }
 
   public async playBackgroundPreview(): Promise<void> {
     const video = this.visualCanvas?.nativeElement.querySelector('video')
     if (!video) return
-    try { await video.play() } catch { this.visualVideoError = 'Lecture impossible. Essaie un autre fichier MP4.' }
+    try { await video.play() } catch { this.visualVideoError = 'Lecture impossible. Essaie un autre fichier MP4 ou MOV.' }
   }
 
   public cancelVisualVideoExport(): void {

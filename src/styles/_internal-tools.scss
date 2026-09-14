@@ -4819,3 +4819,45 @@ app-vote-card-tool {
   margin-block: 0.8rem;
   overflow-wrap: anywhere;
 }
+
+// Keep the announcement's video caption readable without the tilted print treatment.
+.visual-preview-post.visual-mode-show.visual-has-video-background .visual-tagline-video {
+  top: 55%;
+  left: 50%;
+  right: auto;
+  width: 84%;
+  max-width: none;
+  margin: 0;
+  font-family: Arial, Helvetica, sans-serif;
+  font-weight: 600;
+  font-size: min(1.8rem, calc((100vw - 2rem) * 0.068));
+  line-height: 1.3;
+  letter-spacing: -0.015em;
+  text-wrap: balance;
+  text-align: center;
+  text-transform: none;
+  overflow-wrap: anywhere;
+  -webkit-text-stroke: 0;
+  text-shadow: 0 2px 5px rgb(0 0 0 / 85%), 0 0 18px rgb(0 0 0 / 65%);
+  transform: translate(-50%, -50%);
+}
+
+.visual-preview-post.visual-mode-show.visual-has-video-tagline .visual-poster {
+  margin-block: 0;
+
+  img {
+    max-height: min(160px, calc((100vw - 2rem) * 0.38));
+  }
+}
+
+.visual-preview-post.visual-mode-show.visual-has-video-tagline .visual-print-logo-top {
+  top: 23%;
+}
+
+.visual-preview-post.visual-mode-show.visual-has-video-tagline .visual-print-logo-center {
+  top: 29%;
+}
+
+.visual-preview-post.visual-mode-show.visual-has-video-tagline .visual-print-logo-bottom {
+  top: 35%;
+}

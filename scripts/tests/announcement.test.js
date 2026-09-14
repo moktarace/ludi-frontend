@@ -10,12 +10,12 @@ const exportsObject = {}
 const revoked = []
 const angular = new Proxy({}, { get: () => () => () => undefined })
 vm.runInNewContext(compiled, {
-  exports: exportsObject, Intl, Date, File, window: { setTimeout, clearTimeout }, URL: { revokeObjectURL: url => revoked.push(url) },
+  exports: exportsObject, Intl, Date, File, window: { setTimeout, clearTimeout }, URL: { createObjectURL: () => 'blob:imported', revokeObjectURL: url => revoked.push(url) },
   require: name => name === '@angular/core' ? angular : {},
 })
 function component() {
   return Object.assign(Object.create(exportsObject.ToolsComponent.prototype), {
-    selectedFormat: 'post', selectedMode: 'show', customBackgroundVideo: 'blob:test',
+    visualTagline: '', selectedFormat: 'post', selectedMode: 'show', customBackgroundVideo: 'blob:test',
     customBackgroundVideoPreview: {}, visualVideoReady: true, visualVideoError: '',
     backgroundRevision: 0, visualTones: [{ value: 'red', customBackgroundRgb: '223 47 66' }],
     selectedToneValue: 'red', scheduleDraftSave() {},
@@ -93,4 +93,48 @@ test('cancellation while a logo is loading releases the export preparation', asy
   const task = c.waitForVisualVideoImages({}, controller.signal)
   controller.abort()
   await assert.rejects(task, /annulé/)
+})
+
+
+for (const [name, type] of [
+  ['IMG_1234.MOV', 'video/quicktime'],
+  ['iphone.mov', ''],
+  ['iphone.MoV', 'application/octet-stream'],
+  ['upload', 'video/quicktime'],
+  ['upload', 'video/x-quicktime'],
+  ['clip.MP4', 'video/mp4'],
+]) {
+  test(`imports ${name} (${type || 'no MIME'}) and waits for decoding`, () => {
+    const c = component()
+    c.formats = [{value:'post'}, {value:'poster'}]
+    c.selectedFormat = 'poster'
+    c.sanitizer = { bypassSecurityTrustUrl: url => url }
+    const file = new File(['fixture'], name, { type })
+    const input = { files: [file], value: 'selected' }
+    c.updateBackground({ target: input })
+    assert.equal(c.customBackgroundVideoFile, file)
+    assert.equal(c.selectedFormat, 'post')
+    assert.equal(c.customBackgroundVideoPreview, 'blob:imported')
+    assert.equal(c.visualVideoReady, false, 'filename/MIME acceptance does not imply decodability')
+    assert.equal(c.hasVideoBackground, true)
+    assert.equal(input.value, '')
+    c.onBackgroundVideoReady({target:{getAttribute:()=>c.customBackgroundVideo,duration:2,videoWidth:1920}})
+    assert.equal(c.visualVideoReady, true)
+  })
+}
+
+test('an undecodable MOV keeps export disabled and explains the codec issue', () => {
+  const c = component()
+  c.onBackgroundVideoError()
+  assert.equal(c.visualVideoReady, false)
+  assert.match(c.visualVideoError, /codec/)
+})
+
+test('unrelated file types do not replace the current background', () => {
+  const c = component()
+  let message = ''
+  c.showActionMessage = text => { message = text }
+  c.updateBackground({target:{files:[new File(['text'], 'file.txt', {type:'text/plain'})],value:'selected'}})
+  assert.equal(c.customBackgroundVideo, 'blob:test')
+  assert.match(message, /MP4 ou MOV/)
 })

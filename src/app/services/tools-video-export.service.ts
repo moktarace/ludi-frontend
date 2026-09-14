@@ -38,11 +38,11 @@ export class ToolsVideoExportService {
           error ? reject(error) : resolve()
         }
         const abort = (): void => finish(cancelled())
-        const timeout = window.setTimeout(() => finish(new Error('Chargement de la vidéo trop long. Réessaie avec un autre MP4.')), 30000)
+        const timeout = window.setTimeout(() => finish(new Error('Chargement de la vidéo trop long. Réessaie avec un autre fichier vidéo.')), 30000)
         options.signal?.addEventListener('abort', abort, { once: true })
         if (options.signal?.aborted) { abort(); return }
         video.onloadeddata = () => finish()
-        video.onerror = () => finish(new Error('Impossible de lire ce MP4. Vérifie son encodage vidéo.'))
+        video.onerror = () => finish(new Error('Impossible de lire cette vidéo dans ce navigateur. Vérifie son encodage.'))
         video.src = source
         video.load()
       })
@@ -113,7 +113,7 @@ export class ToolsVideoExportService {
           finish()
         }
         activeRecorder.onerror = () => stop(new Error('L’enregistrement MP4 a échoué.'))
-        video.onerror = () => stop(new Error('La lecture du MP4 a échoué.'))
+        video.onerror = () => stop(new Error('La lecture de la vidéo source a échoué.'))
         video.onended = () => stop()
         let lastProgress = -1
         const render = (): void => {

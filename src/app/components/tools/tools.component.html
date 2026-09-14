@@ -233,6 +233,7 @@
           />
           <select
             class="form-select"
+            *ngIf="!hasVideoBackground"
             [(ngModel)]="visualTaglinePlacement"
             aria-label="Position de la tagline"
           >
@@ -243,6 +244,7 @@
             <option value="bottom-left">Bas gauche</option>
             <option value="bottom-right">Bas droit</option>
           </select>
+          <p class="visual-export-note" *ngIf="hasVideoBackground">En vidéo, l’accroche est agrandie et centrée entre le logo et la date.</p>
         </div>
 
         <div class="visual-control-group">
@@ -250,11 +252,11 @@
           <input
             id="visual-background-upload"
             type="file"
-            accept="image/*,video/mp4,.mp4"
+            accept="image/*,video/mp4,video/quicktime,video/x-quicktime,.mp4,.mov"
             class="form-control"
             (change)="updateBackground($event)"
           />
-          <p class="visual-export-note">Image ou MP4. Avec un MP4, l’annonce passe en 9:16 et s’exporte en vidéo sans son.</p>
+          <p class="visual-export-note">Image, MP4 ou MOV (iPhone). Avec une vidéo, l’annonce passe en 9:16 et s’exporte en MP4 sans son.</p>
           <label class="visual-check-row">
             <input
               type="checkbox"

@@ -149,6 +149,7 @@ export interface PersistedToolsDraftState {
 
 export interface PersistedToolsMediaState {
   customPoster?: string
+  customBackgroundVideoFile?: File
   customBackground?: string
   playerPhoto?: string
   customCarouselLogo?: string

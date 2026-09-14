@@ -1,7 +1,9 @@
 import { Component, ElementRef, HostListener, Input, OnDestroy, QueryList, ViewChild, ViewChildren } from '@angular/core'
+import { DomSanitizer, SafeUrl } from '@angular/platform-browser'
 import { isPrivateAccessUnlocked, PRIVATE_ACCESS_CODE, unlockPrivateAccess } from 'src/app/config/private-access'
 import { Show } from 'src/app/model'
-import { Html2Canvas, ToolsCanvasExportService } from 'src/app/services/tools-canvas-export.service'
+import { Html2Canvas, StagedExportElement, ToolsCanvasExportService } from 'src/app/services/tools-canvas-export.service'
+import { ToolsVideoExportService } from 'src/app/services/tools-video-export.service'
 import { ToolsDraftService } from 'src/app/services/tools-draft.service'
 import {
   createInitialChampionshipMatches,
@@ -131,6 +133,19 @@ export class ToolsComponent implements OnDestroy {
   public selectedShowId: string = ''
   public selectedToneValue = this.visualTones[0].value
   public customPoster?: string
+  public visualVideoError = ''
+  public visualVideoReady = false
+  public visualVideoProgress = 0
+  public preparedVisualVideo?: File
+  public preparedVisualVideoUrl?: SafeUrl
+  private preparedVisualVideoObjectUrl?: string
+  private visualVideoAbort?: AbortController
+  private mediaSaveWarningShown = false
+  private backgroundRevision = 0
+  private destroyed = false
+  public customBackgroundVideoPreview?: SafeUrl
+  public customBackgroundVideo?: string
+  private customBackgroundVideoFile?: File
   public customBackground?: string
   public customBackgroundTintEnabled = true
   public customQrLink = ''
@@ -193,6 +208,8 @@ export class ToolsComponent implements OnDestroy {
   constructor(
     private readonly canvasExport: ToolsCanvasExportService,
     private readonly drafts: ToolsDraftService,
+    private readonly videoExport: ToolsVideoExportService,
+    private readonly sanitizer: DomSanitizer,
   ) {
     this.restoreDraftState()
     this.restoreChampionshipState()
@@ -201,9 +218,13 @@ export class ToolsComponent implements OnDestroy {
   }
 
   public ngOnDestroy(): void {
+    this.destroyed = true
+    this.visualVideoAbort?.abort()
+    this.clearPreparedVisualVideo()
     window.clearTimeout(this.draftSaveTimer)
     window.clearTimeout(this.actionMessageTimer)
     this.persistDraftState()
+    if (this.customBackgroundVideo) URL.revokeObjectURL(this.customBackgroundVideo)
     for (const media of this.socialReelMedia) {
       if (media.objectUrl) {
         URL.revokeObjectURL(media.objectUrl)
@@ -323,9 +344,13 @@ export class ToolsComponent implements OnDestroy {
     return show?.logoLink || 'assets/logo/logo.png'
   }
 
+  public get hasVideoBackground(): boolean {
+    return this.isPostFormat && Boolean(this.customBackgroundVideo)
+  }
+
   public get visualClass(): string {
-    const customClass = this.hasCustomOptions && this.customBackground ? ' visual-has-custom-background' : ''
-    return `visual-preview visual-preview-${this.selectedFormat} visual-mode-${this.selectedMode}${customClass}`
+    const customClass = this.hasCustomOptions && (this.customBackground || this.hasVideoBackground) ? ' visual-has-custom-background' : ''
+    return `visual-preview visual-preview-${this.selectedFormat} visual-mode-${this.selectedMode}${customClass}${this.hasVideoBackground ? ' visual-has-video-background' : ''}`
   }
 
   public get availableModes(): { label: string; value: VisualMode }[] {
@@ -398,6 +423,11 @@ export class ToolsComponent implements OnDestroy {
   }
 
   public get visualBackgroundImage(): string | null {
+    if (this.hasVideoBackground) {
+      return this.customBackgroundTintEnabled
+        ? `linear-gradient(145deg, rgb(23 18 31 / 72%) 0%, rgb(33 21 40 / 72%) 48%, rgb(${this.selectedTone.customBackgroundRgb} / 58%) 100%)`
+        : 'none'
+    }
     if (!this.hasCustomOptions || !this.customBackground) {
       return null
     }
@@ -446,9 +476,10 @@ export class ToolsComponent implements OnDestroy {
 
   public get exportLabel(): string {
     if (this.isExporting) {
-      return this.isReelFormat ? 'Export vidéo...' : 'Export en cours...'
+      return this.hasVideoBackground ? `Export vidéo… ${this.visualVideoProgress} %` : this.isReelFormat ? 'Export vidéo...' : 'Export en cours...'
     }
 
+    if (this.hasVideoBackground) return 'Préparer le MP4'
     return this.isReelFormat ? 'Télécharger le Reel' : 'Télécharger le PNG'
   }
 
@@ -906,9 +937,87 @@ export class ToolsComponent implements OnDestroy {
   }
 
   public updateBackground(event: Event): void {
+    const input = event.target as HTMLInputElement
+    const file = input.files?.[0]
+    if (!file) return
+    if (!file.size) { this.showActionMessage('Ce fichier est vide.', 'error'); input.value = ''; return }
+    if (file.type === 'video/mp4' || /\.mp4$/i.test(file.name)) {
+      this.resetBackground()
+      this.customBackgroundVideoFile = file
+      this.setBackgroundVideo(file)
+      this.selectFormat('post')
+      input.value = ''
+      this.scheduleDraftSave()
+      return
+    }
+    if (!file.type.startsWith('image/')) {
+      this.showActionMessage('Choisis une image ou une vidéo MP4.', 'error')
+      input.value = ''
+      return
+    }
+    const revision = ++this.backgroundRevision
     this.readImage(event, (image) => {
+      if (revision !== this.backgroundRevision || this.destroyed) return
+      this.resetBackground()
       this.customBackground = image
     })
+  }
+
+  private setBackgroundVideo(file: File): void {
+    this.visualVideoReady = false
+    this.visualVideoError = ''
+    const url = URL.createObjectURL(file)
+    this.customBackgroundVideo = url
+    // Angular 13 rejects blob URLs in video bindings. Trust only URLs we create
+    // from the imported File, never an arbitrary URL from user input or a draft.
+    this.customBackgroundVideoPreview = this.sanitizer.bypassSecurityTrustUrl(url)
+  }
+
+  public onBackgroundVideoReady(event: Event): void {
+    const video = event.target as HTMLVideoElement
+    if (video.getAttribute('src') !== this.customBackgroundVideo) return
+    this.visualVideoReady = Number.isFinite(video.duration) && video.duration > 0 && video.videoWidth > 0
+    this.visualVideoError = this.visualVideoReady ? '' : 'Cette vidéo ne contient pas d’image ou de durée valide.'
+  }
+
+  public onBackgroundVideoError(): void {
+    this.visualVideoReady = false
+    this.visualVideoError = 'Impossible de lire cette vidéo. Essaie un MP4 encodé en H.264.'
+  }
+
+  public async playBackgroundPreview(): Promise<void> {
+    const video = this.visualCanvas?.nativeElement.querySelector('video')
+    if (!video) return
+    try { await video.play() } catch { this.visualVideoError = 'Lecture impossible. Essaie un autre fichier MP4.' }
+  }
+
+  public cancelVisualVideoExport(): void {
+    this.visualVideoAbort?.abort()
+  }
+
+  private clearPreparedVisualVideo(): void {
+    if (this.preparedVisualVideoObjectUrl) URL.revokeObjectURL(this.preparedVisualVideoObjectUrl)
+    this.preparedVisualVideo = undefined
+    this.preparedVisualVideoUrl = undefined
+    this.preparedVisualVideoObjectUrl = undefined
+  }
+
+  private prepareVisualVideo(file: File): void {
+    this.clearPreparedVisualVideo()
+    this.preparedVisualVideo = file
+    this.preparedVisualVideoObjectUrl = URL.createObjectURL(file)
+    this.preparedVisualVideoUrl = this.sanitizer.bypassSecurityTrustUrl(this.preparedVisualVideoObjectUrl)
+  }
+
+  public async sharePreparedVisualVideo(): Promise<void> {
+    if (!this.preparedVisualVideo || this.isSharing) return
+    this.isSharing = true
+    try {
+      // Called directly from a tap: mobile Web Share requires fresh user activation.
+      await this.shareFiles([this.preparedVisualVideo], 'Annonce LUDI')
+    } catch (error) {
+      this.showActionMessage(this.errorMessage(error, 'Partage annulé ou impossible. Tu peux télécharger la vidéo.'), 'error')
+    } finally { this.isSharing = false }
   }
 
   public updatePlayerPhoto(event: Event): void {
@@ -933,7 +1042,16 @@ export class ToolsComponent implements OnDestroy {
   }
 
   public resetBackground(): void {
+    this.backgroundRevision += 1
+    this.clearPreparedVisualVideo()
+    this.visualVideoReady = false
+    this.visualVideoError = ''
     this.customBackground = undefined
+    if (this.customBackgroundVideo) URL.revokeObjectURL(this.customBackgroundVideo)
+    this.customBackgroundVideo = undefined
+    this.customBackgroundVideoPreview = undefined
+    this.customBackgroundVideoFile = undefined
+    this.scheduleDraftSave()
   }
 
   public resetQrLink(): void {
@@ -1416,7 +1534,7 @@ export class ToolsComponent implements OnDestroy {
       if (typeof state.playerLogoShadowEnabled === 'boolean') this.playerLogoShadowEnabled = state.playerLogoShadowEnabled
       if (typeof state.carouselLogoShadowEnabled === 'boolean') this.carouselLogoShadowEnabled = state.carouselLogoShadowEnabled
       if (typeof state.championshipLogoShadowEnabled === 'boolean') this.championshipLogoShadowEnabled = state.championshipLogoShadowEnabled
-      if (state.selectedFormat && formats.includes(state.selectedFormat)) this.selectedFormat = state.selectedFormat
+      if (state.selectedFormat && formats.includes(state.selectedFormat)) this.selectedFormat = state.selectedFormat === 'reel' ? 'post' : state.selectedFormat
       if (state.selectedMode && modes.includes(state.selectedMode)) this.selectedMode = state.selectedMode
       if (typeof state.selectedShowId === 'string') this.selectedShowId = state.selectedShowId
       if (state.selectedToneValue && this.visualTones.some((tone) => tone.value === state.selectedToneValue)) this.selectedToneValue = state.selectedToneValue
@@ -1457,6 +1575,7 @@ export class ToolsComponent implements OnDestroy {
     const state: PersistedToolsMediaState = {
       customPoster: this.customPoster,
       customBackground: this.customBackground,
+      customBackgroundVideoFile: this.customBackgroundVideoFile,
       playerPhoto: this.playerPhoto,
       customCarouselLogo: this.customCarouselLogo,
       carouselPhotos: this.carouselPhotos,
@@ -1464,7 +1583,12 @@ export class ToolsComponent implements OnDestroy {
       socialReelFiles: this.socialReelMedia.map((media) => media.file),
     }
 
-    await this.drafts.writeMedia(state)
+    const saved = await this.drafts.writeMedia(state)
+    if (!saved && this.customBackgroundVideoFile && !this.mediaSaveWarningShown) {
+      this.mediaSaveWarningShown = true
+      this.showActionMessage('Le navigateur ne peut pas sauvegarder ce brouillon vidéo. Exporte-le avant de fermer la page.', 'error')
+    }
+    if (saved) this.mediaSaveWarningShown = false
   }
 
   private async restoreDraftMediaState(): Promise<void> {
@@ -1475,7 +1599,12 @@ export class ToolsComponent implements OnDestroy {
       }
 
       if (typeof state.customPoster === 'string') this.customPoster = state.customPoster
-      if (typeof state.customBackground === 'string') this.customBackground = state.customBackground
+      if (this.destroyed) return
+      if (!this.backgroundRevision && typeof state.customBackground === 'string') this.customBackground = state.customBackground
+      if (!this.backgroundRevision && state.customBackgroundVideoFile instanceof File) {
+        this.customBackgroundVideoFile = state.customBackgroundVideoFile
+        this.setBackgroundVideo(state.customBackgroundVideoFile)
+      }
       if (typeof state.playerPhoto === 'string') this.playerPhoto = state.playerPhoto
       if (typeof state.customCarouselLogo === 'string') this.customCarouselLogo = state.customCarouselLogo
       if (Array.isArray(state.carouselPhotos)) {
@@ -1494,10 +1623,12 @@ export class ToolsComponent implements OnDestroy {
       // Ignore unavailable or corrupted media drafts.
     } finally {
       this.mediaDraftRestored = true
+      if (this.backgroundRevision && !this.destroyed) this.scheduleDraftSave()
     }
   }
 
   private showActionMessage(message: string, type: 'success' | 'error' = 'success'): void {
+    if (this.destroyed) return
     window.clearTimeout(this.actionMessageTimer)
     this.actionMessage = message
     this.actionMessageType = type
@@ -1616,7 +1747,7 @@ export class ToolsComponent implements OnDestroy {
   }
 
   public async exportVisual(): Promise<void> {
-    if (!this.visualCanvas || this.isExporting) {
+    if (!this.visualCanvas || this.isExporting || this.isSharing) {
       return
     }
 
@@ -1624,8 +1755,14 @@ export class ToolsComponent implements OnDestroy {
 
     try {
       const file = await this.createVisualFile()
-      this.canvasExport.downloadBlob(file, file.name)
-      this.showActionMessage(`Visuel téléchargé : ${file.name}`)
+      if (this.destroyed) return
+      if (file.type === 'video/mp4') {
+        this.prepareVisualVideo(file)
+        this.showActionMessage('Vidéo prête. Télécharge-la ou partage-la avec les boutons ci-dessous.')
+      } else {
+        this.canvasExport.downloadBlob(file, file.name)
+        this.showActionMessage(`Visuel téléchargé : ${file.name}`)
+      }
     } catch (error) {
       this.showActionMessage(this.errorMessage(error, 'Téléchargement du visuel impossible.'), 'error')
     } finally {
@@ -1689,7 +1826,7 @@ export class ToolsComponent implements OnDestroy {
   }
 
   public async shareVisual(): Promise<void> {
-    if (this.isSharing || !this.visualCanvas) {
+    if (this.isSharing || this.isExporting || !this.visualCanvas) {
       return
     }
 
@@ -1697,6 +1834,12 @@ export class ToolsComponent implements OnDestroy {
 
     try {
       const file = await this.createVisualFile()
+      if (this.destroyed) return
+      if (file.type === 'video/mp4') {
+        this.prepareVisualVideo(file)
+        this.showActionMessage('Vidéo prête. Appuie sur « Partager la vidéo » pour ouvrir le partage de ton téléphone.')
+        return
+      }
       await this.shareFiles([file], 'Visuel LUDI')
       this.showActionMessage('Visuel prêt à être partagé.')
     } catch (error) {
@@ -1842,13 +1985,62 @@ export class ToolsComponent implements OnDestroy {
     }
   }
 
+  private waitForVisualVideoImages(element: HTMLElement, signal: AbortSignal): Promise<void> {
+    return new Promise((resolve, reject) => {
+      const finish = (error?: Error): void => {
+        window.clearTimeout(timeout)
+        signal.removeEventListener('abort', abort)
+        error ? reject(error) : resolve()
+      }
+      const abort = (): void => finish(new Error('Export vidéo annulé.'))
+      const timeout = window.setTimeout(() => finish(new Error('Un logo ou le QR code ne se charge pas. Vérifie ta connexion puis réessaie.')), 30000)
+      signal.addEventListener('abort', abort, { once: true })
+      if (signal.aborted) { abort(); return }
+      this.canvasExport.waitForImages(element).then(() => finish(), error => finish(error))
+    })
+  }
+
   private async createVisualFile(): Promise<File> {
     if (!this.visualCanvas) {
       throw new Error('Aucun visuel à exporter')
     }
 
-    const html2canvas = await this.canvasExport.loadRenderer()
+    if (this.hasVideoBackground && this.customBackgroundVideoFile) {
+      if (!this.visualVideoReady) throw new Error(this.visualVideoError || 'Attends le chargement de la vidéo avant de lancer l’export.')
+      if (!this.videoExport.supportedMimeType()) throw new Error('Ce navigateur ne permet pas l’export MP4. Utilise une version récente de Chrome ou Safari.')
+      this.clearPreparedVisualVideo()
+      this.visualVideoProgress = 0
+      const abort = new AbortController()
+      this.visualVideoAbort = abort
+      // Own a separate URL so replacing the preview cannot revoke an active export.
+      const source = URL.createObjectURL(this.customBackgroundVideoFile)
+      const fileName = `${this.fileNameBase(this.visualExportKind)}-${this.selectedFormat}.mp4`
+      const { width, height } = this.visualCanvas.nativeElement.getBoundingClientRect()
+      let staged: StagedExportElement | undefined
+      try {
+        if (!width || !height) throw new Error('Affiche l’aperçu avant de lancer l’export.')
+        staged = this.canvasExport.stageElement(this.visualCanvas.nativeElement, width, height)
+        const stagedVideo = staged.element.querySelector('video')
+        if (stagedVideo) { stagedVideo.pause(); stagedVideo.removeAttribute('src'); stagedVideo.load(); stagedVideo.remove() }
+        staged.element.style.background = 'transparent'
+        const html2canvas = await this.canvasExport.loadRenderer()
+        await this.waitForVisualVideoImages(staged.element, abort.signal)
+        if (abort.signal.aborted) throw new Error('Export vidéo annulé.')
+        const overlay = await html2canvas(staged.element, {
+          backgroundColor: null, scale: 1080 / width, useCORS: true, width, height,
+        })
+        const blob = await this.videoExport.createSilentMp4(source, overlay, {
+          signal: abort.signal, onProgress: (percent) => { this.visualVideoProgress = percent },
+        })
+        return new File([blob], fileName, { type: 'video/mp4' })
+      } finally {
+        staged?.dispose()
+        URL.revokeObjectURL(source)
+        this.visualVideoAbort = undefined
+      }
+    }
 
+    const html2canvas = await this.canvasExport.loadRenderer()
     if (this.isReelFormat) {
       return new File([await this.createReelBlob(html2canvas)], this.exportFileName, {
         type: 'video/webm',

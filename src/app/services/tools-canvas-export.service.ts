@@ -89,7 +89,8 @@ export class ToolsCanvasExportService {
     document.body.appendChild(link)
     link.click()
     link.remove()
-    window.setTimeout(() => URL.revokeObjectURL(url), 0)
+    // Give Safari time to consume the download before releasing its backing Blob.
+    window.setTimeout(() => URL.revokeObjectURL(url), 60000)
   }
 
   public async canvasesToA4Pdf(canvases: HTMLCanvasElement[]): Promise<Blob> {

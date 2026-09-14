@@ -8,7 +8,8 @@
     "build": "ng build && node scripts/prerender-seo.js",
     "watch": "ng build --watch --configuration development",
     "deploy:ftp": "node scripts/deploy-ftp.js",
-    "build:ftp": "npm run build && npm run deploy:ftp"
+    "build:ftp": "npm run build && npm run deploy:ftp",
+    "test:video": "node --test scripts/tests/*.test.js"
   },
   "private": true,
   "dependencies": {

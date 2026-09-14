@@ -250,10 +250,11 @@
           <input
             id="visual-background-upload"
             type="file"
-            accept="image/*"
+            accept="image/*,video/mp4,.mp4"
             class="form-control"
             (change)="updateBackground($event)"
           />
+          <p class="visual-export-note">Image ou MP4. Avec un MP4, l’annonce passe en 9:16 et s’exporte en vidéo sans son.</p>
           <label class="visual-check-row">
             <input
               type="checkbox"
@@ -261,6 +262,10 @@
             />
             <span>Appliquer la teinte sur le fond</span>
           </label>
+          <p *ngIf="visualVideoError" class="visual-export-note" role="alert">{{ visualVideoError }}</p>
+          <div class="visual-inline-actions" *ngIf="hasVideoBackground">
+            <button type="button" (click)="playBackgroundPreview()">Lire l’aperçu vidéo</button>
+          </div>
           <div class="visual-inline-actions">
             <button type="button" (click)="resetBackground()">Retirer le fond</button>
           </div>
@@ -291,7 +296,7 @@
       <button
         type="button"
         class="btn btn-danger visual-export-button"
-        [disabled]="isExporting"
+        [disabled]="isExporting || isSharing || (hasVideoBackground && !visualVideoReady)"
         (click)="exportVisual()"
       >
         {{ exportLabel }}
@@ -299,13 +304,24 @@
       <button
         type="button"
         class="btn btn-light visual-share-button"
-        [disabled]="isSharing"
+        [disabled]="isSharing || isExporting || (hasVideoBackground && !visualVideoReady)"
         (click)="shareVisual()"
       >
         {{ shareLabel }}
       </button>
-      <p class="visual-export-note" *ngIf="isReelFormat">
+      <div class="visual-inline-actions" *ngIf="hasVideoBackground && (isExporting || isSharing)">
+        <button type="button" (click)="cancelVisualVideoExport()">Annuler l’export vidéo</button>
+      </div>
+      <div *ngIf="preparedVisualVideo as videoFile" class="visual-video-result">
+        <p>Dernière vidéo générée : {{ videoFile.name }}</p>
+        <a class="btn btn-danger" [href]="preparedVisualVideoUrl" [download]="videoFile.name">Télécharger la vidéo</a>
+        <button type="button" class="btn btn-light" [disabled]="isSharing || isExporting" (click)="sharePreparedVisualVideo()">Partager la vidéo</button>
+      </div>
+      <p class="visual-export-note" *ngIf="isReelFormat && !hasVideoBackground">
         Export vidéo vertical en .webm, prêt à convertir en .mp4 si besoin.
+      </p>
+      <p class="visual-export-note" *ngIf="hasVideoBackground">
+        MP4 sans son · 1080 × 1920 (9:16) · 30 images/s. Garde cet onglet visible pendant l’export, qui dure le temps de la vidéo.
       </p>
     </div>
 
@@ -318,6 +334,12 @@
         [style.--visual-accent-rgb]="visualAccentRgb"
         [style.--visual-tagline-accent]="visualTaglineAccent"
       >
+        <video *ngIf="hasVideoBackground" class="visual-video-background"
+          [src]="customBackgroundVideoPreview" [muted]="true" autoplay loop playsinline preload="auto"
+          (loadeddata)="onBackgroundVideoReady($event)" (error)="onBackgroundVideoError()"
+          aria-hidden="true"></video>
+        <div *ngIf="hasVideoBackground" class="visual-video-tint"
+          [style.background-image]="visualBackgroundImage"></div>
         <div class="visual-background-mark">LUDI</div>
         <div class="visual-brand">
           <img src="assets/logo/logo.png" alt="LUDI Toulouse" />

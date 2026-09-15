@@ -4861,3 +4861,110 @@ app-vote-card-tool {
 .visual-preview-post.visual-mode-show.visual-has-video-tagline .visual-print-logo-bottom {
   top: 35%;
 }
+
+// Conservative margins for the Reel header, right-hand actions and lower caption.
+// These are composition margins, not a guarantee for every Instagram overlay.
+.visual-preview-post.visual-mode-show.visual-has-video-background:not(.visual-cover-frame) {
+  --reel-width: min(420px, calc(100vw - 2rem));
+
+  .visual-brand {
+    top: 14%;
+    left: 44.5%;
+    max-width: 75%;
+    gap: 0.25rem 0.5rem;
+
+    > img { height: calc(var(--reel-width) * 0.07); }
+    span { font-size: calc(var(--reel-width) * 0.025); }
+  }
+
+  .visual-partner-logos {
+    gap: 0.4rem;
+    img {
+      max-width: calc(var(--reel-width) * 0.15);
+      max-height: calc(var(--reel-width) * 0.045);
+    }
+  }
+
+  .visual-poster {
+    left: 44.5%;
+    max-width: 75%;
+    margin: 0;
+
+    img { max-height: calc(var(--reel-width) * 0.27); }
+  }
+
+  .visual-print-logo-top { top: 27%; }
+  .visual-print-logo-center { top: 29%; }
+  .visual-print-logo-bottom { top: 31%; }
+
+  .visual-tagline-video {
+    top: 44%;
+    left: 44.5%;
+    width: 73%;
+    font-size: calc(var(--reel-width) * 0.057);
+    line-height: 1.25;
+  }
+
+  .visual-content {
+    top: 53%;
+    bottom: auto;
+    left: 44.5%;
+    width: 75%;
+    padding: 0;
+  }
+
+  .visual-show-details {
+    width: 100%;
+    gap: calc(var(--reel-width) * 0.012);
+
+    p {
+      min-height: 0;
+      padding: 0.3em 0.45em;
+      max-width: 100%;
+      white-space: normal;
+      overflow-wrap: anywhere;
+      font-size: calc(var(--reel-width) * 0.051);
+      line-height: 1.08;
+    }
+
+    p:nth-child(2) {
+      min-height: 0;
+      font-size: calc(var(--reel-width) * 0.033);
+    }
+
+    span, span.visual-free-price {
+      min-height: 0;
+      margin: 0;
+      font-size: calc(var(--reel-width) * 0.029);
+      line-height: 1.1;
+      white-space: normal;
+      text-align: center;
+    }
+  }
+
+  .visual-footer {
+    left: 7%;
+    bottom: 28%;
+    max-width: 53%;
+    font-size: calc(var(--reel-width) * 0.023);
+    overflow-wrap: anywhere;
+  }
+
+  .visual-qr-code {
+    right: 18%;
+    bottom: 28%;
+    font-size: calc(var(--reel-width) * 0.016);
+    padding: calc(var(--reel-width) * 0.006);
+    img {
+      width: calc(var(--reel-width) * 0.09);
+      height: calc(var(--reel-width) * 0.09);
+    }
+  }
+}
+
+.visual-cover-result {
+  display: block;
+  width: min(100%, 180px);
+  height: auto;
+  border-radius: 0.35rem;
+}

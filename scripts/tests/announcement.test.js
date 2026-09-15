@@ -8,9 +8,10 @@ const compiled = ts.transpileModule(fs.readFileSync('src/app/components/tools/to
 }).outputText
 const exportsObject = {}
 const revoked = []
+const documentStub = {}
 const angular = new Proxy({}, { get: () => () => () => undefined })
 vm.runInNewContext(compiled, {
-  exports: exportsObject, Intl, Date, File, window: { setTimeout, clearTimeout }, URL: { createObjectURL: () => 'blob:imported', revokeObjectURL: url => revoked.push(url) },
+  exports: exportsObject, Intl, Date, File, Blob, AbortController, document: documentStub, window: { setTimeout, clearTimeout }, URL: { createObjectURL: () => 'blob:imported', revokeObjectURL: url => revoked.push(url) },
   require: name => name === '@angular/core' ? angular : {},
 })
 function component() {
@@ -137,4 +138,63 @@ test('unrelated file types do not replace the current background', () => {
   c.updateBackground({target:{files:[new File(['text'], 'file.txt', {type:'text/plain'})],value:'selected'}})
   assert.equal(c.customBackgroundVideo, 'blob:test')
   assert.match(message, /MP4 ou MOV/)
+})
+
+
+function coverComponent() {
+  const c = component()
+  const draws = []
+  const canvas = { width: 0, height: 0, getContext: () => ({drawImage: (...args) => draws.push(args)}) }
+  documentStub.createElement = () => canvas
+  const video = {readyState:4,videoWidth:1920,videoHeight:1080}
+  c.visualCanvas = {nativeElement:{querySelector:()=>video,getBoundingClientRect:()=>({width:420,height:746.6667})}}
+  let disposed = false
+  c.canvasExport = {
+    stageElement: () => ({element:{classList:{add:name=>assert.equal(name,'visual-cover-frame')}},dispose:()=>{disposed=true}}),
+    canvasToBlob: async () => new Blob(['png'], {type:'image/png'}),
+  }
+  c.fileNameBase = () => 'ludi-test'
+  c.showActionMessage = () => {}
+  c.sanitizer = {bypassSecurityTrustUrl:url=>url}
+  return {c, draws, canvas, video, disposed:()=>disposed}
+}
+
+test('cover freezes a single video frame before rendering and returns a separate PNG', async () => {
+  const {c,draws,canvas,video,disposed} = coverComponent()
+  const overlay = {}
+  c.renderVisualVideoOverlay = async () => {
+    assert.equal(draws.length,1)
+    assert.equal(draws[0][0],video)
+    return overlay
+  }
+  await c.prepareVisualCover()
+  assert.equal(canvas.width,1080)
+  assert.equal(canvas.height,1920)
+  assert.ok(draws[0][1]<0, 'landscape frame is cropped to fill portrait')
+  assert.equal(draws[1][0],overlay)
+  assert.equal(c.preparedVisualCover.type,'image/png')
+  assert.equal(c.preparedVisualCover.name,'ludi-test-couverture.png')
+  assert.equal(c.preparedVisualVideo,undefined)
+  assert.equal(c.isExporting,false)
+  assert.ok(disposed())
+})
+
+test('cancelled cover preparation releases the staged view and publishes no result', async () => {
+  const {c,disposed} = coverComponent()
+  c.renderVisualVideoOverlay = async () => { c.cancelVisualVideoExport(); return {} }
+  await c.prepareVisualCover()
+  assert.equal(c.preparedVisualCover,undefined)
+  assert.equal(c.isCoverExporting,false)
+  assert.ok(disposed())
+})
+
+test('cover waits for a decoded frame and cannot run during an export', async () => {
+  const {c,video} = coverComponent()
+  c.renderVisualVideoOverlay = () => assert.fail('must not render')
+  video.readyState=0
+  await c.prepareVisualCover()
+  assert.equal(c.preparedVisualCover,undefined)
+  video.readyState=4; c.isExporting=true
+  await c.prepareVisualCover()
+  assert.equal(c.preparedVisualCover,undefined)
 })

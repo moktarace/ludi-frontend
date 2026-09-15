@@ -136,6 +136,10 @@ export class ToolsComponent implements OnDestroy {
   public visualVideoError = ''
   public visualVideoReady = false
   public visualVideoProgress = 0
+  public isCoverExporting = false
+  public preparedVisualCover?: File
+  public preparedVisualCoverUrl?: SafeUrl
+  private preparedVisualCoverObjectUrl?: string
   public preparedVisualVideo?: File
   public preparedVisualVideoUrl?: SafeUrl
   private preparedVisualVideoObjectUrl?: string
@@ -221,6 +225,7 @@ export class ToolsComponent implements OnDestroy {
     this.destroyed = true
     this.visualVideoAbort?.abort()
     this.clearPreparedVisualVideo()
+    this.clearPreparedVisualCover()
     window.clearTimeout(this.draftSaveTimer)
     window.clearTimeout(this.actionMessageTimer)
     this.persistDraftState()
@@ -476,6 +481,7 @@ export class ToolsComponent implements OnDestroy {
   }
 
   public get exportLabel(): string {
+    if (this.isCoverExporting) return 'Préparation de la couverture…'
     if (this.isExporting) {
       return this.hasVideoBackground ? `Export vidéo… ${this.visualVideoProgress} %` : this.isReelFormat ? 'Export vidéo...' : 'Export en cours...'
     }
@@ -996,6 +1002,65 @@ export class ToolsComponent implements OnDestroy {
     this.visualVideoAbort?.abort()
   }
 
+  public pauseBackgroundPreview(): void {
+    this.visualCanvas?.nativeElement.querySelector('video')?.pause()
+  }
+
+  private clearPreparedVisualCover(): void {
+    if (this.preparedVisualCoverObjectUrl) URL.revokeObjectURL(this.preparedVisualCoverObjectUrl)
+    this.preparedVisualCover = undefined
+    this.preparedVisualCoverUrl = undefined
+    this.preparedVisualCoverObjectUrl = undefined
+  }
+
+  public async prepareVisualCover(): Promise<void> {
+    const preview = this.visualCanvas?.nativeElement
+    const video = preview?.querySelector('video')
+    if (!preview || !video || !this.hasVideoBackground || this.isExporting || this.isSharing) return
+    if (video.readyState < 2 || !video.videoWidth || !video.videoHeight) {
+      this.showActionMessage('Attends le chargement de l’image vidéo.', 'error')
+      return
+    }
+    this.isCoverExporting = true
+    this.isExporting = true
+    const abort = new AbortController()
+    this.visualVideoAbort = abort
+    let staged: StagedExportElement | undefined
+    try {
+      // Freeze the frame synchronously, before loading fonts/images or rendering HTML.
+      const canvas = document.createElement('canvas')
+      canvas.width = 1080
+      canvas.height = 1920
+      const context = canvas.getContext('2d')
+      if (!context) throw new Error('Impossible de préparer la couverture.')
+      const scale = Math.max(canvas.width / video.videoWidth, canvas.height / video.videoHeight)
+      const drawWidth = video.videoWidth * scale
+      const drawHeight = video.videoHeight * scale
+      context.drawImage(video, (canvas.width - drawWidth) / 2, (canvas.height - drawHeight) / 2, drawWidth, drawHeight)
+      const fileName = `${this.fileNameBase(this.visualExportKind)}-couverture.png`
+      const { width, height } = preview.getBoundingClientRect()
+      if (!width || !height) throw new Error('Affiche l’aperçu avant de préparer la couverture.')
+      staged = this.canvasExport.stageElement(preview, width, height)
+      staged.element.classList.add('visual-cover-frame')
+      const overlay = await this.renderVisualVideoOverlay(staged.element, width, height, abort.signal)
+      context.drawImage(overlay, 0, 0, canvas.width, canvas.height)
+      const blob = await this.canvasExport.canvasToBlob(canvas)
+      if (abort.signal.aborted || this.destroyed) return
+      this.clearPreparedVisualCover()
+      this.preparedVisualCover = new File([blob], fileName, { type: 'image/png' })
+      this.preparedVisualCoverObjectUrl = URL.createObjectURL(this.preparedVisualCover)
+      this.preparedVisualCoverUrl = this.sanitizer.bypassSecurityTrustUrl(this.preparedVisualCoverObjectUrl)
+      this.showActionMessage('Couverture prête. Télécharge-la puis choisis-la comme couverture dans Instagram.')
+    } catch (error) {
+      this.showActionMessage(this.errorMessage(error, 'Préparation de la couverture impossible.'), 'error')
+    } finally {
+      staged?.dispose()
+      this.visualVideoAbort = undefined
+      this.isCoverExporting = false
+      this.isExporting = false
+    }
+  }
+
   private clearPreparedVisualVideo(): void {
     if (this.preparedVisualVideoObjectUrl) URL.revokeObjectURL(this.preparedVisualVideoObjectUrl)
     this.preparedVisualVideo = undefined
@@ -1044,6 +1109,7 @@ export class ToolsComponent implements OnDestroy {
 
   public resetBackground(): void {
     this.backgroundRevision += 1
+    this.clearPreparedVisualCover()
     this.clearPreparedVisualVideo()
     this.visualVideoReady = false
     this.visualVideoError = ''
@@ -2001,6 +2067,18 @@ export class ToolsComponent implements OnDestroy {
     })
   }
 
+  private async renderVisualVideoOverlay(element: HTMLElement, width: number, height: number, signal: AbortSignal): Promise<HTMLCanvasElement> {
+    const video = element.querySelector('video')
+    if (video) { video.pause(); video.removeAttribute('src'); video.load(); video.remove() }
+    element.style.background = 'transparent'
+    const html2canvas = await this.canvasExport.loadRenderer()
+    await this.waitForVisualVideoImages(element, signal)
+    if (signal.aborted) throw new Error('Préparation annulée.')
+    return html2canvas(element, {
+      backgroundColor: null, scale: 1080 / width, useCORS: true, width, height,
+    })
+  }
+
   private async createVisualFile(): Promise<File> {
     if (!this.visualCanvas) {
       throw new Error('Aucun visuel à exporter')
@@ -2021,15 +2099,7 @@ export class ToolsComponent implements OnDestroy {
       try {
         if (!width || !height) throw new Error('Affiche l’aperçu avant de lancer l’export.')
         staged = this.canvasExport.stageElement(this.visualCanvas.nativeElement, width, height)
-        const stagedVideo = staged.element.querySelector('video')
-        if (stagedVideo) { stagedVideo.pause(); stagedVideo.removeAttribute('src'); stagedVideo.load(); stagedVideo.remove() }
-        staged.element.style.background = 'transparent'
-        const html2canvas = await this.canvasExport.loadRenderer()
-        await this.waitForVisualVideoImages(staged.element, abort.signal)
-        if (abort.signal.aborted) throw new Error('Export vidéo annulé.')
-        const overlay = await html2canvas(staged.element, {
-          backgroundColor: null, scale: 1080 / width, useCORS: true, width, height,
-        })
+        const overlay = await this.renderVisualVideoOverlay(staged.element, width, height, abort.signal)
         const blob = await this.videoExport.createSilentMp4(source, overlay, {
           signal: abort.signal, onProgress: (percent) => { this.visualVideoProgress = percent },
         })

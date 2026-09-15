@@ -267,6 +267,7 @@
           <p *ngIf="visualVideoError" class="visual-export-note" role="alert">{{ visualVideoError }}</p>
           <div class="visual-inline-actions" *ngIf="hasVideoBackground">
             <button type="button" (click)="playBackgroundPreview()">Lire l’aperçu vidéo</button>
+            <button type="button" (click)="pauseBackgroundPreview()">Mettre en pause</button>
           </div>
           <div class="visual-inline-actions">
             <button type="button" (click)="resetBackground()">Retirer le fond</button>
@@ -311,8 +312,19 @@
       >
         {{ shareLabel }}
       </button>
+      <button *ngIf="hasVideoBackground" type="button" class="btn btn-light visual-share-button"
+        [disabled]="isExporting || isSharing || !visualVideoReady" (click)="prepareVisualCover()">
+        {{ isCoverExporting ? 'Préparation de la couverture…' : 'Préparer la couverture PNG' }}
+      </button>
+      <p class="visual-export-note" *ngIf="hasVideoBackground">La couverture utilise l’image actuelle de la vidéo et tout le cadre, sans les marges des commandes Instagram. Tu peux mettre l’aperçu en pause dans « Personnaliser » pour choisir l’instant.</p>
+      <div *ngIf="preparedVisualCover as cover" class="visual-video-result">
+        <p>Dernière couverture générée</p>
+        <img [src]="preparedVisualCoverUrl" alt="Couverture du Reel générée" class="visual-cover-result" />
+        <a class="btn btn-light" [href]="preparedVisualCoverUrl" [download]="cover.name">Télécharger la couverture PNG</a>
+        <p class="visual-export-note">Dans Instagram : Modifier la couverture → Ajouter depuis la pellicule. Ajuste le recadrage de la grille si nécessaire.</p>
+      </div>
       <div class="visual-inline-actions" *ngIf="hasVideoBackground && (isExporting || isSharing)">
-        <button type="button" (click)="cancelVisualVideoExport()">Annuler l’export vidéo</button>
+        <button type="button" (click)="cancelVisualVideoExport()">Annuler la préparation</button>
       </div>
       <div *ngIf="preparedVisualVideo as videoFile" class="visual-video-result">
         <p>Dernière vidéo générée : {{ videoFile.name }}</p>

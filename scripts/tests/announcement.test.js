@@ -198,3 +198,27 @@ test('cover waits for a decoded frame and cannot run during an export', async ()
   await c.prepareVisualCover()
   assert.equal(c.preparedVisualCover,undefined)
 })
+
+
+test('Instagram preview UI is removed before rendering video and cover overlays', async () => {
+  const c = component()
+  let uiPresent = true
+  let rendered = false
+  const element = {
+    style: {},
+    querySelectorAll: selector => {
+      assert.equal(selector, '[data-preview-only]')
+      return [{remove:()=>{uiPresent=false}}]
+    },
+    querySelector: () => null,
+  }
+  c.canvasExport = {loadRenderer:async()=>async source=>{
+    assert.equal(source, element)
+    assert.equal(uiPresent, false)
+    rendered=true
+    return {}
+  }}
+  c.waitForVisualVideoImages = async()=>assert.equal(uiPresent,false)
+  await c.renderVisualVideoOverlay(element,420,746.6667,new AbortController().signal)
+  assert.equal(rendered,true)
+})

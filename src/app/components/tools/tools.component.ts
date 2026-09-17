@@ -135,6 +135,7 @@ export class ToolsComponent implements OnDestroy {
   public customPoster?: string
   public visualVideoError = ''
   public visualVideoReady = false
+  public showInstagramPreviewUi = true
   public visualVideoProgress = 0
   public isCoverExporting = false
   public preparedVisualCover?: File
@@ -2068,6 +2069,7 @@ export class ToolsComponent implements OnDestroy {
   }
 
   private async renderVisualVideoOverlay(element: HTMLElement, width: number, height: number, signal: AbortSignal): Promise<HTMLCanvasElement> {
+    element.querySelectorAll('[data-preview-only]').forEach(node => node.remove())
     const video = element.querySelector('video')
     if (video) { video.pause(); video.removeAttribute('src'); video.load(); video.remove() }
     element.style.background = 'transparent'

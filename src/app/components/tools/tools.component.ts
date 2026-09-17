@@ -876,6 +876,11 @@ export class ToolsComponent implements OnDestroy {
     return ToolsComponent.FULL_DATE_FORMATTER.format(new Date(show.date * 1000)).replace(/(\d{2}):(\d{2})/, '$1h $2')
   }
 
+  public formattedAnnouncementDate(show: Show): string {
+    const date = this.formattedDate(show)
+    return this.hasVideoBackground ? date.replace(/\s+à\s+/, '\nà ') : date
+  }
+
   public priceLabel(show: Show): string {
     if (!show.price) {
       return 'Entrée gratuite'

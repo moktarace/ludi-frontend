@@ -386,7 +386,7 @@
           <p class="visual-subtitle" *ngIf="!isShowVisual">{{ visualSubtitle }}</p>
 
           <div class="visual-show-details" *ngIf="selectedMode === 'show' && selectedShow as show">
-            <p>{{ formattedDate(show) }}</p>
+            <p>{{ formattedAnnouncementDate(show) }}</p>
             <p>{{ show.location }}</p>
             <span [class.visual-free-price]="!show.price">{{ priceLabel(show) }}</span>
           </div>

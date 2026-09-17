@@ -4868,20 +4868,28 @@ app-vote-card-tool {
   --reel-width: min(420px, calc(100vw - 2rem));
 
   .visual-brand {
-    top: 14%;
+    top: 7%;
+    bottom: auto;
     left: 50%;
+    display: flex;
     max-width: 75%;
-    gap: 0.25rem 0.5rem;
 
-    > img { height: calc(var(--reel-width) * 0.07); }
-    span { font-size: calc(var(--reel-width) * 0.025); }
+    > img, > span { display: none; }
   }
 
   .visual-partner-logos {
-    gap: 0.4rem;
+    gap: calc(var(--reel-width) * 0.015);
     img {
-      max-width: calc(var(--reel-width) * 0.15);
-      max-height: calc(var(--reel-width) * 0.045);
+      width: auto;
+      height: auto;
+      max-width: calc(var(--reel-width) * 0.12);
+      max-height: calc(var(--reel-width) * 0.035);
+    }
+
+    .visual-partner-logo-badge {
+      min-width: 0;
+      min-height: 0;
+      padding: calc(var(--reel-width) * 0.004);
     }
   }
 
@@ -4893,12 +4901,12 @@ app-vote-card-tool {
     img { max-height: calc(var(--reel-width) * 0.27); }
   }
 
-  .visual-print-logo-top { top: 27%; }
-  .visual-print-logo-center { top: 29%; }
-  .visual-print-logo-bottom { top: 31%; }
+  .visual-print-logo-top { top: 16%; }
+  .visual-print-logo-center { top: 18%; }
+  .visual-print-logo-bottom { top: 20%; }
 
   .visual-tagline-video {
-    top: 44%;
+    top: 33%;
     left: 50%;
     width: 73%;
     font-size: calc(var(--reel-width) * 0.057);
@@ -4906,7 +4914,7 @@ app-vote-card-tool {
   }
 
   .visual-content {
-    top: 53%;
+    top: 42%;
     bottom: auto;
     left: 50%;
     width: 75%;

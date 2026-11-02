@@ -891,6 +891,10 @@ export class ToolsComponent implements OnDestroy {
       : `${show.price} €`
   }
 
+  public studentPriceLabel(show: Show): string {
+    return show.price && show.freeForStudents ? 'Gratuit pour les étudiant·e·s' : ''
+  }
+
   public selectFormat(format: VisualFormat): void {
     if (!this.formats.some((item) => item.value === format)) {
       format = 'post'
@@ -2966,6 +2970,12 @@ export class ToolsComponent implements OnDestroy {
       context.fillStyle = 'rgba(255, 248, 237, 0.88)'
       context.font = '900 26px Arial, sans-serif'
       context.fillText(this.priceLabel(show).toUpperCase(), 76, y + 246)
+
+      const studentPrice = this.studentPriceLabel(show)
+      if (studentPrice) {
+        context.fillStyle = '#f0b92e'
+        context.fillText(studentPrice.toUpperCase(), 76, y + 282)
+      }
 
       context.fillStyle = 'rgba(255, 248, 237, 0.24)'
       context.fillRect(76, y + 314, 928, 2)

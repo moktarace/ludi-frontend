@@ -1,3 +1,8 @@
+<ng-template #showPrice let-show>
+  {{ priceLabel(show) }}
+  <small class="visual-student-price" *ngIf="studentPriceLabel(show) as studentPrice">{{ studentPrice }}</small>
+</ng-template>
+
 <div class="container-fluid section-band visual-tools text-white">
   <p
     class="tools-action-message"
@@ -347,6 +352,7 @@
       <div
         #visualCanvas
         [ngClass]="visualClass"
+        [class.visual-agenda-dense]="selectedMode !== 'show' && visualShows.length > 3"
         [style.background-image]="visualBackgroundImage"
         [style.--visual-accent]="visualAccent"
         [style.--visual-accent-rgb]="visualAccentRgb"
@@ -388,7 +394,7 @@
           <div class="visual-show-details" *ngIf="selectedMode === 'show' && selectedShow as show">
             <p>{{ formattedAnnouncementDate(show) }}</p>
             <p>{{ show.location }}</p>
-            <span [class.visual-free-price]="!show.price">{{ priceLabel(show) }}</span>
+            <span [class.visual-free-price]="!show.price"><ng-container *ngTemplateOutlet="showPrice; context: { $implicit: show }"></ng-container></span>
           </div>
 
           <div class="visual-agenda" *ngIf="selectedMode !== 'show'">
@@ -396,7 +402,7 @@
               <span>{{ formattedDate(show) }}</span>
               <strong>{{ show.name }}</strong>
               <small>{{ show.location }}</small>
-              <em>{{ priceLabel(show) }}</em>
+              <em><ng-container *ngTemplateOutlet="showPrice; context: { $implicit: show }"></ng-container></em>
             </div>
             <p class="visual-empty" *ngIf="!visualShows.length">
               Aucune date sur cette période
@@ -591,7 +597,7 @@
               <span>{{ formattedDate(show) }}</span>
               <strong>{{ show.name }}</strong>
               <small>{{ show.location || 'Lieu à venir' }}</small>
-              <em>{{ priceLabel(show) }}</em>
+              <em><ng-container *ngTemplateOutlet="showPrice; context: { $implicit: show }"></ng-container></em>
             </div>
           </div>
 
@@ -834,7 +840,7 @@
               <span>{{ formattedDate(show) }}</span>
               <strong>{{ show.name }}</strong>
               <small>{{ show.location }}</small>
-              <em>{{ priceLabel(show) }}</em>
+              <em><ng-container *ngTemplateOutlet="showPrice; context: { $implicit: show }"></ng-container></em>
             </div>
           </div>
           <p class="visual-empty" *ngIf="!carouselAgendaShows.length">
@@ -887,7 +893,7 @@
                 <span>{{ formattedDate(show) }}</span>
                 <strong>{{ show.name }}</strong>
                 <small>{{ show.location }}</small>
-                <em>{{ priceLabel(show) }}</em>
+                <em><ng-container *ngTemplateOutlet="showPrice; context: { $implicit: show }"></ng-container></em>
               </div>
             </div>
             <p class="visual-empty" *ngIf="!carouselAgendaShows.length">
@@ -1125,7 +1131,7 @@
             <span>{{ formattedDate(show) }}</span>
             <strong>{{ show.name }}</strong>
             <small>{{ show.location }}</small>
-            <em>{{ priceLabel(show) }}</em>
+            <em><ng-container *ngTemplateOutlet="showPrice; context: { $implicit: show }"></ng-container></em>
           </div>
         </div>
         <p class="visual-empty" *ngIf="!carouselAgendaShows.length">
@@ -1187,7 +1193,7 @@
                 <span>{{ formattedDate(show) }}</span>
                 <strong>{{ show.name }}</strong>
                 <small>{{ show.location }}</small>
-                <em>{{ priceLabel(show) }}</em>
+                <em><ng-container *ngTemplateOutlet="showPrice; context: { $implicit: show }"></ng-container></em>
               </div>
             </div>
             <p class="visual-empty" *ngIf="!carouselAgendaShows.length">
@@ -1356,7 +1362,7 @@
             <span>{{ formattedDate(show) }}</span>
             <strong>{{ show.name }}</strong>
             <small>{{ show.location }}</small>
-            <em>{{ priceLabel(show) }}</em>
+            <em><ng-container *ngTemplateOutlet="showPrice; context: { $implicit: show }"></ng-container></em>
           </div>
         </div>
         <p class="visual-empty" *ngIf="!carouselAgendaShows.length">
@@ -1449,7 +1455,7 @@
                 <span>{{ formattedDate(show) }}</span>
                 <strong>{{ show.name }}</strong>
                 <small>{{ show.location }}</small>
-                <em>{{ priceLabel(show) }}</em>
+                <em><ng-container *ngTemplateOutlet="showPrice; context: { $implicit: show }"></ng-container></em>
               </div>
             </div>
             <p class="visual-empty" *ngIf="!carouselAgendaShows.length">
@@ -1704,7 +1710,7 @@
             <span>{{ formattedDate(show) }}</span>
             <strong>{{ show.name }}</strong>
             <small>{{ show.location }}</small>
-            <em>{{ priceLabel(show) }}</em>
+            <em><ng-container *ngTemplateOutlet="showPrice; context: { $implicit: show }"></ng-container></em>
           </div>
         </div>
         <p class="visual-empty" *ngIf="!carouselAgendaShows.length">
@@ -1886,7 +1892,7 @@
                 <span>{{ formattedDate(show) }}</span>
                 <strong>{{ show.name }}</strong>
                 <small>{{ show.location }}</small>
-                <em>{{ priceLabel(show) }}</em>
+                <em><ng-container *ngTemplateOutlet="showPrice; context: { $implicit: show }"></ng-container></em>
               </div>
             </div>
             <p class="visual-empty" *ngIf="!carouselAgendaShows.length">

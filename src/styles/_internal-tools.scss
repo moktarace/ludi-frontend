@@ -1486,6 +1486,60 @@
   }
 }
 
+.visual-show-details .visual-student-price,
+.visual-agenda-item em .visual-student-price,
+.carousel-date-item em .visual-student-price {
+  display: block;
+  margin-top: 0.3em;
+  color: inherit;
+  font-size: inherit;
+  font-weight: 900;
+  line-height: 1.2;
+  white-space: normal;
+}
+
+.visual-agenda-item em .visual-student-price,
+.carousel-date-item em .visual-student-price {
+  color: var(--ludi-gold);
+}
+
+// Keep every date and its pricing inside the fixed export frame for busy agendas.
+.visual-preview.visual-agenda-dense {
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  gap: 8px;
+  padding: 20px;
+
+  .visual-brand img { width: 32px; height: 32px; }
+  .visual-kicker { display: none; }
+  .visual-content { min-height: 0; }
+  .visual-content h2 { font-size: 1.6rem; }
+  .visual-subtitle { margin-top: 4px; font-size: 0.75rem; }
+  .visual-agenda { gap: 4px; margin-top: 8px; }
+
+  .visual-agenda-item {
+    grid-template-columns: 4.6rem minmax(0, 1fr);
+    gap: 1px 8px;
+    padding-top: 3px;
+
+    > span {
+      grid-column: 1;
+      grid-row: 1 / span 3;
+      font-size: 0.64rem;
+      line-height: 1.2;
+    }
+
+    strong { font-size: 0.8rem; }
+    > small { grid-column: 2; font-size: 0.68rem; }
+    em { grid-column: 2; font-size: 0.64rem; }
+  }
+}
+
+.visual-preview-post.visual-mode-show.visual-instagram-show .visual-show-details .visual-show-price .visual-student-price {
+  margin-top: 5px;
+  font-family: var(--bs-font-sans-serif);
+  font-size: 13px;
+}
+
 .visual-empty {
   color: rgb(255 248 237 / 72%);
   font-weight: 700;

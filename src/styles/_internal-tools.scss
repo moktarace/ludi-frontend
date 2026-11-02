@@ -1503,34 +1503,98 @@
   color: var(--ludi-gold);
 }
 
-// Keep every date and its pricing inside the fixed export frame for busy agendas.
-.visual-preview.visual-agenda-dense {
-  grid-template-rows: auto minmax(0, 1fr) auto;
-  gap: 8px;
-  padding: 20px;
+@function agenda-size($pixels) {
+  @return calc(var(--agenda-unit, 1px) * #{$pixels});
+}
 
-  .visual-brand img { width: 32px; height: 32px; }
+// Let the agenda use the frame's height instead of clustering all dates at its centre.
+.visual-preview.visual-mode-week,
+.visual-preview.visual-mode-month {
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  gap: agenda-size(12);
+  padding: agenda-size(20);
+
+  .visual-brand { gap: agenda-size(16); font-size: agenda-size(13.6); }
+  .visual-footer { gap: agenda-size(16); font-size: agenda-size(12.48); }
+  .visual-brand img { width: agenda-size(32); height: agenda-size(32); }
   .visual-kicker { display: none; }
-  .visual-content { min-height: 0; }
-  .visual-content h2 { font-size: 1.6rem; }
-  .visual-subtitle { margin-top: 4px; font-size: 0.75rem; }
-  .visual-agenda { gap: 4px; margin-top: 8px; }
+
+  .visual-content {
+    display: flex;
+    min-height: 0;
+    flex-direction: column;
+    align-self: stretch;
+    padding-top: agenda-size(16);
+  }
+
+  .visual-content h2 { font-size: agenda-size(28.8); }
+  .visual-subtitle { margin-top: agenda-size(8); font-size: agenda-size(12.8); }
+  .visual-agenda {
+    flex: 1;
+    align-content: space-evenly;
+    gap: agenda-size(12);
+    margin-top: agenda-size(12);
+  }
 
   .visual-agenda-item {
-    grid-template-columns: 4.6rem minmax(0, 1fr);
-    gap: 1px 8px;
-    padding-top: 3px;
+    grid-template-columns: agenda-size(83.2) minmax(0, 1fr);
+    gap: agenda-size(4) agenda-size(12);
+    padding-top: agenda-size(10);
 
     > span {
       grid-column: 1;
       grid-row: 1 / span 3;
-      font-size: 0.64rem;
+      font-size: agenda-size(10.88);
+      line-height: 1.35;
+    }
+
+    strong { font-size: agenda-size(13.6); line-height: 1.12; }
+    > small { grid-column: 2; font-size: agenda-size(11.2); line-height: 1.25; }
+    em { grid-column: 2; font-size: agenda-size(10.56); line-height: 1.2; }
+  }
+}
+
+// Reserve the compact layout for five or six dates.
+.visual-preview.visual-agenda-dense {
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  gap: agenda-size(8);
+  padding: agenda-size(20);
+
+  .visual-brand img { width: agenda-size(32); height: agenda-size(32); }
+  .visual-kicker { display: none; }
+  .visual-content { display: block; align-self: center; padding-top: 0; }
+  .visual-content h2 { font-size: agenda-size(25.6); }
+  .visual-subtitle { margin-top: agenda-size(4); font-size: agenda-size(12); }
+  .visual-agenda { gap: agenda-size(4); margin-top: agenda-size(8); }
+
+  .visual-agenda-item {
+    grid-template-columns: agenda-size(73.6) minmax(0, 1fr);
+    gap: agenda-size(1) agenda-size(8);
+    padding-top: agenda-size(3);
+
+    > span {
+      grid-column: 1;
+      grid-row: 1 / span 3;
+      font-size: agenda-size(10.24);
       line-height: 1.2;
     }
 
-    strong { font-size: 0.8rem; }
-    > small { grid-column: 2; font-size: 0.68rem; }
-    em { grid-column: 2; font-size: 0.64rem; }
+    strong { font-size: agenda-size(12.8); line-height: 1.05; }
+    > small { grid-column: 2; font-size: agenda-size(10.88); line-height: 1.15; }
+    em { grid-column: 2; font-size: agenda-size(10.24); line-height: 1.05; }
+  }
+}
+
+// Only the on-screen preview shrinks; PNG exports retain their 420/337.5px layout.
+@media (max-width: 768px) {
+  .visual-preview-post.visual-mode-week:not(.visual-export-frame),
+  .visual-preview-post.visual-mode-month:not(.visual-export-frame) {
+    --agenda-unit: min(1px, calc((100vw - 32px) / 420));
+  }
+
+  .visual-preview-story.visual-mode-week:not(.visual-export-frame),
+  .visual-preview-story.visual-mode-month:not(.visual-export-frame) {
+    --agenda-unit: min(1px, calc((100vw - 32px) / 337.5));
   }
 }
 
